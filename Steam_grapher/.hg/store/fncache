@@ -1,0 +1,7 @@
+data/backends/__init__.py.i
+data/backends/spiro_com.py.i
+data/filters/__init__.py.i
+data/filters/iir_filter.py.i
+data/filters/notch.py.i
+data/stream_grapher.py.i
+data/stream_widgets.py.i
