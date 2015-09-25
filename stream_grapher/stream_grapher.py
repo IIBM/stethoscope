@@ -66,7 +66,7 @@ window = pyglet.window.Window(SIZE[0], SIZE[1], config=config)
 fps_display = pyglet.clock.ClockDisplay()
 
 
-stream_widget1 = StreamWidget(N_SAMPLES, (SIZE[0]-400, SIZE[1]-100), (100,100))
+stream_widget1 = StreamWidget(N_SAMPLES, (SIZE[0], SIZE[1]), (100,50))
 
 
 @window.event
