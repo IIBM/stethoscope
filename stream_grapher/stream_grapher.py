@@ -25,8 +25,7 @@
 '''
 from stream_widgets import StreamWidget
 
-#subjectID= raw_input("Ingrese el nombre del paciente: ")
-subjectID="Brian"
+subjectID= raw_input("Ingrese el nombre del paciente: ")
 #backend = raw_input("Choose backend: 1 = Spiro,  2 = x^3: ")
 
 #Acá elijo el backend para que Mario no lo tenga que tipear
@@ -34,7 +33,8 @@ backend= "1"
 if backend == "1":
     from backends.spiro_com import Spiro
     #com = raw_input("COM port:")
-    com="COM4"   #ttyACM0 para la compu con Ubuntu
+    com="/dev/ttyACM0"
+    #com="COM4"   #/dev/ttyACM0 para la compu con Ubuntu
     if com == "":
         spiro = Spiro(timeout=0.5)
     else :
@@ -54,10 +54,11 @@ import pyglet
 from pyglet.window import key
 import random, math
 
-import ctypes
-user32 = ctypes.windll.user32
+#import ctypes
+#user32 = ctypes.windll.user32
 
-SIZE = (user32.GetSystemMetrics(0), user32.GetSystemMetrics(1))
+#SIZE = (user32.GetSystemMetrics(0), user32.GetSystemMetrics(1))
+SIZE= (1024,600)
 N_SAMPLES = 1500
 
 config = pyglet.gl.Config(double_buffer=True, buffer_size=24)
@@ -66,7 +67,7 @@ window = pyglet.window.Window(SIZE[0], SIZE[1], config=config)
 fps_display = pyglet.clock.ClockDisplay()
 
 
-stream_widget1 = StreamWidget(N_SAMPLES, (SIZE[0], SIZE[1]), (100,50))
+stream_widget1 = StreamWidget(N_SAMPLES, (SIZE[0], SIZE[1]), (100,100))
 
 
 @window.event

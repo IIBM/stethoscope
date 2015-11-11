@@ -67,7 +67,7 @@ class StreamGraph(object):
         self.samples = [0] * n_samples
         self.actual_sample_index = 0
         self.width = size[0]
-        self.heigth = size[1]
+        self.heigth = size[1]/4
         self.position = position
         self.color = color
         self.amplification = amplification
@@ -76,7 +76,7 @@ class StreamGraph(object):
         colors = flatten([self.color for x in range(n_samples)])
         self._vertex_list = pyglet.graphics.vertex_list(n_samples, ('v2f\stream', vertexs), ("c3B\static", colors))
         
-        self.grid = Grid(size, position, h_sep=50, v_sep=50)
+        self.grid = Grid((size[0], size[1]-100), position, h_sep=50, v_sep=50)
         
         self.samples_per_h_division = int(self.n_samples * float(self.grid.h_sep) / float(self.width))
         self.samples_per_h_division_label = pyglet.text.Label(str(float(self.samples_per_h_division*1000/sample_rate))+ "mseg/div",
