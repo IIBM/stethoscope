@@ -23,6 +23,7 @@
 
 import itertools
 import pyglet.graphics
+import math
 sample_rate=1000
 
 
@@ -63,7 +64,7 @@ class Grid(object):
 
 
 class StreamGraph(object):
-    def __init__(self, n_samples, size, position, color=(255,255,255), amplification=5):
+    def __init__(self, n_samples, size, position, line_color, graph_num, amplification=5):
         
 	self.n_samples = n_samples
         self.samples = [0] * n_samples
@@ -72,8 +73,11 @@ class StreamGraph(object):
         self.heigth = size[1]/4
 	old_height=size[1];
         self.position = position
-        self.color = color
+        self.color = line_color
 	self.amplification = amplification
+	self.graph_num=graph_num
+        line_color+=(255,)
+	self.label_color=line_color
         
         
         vertexs = self._vertex_list_from_samples(self.samples)
@@ -83,17 +87,19 @@ class StreamGraph(object):
         self.grid = Grid((size[0], size[1]-100), position, h_sep=50, v_sep=50)
         
         self.samples_per_h_division = int(self.n_samples * float(self.grid.h_sep) / float(self.width))
-        self.samples_per_h_division_label = pyglet.text.Label(str(float(self.samples_per_h_division*1000/sample_rate))+ "mseg/div",
-                          font_size=14, x=size[0]/2.0 + position[0], y=position[1]- 10, anchor_x='center', anchor_y='center')
+        self.samples_per_h_division_label = pyglet.text.Label(str(float(self.samples_per_h_division*1000/sample_rate))+ "mseg/div", font_size=14, x=size[0]/2.0 + position[0]-80*(math.pow(-1,self.graph_num)), y=position[1]- 10, anchor_x='center', anchor_y='center',color=self.label_color)
                           
         self.values_per_v_division = int(self.grid.v_sep / float(self.amplification))
-        self.values_per_v_division_label = pyglet.text.Label(str(self.values_per_v_division)+"/div",
-                          font_size=14, x=position[0]-40, y=position[1]+self.heigth/2.0, anchor_x='center', anchor_y='center')
+        self.values_per_v_division_label = pyglet.text.Label("CH" + str(self.graph_num)+":"+str(self.values_per_v_division)+"/div",font_size=10, x=position[0]-40, y=position[1]+self.heigth/2.0-20*(math.pow(-1,self.graph_num)), anchor_x='center', anchor_y='center',color=self.label_color)
 
 	self.up_label = pyglet.text.Label("UP: +", font_size=12, x=position[0]-45, y=position[1]+old_height*0.75, anchor_x='center', anchor_y='center')
+
 	self.down_label = pyglet.text.Label("DOWN: -", font_size=12, x=position[0]-45, y=position[1]+old_height*0.70, anchor_x='center', anchor_y='center')
+
 	self.W_label = pyglet.text.Label("w: up", font_size=12, x=position[0]-45, y=position[1]+old_height*0.60, anchor_x='center', anchor_y='center')
+
 	self.S_label = pyglet.text.Label("s: down", font_size=12, x=position[0]-45, y=position[1]+old_height*0.55, anchor_x='center', anchor_y='center')
+
 	self.R_label = pyglet.text.Label("r: reset", font_size=12, x=position[0]-45, y=position[1]+old_height*0.45, anchor_x='center', anchor_y='center')
 
     
@@ -121,7 +127,6 @@ class StreamGraph(object):
 	self.W_label.draw()
 	self.S_label.draw()
 	self.R_label.draw()
-        
 
     def add_samples(self, samples):
         "Add a list of samples to the graph"
@@ -157,7 +162,7 @@ class StreamGraph(object):
         self.amplification = amplification
         self._regenerate_vertex_list()
         self.values_per_v_division = int(self.grid.v_sep / float(self.amplification))
-        self.values_per_v_division_label.text = str(self.values_per_v_division)+"/div"
+        self.values_per_v_division_label.text = "CH" + str(self.graph_num)+":"+str(self.values_per_v_division)+"/div"
 
     def set_position(self, position):
  	self.position=position
@@ -183,8 +188,8 @@ class StreamGraph(object):
         return  x, y
 
 class StreamWidget(object):
-    def __init__(self, n_samples, size, position):
-        self.graph = StreamGraph(n_samples, size, position, (255,0,90))
+    def __init__(self, n_samples, size, position, line_color, graph_num):
+        self.graph = StreamGraph(n_samples, size, position, line_color, graph_num)
         self.size = size
 
     def draw(self, samples):
