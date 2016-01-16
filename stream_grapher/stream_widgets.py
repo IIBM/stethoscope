@@ -61,16 +61,20 @@ class Grid(object):
         self.h_vertex_list.draw(pyglet.gl.GL_LINES)
         self.v_vertex_list.draw(pyglet.gl.GL_LINES)
 
+
 class StreamGraph(object):
     def __init__(self, n_samples, size, position, color=(255,255,255), amplification=5):
-        self.n_samples = n_samples
+        
+	self.n_samples = n_samples
         self.samples = [0] * n_samples
         self.actual_sample_index = 0
-        self.width = size[0]
+	self.width = size[0]
         self.heigth = size[1]/4
+	old_height=size[1];
         self.position = position
         self.color = color
-        self.amplification = amplification
+	self.amplification = amplification
+        
         
         vertexs = self._vertex_list_from_samples(self.samples)
         colors = flatten([self.color for x in range(n_samples)])
@@ -86,6 +90,12 @@ class StreamGraph(object):
         self.values_per_v_division_label = pyglet.text.Label(str(self.values_per_v_division)+"/div",
                           font_size=14, x=position[0]-40, y=position[1]+self.heigth/2.0, anchor_x='center', anchor_y='center')
 
+	self.up_label = pyglet.text.Label("UP: +", font_size=12, x=position[0]-45, y=position[1]+old_height*0.75, anchor_x='center', anchor_y='center')
+	self.down_label = pyglet.text.Label("DOWN: -", font_size=12, x=position[0]-45, y=position[1]+old_height*0.70, anchor_x='center', anchor_y='center')
+	self.W_label = pyglet.text.Label("w: up", font_size=12, x=position[0]-45, y=position[1]+old_height*0.60, anchor_x='center', anchor_y='center')
+	self.S_label = pyglet.text.Label("s: down", font_size=12, x=position[0]-45, y=position[1]+old_height*0.55, anchor_x='center', anchor_y='center')
+	self.R_label = pyglet.text.Label("r: reset", font_size=12, x=position[0]-45, y=position[1]+old_height*0.45, anchor_x='center', anchor_y='center')
+
     
     def draw(self, samples):
         "Add a list of samples to the graph and then draw it"
@@ -94,6 +104,11 @@ class StreamGraph(object):
         self._vertex_list.draw(pyglet.gl.GL_LINE_STRIP)
         self.samples_per_h_division_label.draw()
         self.values_per_v_division_label.draw()
+	self.up_label.draw()
+	self.down_label.draw()
+	self.W_label.draw()
+	self.S_label.draw()
+	self.R_label.draw()
 
     def redraw(self):
         "Draw the graph"
@@ -101,6 +116,11 @@ class StreamGraph(object):
         self._vertex_list.draw(pyglet.gl.GL_LINE_STRIP)
         self.samples_per_h_division_label.draw()
         self.values_per_v_division_label.draw()
+	self.up_label.draw()
+	self.down_label.draw()
+	self.W_label.draw()
+	self.S_label.draw()
+	self.R_label.draw()
         
 
     def add_samples(self, samples):
@@ -138,6 +158,10 @@ class StreamGraph(object):
         self._regenerate_vertex_list()
         self.values_per_v_division = int(self.grid.v_sep / float(self.amplification))
         self.values_per_v_division_label.text = str(self.values_per_v_division)+"/div"
+
+    def set_position(self, position):
+ 	self.position=position
+        self._regenerate_vertex_list()
 
     def set_color(self, color):
         colors = tuple(flatten([color for x in range(self.n_samples)])) 

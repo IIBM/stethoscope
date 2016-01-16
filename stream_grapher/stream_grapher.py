@@ -41,8 +41,17 @@ if backend == "1":
         spiro = Spiro(port=com, timeout=0.5)
     spiro.run()
     backend = "spiro"
-    out_file_name = subjectID+ "_dataECG.log"
-    out_file= open(out_file_name, "w")
+
+    import os.path
+    import datetime
+
+    save_path='/home/biomedica/Escritorio/stream_grapher/Data'
+    today= datetime.date.today()
+	
+    out_file_name = subjectID+ "_dataECG_"+str(today)+".log"
+    completeName= os.path.join(save_path, out_file_name)
+    out_file= open(completeName, "w")
+
     from filters.iir_filter import IIRFilter
     filt_45hz_2nd = IIRFilter((1.0, 2.0, 1.0),(1.0, -1.6692031429, 0.7166338735))
     
@@ -97,7 +106,18 @@ def on_key_press(symbol, modifiers):
     elif symbol == key.DOWN:
         old_amplification = stream_widget1.graph.amplification
         stream_widget1.graph.set_amplification(old_amplification - old_amplification * 0.4)
-
+    elif symbol == key.W:
+	old_position = stream_widget1.graph.position
+	new_position=(old_position[0], old_position[1]+30)
+        stream_widget1.graph.set_position(new_position)
+    elif symbol == key.S:
+	old_position = stream_widget1.graph.position
+	new_position=(old_position[0], old_position[1]-30)
+        stream_widget1.graph.set_position(new_position)
+    elif symbol == key.R:
+	new_position=(100, 100)
+        stream_widget1.graph.set_position(new_position)
+        stream_widget1.graph.set_amplification(5)
 
 
 def update(dt):
