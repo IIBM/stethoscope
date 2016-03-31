@@ -1,4 +1,4 @@
-update=09/08/2015 19:38:41
+update=jue 31 mar 2016 15:17:06 ART
 version=1
 last_client=kicad
 [pcbnew]
@@ -23,11 +23,9 @@ ModuleOutlineThickness=0.150000000000
 [cvpcb]
 version=1
 NetIExt=net
-[general]
-version=1
 [eeschema]
 version=1
-LibDir=
+LibDir=../Lib
 [eeschema/libraries]
 LibName1=power
 LibName2=device
@@ -61,3 +59,6 @@ LibName29=valves
 LibName30=ina
 LibName31=opa2335
 LibName32=reg
+LibName33=plugs
+[general]
+version=1

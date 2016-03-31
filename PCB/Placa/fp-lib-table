@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name componentes)(type KiCad)(uri /home/gigi/Documentos/Facu/Estetoscopio/stethoscope-master/PCB/Lib/componentes.pretty)(options "")(descr ""))
+)
