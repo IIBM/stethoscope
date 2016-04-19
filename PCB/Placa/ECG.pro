@@ -1,4 +1,4 @@
-update=lun 11 abr 2016 20:03:57 ART
+update=lun 18 abr 2016 22:07:12 ART
 version=1
 last_client=kicad
 [pcbnew]
@@ -60,5 +60,6 @@ LibName30=ina
 LibName31=opa2335
 LibName32=reg
 LibName33=plugs
+LibName34=minidin_6
 [general]
 version=1
