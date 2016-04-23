@@ -248,7 +248,7 @@ F 1 "CONN_01X04" V 1950 4750 50  0000 C CNN
 F 2 "Pin_Headers:Pin_Header_Angled_1x04" H 1850 4750 50  0001 C CNN
 F 3 "" H 1850 4750 50  0000 C CNN
 	1    1850 4750
-	1    0    0    -1  
+	1    0    0    1   
 $EndComp
 Text Label 1450 4600 0    60   ~ 0
 Mic
