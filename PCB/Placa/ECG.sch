@@ -96,17 +96,6 @@ F 3 "" H 1900 1300 60  0000 C CNN
 $EndComp
 NoConn ~ 1400 1500
 $Comp
-L CONN_01X01 P7
-U 1 1 55CD1DFD
-P 9500 6050
-F 0 "P7" H 9500 6150 50  0000 C CNN
-F 1 "Shield" V 9600 6050 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x01" H 9500 6050 60  0001 C CNN
-F 3 "" H 9500 6050 60  0000 C CNN
-	1    9500 6050
-	-1   0    0    1   
-$EndComp
-$Comp
 L CP C5
 U 1 1 564D717C
 P 1150 1450
@@ -202,10 +191,6 @@ Wire Notes Line
 	5200 2050 5200 600 
 Wire Notes Line
 	5200 600  700  600 
-Text Label 10050 6050 2    60   ~ 0
-SHIELD
-Wire Wire Line
-	10050 6050 9700 6050
 Text Label 9800 4500 2    60   ~ 0
 SHIELD
 $Comp
