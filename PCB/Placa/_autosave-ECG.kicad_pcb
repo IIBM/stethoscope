@@ -3,7 +3,7 @@
   (general
     (links 125)
     (no_connects 0)
-    (area 134.924999 70.524999 195.875001 94.675001)
+    (area 127.399399 66.4 195.875001 95.8517)
     (thickness 1.6)
     (drawings 13)
     (tracks 475)
@@ -15,12 +15,12 @@
   (page A4)
   (layers
     (0 F.Cu signal)
-    (31 B.Cu signal)
+    (31 B.Cu signal hide)
     (32 B.Adhes user)
     (33 F.Adhes user)
     (34 B.Paste user)
     (35 F.Paste user)
-    (36 B.SilkS user)
+    (36 B.SilkS user hide)
     (37 F.SilkS user)
     (38 B.Mask user)
     (39 F.Mask user)
@@ -65,7 +65,7 @@
     (pad_drill 0.8)
     (pad_to_mask_clearance 0.2)
     (aux_axis_origin 0 0)
-    (visible_elements 7FFEF7FF)
+    (visible_elements 7FFFF7FF)
     (pcbplotparams
       (layerselection 0x01000_80000001)
       (usegerberextensions false)
