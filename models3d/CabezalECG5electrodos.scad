@@ -39,6 +39,7 @@ altura_arriba_electrodo=altura_electrodo-altura_abajo_electrodo+0.2;
 altura_arriba=(altura_abajo_electrodo/2)+altura_arriba_electrodo; //lo utilizo para la posicion de la esfera
 
 //uso esta variable para el hueco en el electrodo
+
 rad1=3;
 alt1=3;
 
