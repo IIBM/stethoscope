@@ -1,11 +1,11 @@
-//cyntia vilte 10 de Junio version 4.0 Cabezal para ECG(Parte de abajo, con 5 electrodos)
+//cyntia vilte 11 de Julio version 4.0 Cabezal para ECG(Parte de abajo, con 5 electrodos)
 
 fn1=20;
 radio_base=22;   
 radio_techo=12.1; // radio de la parte de arriba de la base
 altura_techo=11;//altura del cilindro de la parte de arriba(techo) 
 altura_base=10; //altura del cilindro de la parte de abajo(base)
-radio_adentro_base=5.14;//del cilindro con el cual lo diferencio con el cilindro de la base
+radio_adentro_base=5;//del cilindro con el cual lo diferencio con el cilindro de la base
 radio_adentro_techo=3.5;//del cilindro con el cual lo diferencio con el cilindro del techo
 radio_cable=1.15; // radio del espacio en donde ira el cable 
 
@@ -37,6 +37,10 @@ radio_esfera=2; //es el radio de la esfera de la punta del electrodo
 altura_abajo_electrodo=1.20; //la altura de la base del electrodo
 altura_arriba_electrodo=altura_electrodo-altura_abajo_electrodo+0.2; 
 altura_arriba=(altura_abajo_electrodo/2)+altura_arriba_electrodo; //lo utilizo para la posicion de la esfera
+
+//uso esta variable para el hueco en el electrodo
+rad1=3;
+alt1=3;
 
 union()
  {
@@ -79,8 +83,18 @@ union()
           union()
            {
             cylinder(r=radio_electrodo2,h=altura_electrodo2,center=true,$fn=fn1);//espacio para que entre el electrodo
-             translate([0,0,radio_esfera])
-              sphere(r=radio_esfera,$fn=fn1);
+            translate([0,0,radio_esfera])
+             sphere(r=radio_esfera,$fn=fn1);
+            translate([-radio_esfera-1,0,radio_esfera+0.85])     
+             rotate([0,0,-180])
+              rotate([0,45,0])
+               rotate([90,-15,0])
+                difference()
+                 {
+                  cylinder(r1=rad1,r2=rad1,h=alt1,$fn=4,center=true);
+                  translate([0,rad1-1,0])   
+                   cube([rad1+3,rad1+1,rad1+0.25],center=true);   
+                  }
             }      
        // esta parte hace los dos electrodos que estan en el eje x
      translate([0,0.3,(altura_electrodo2/2)-0.2])//mueve los dos electrodos en el eje y
@@ -93,13 +107,35 @@ union()
             cylinder(r=radio_electrodo2,h=altura_electrodo2,center=true,$fn=fn1);//espacio para que entre el electrodo
             translate([0,0,radio_esfera])
              sphere(r=radio_esfera,$fn=fn1);
+            translate([-radio_esfera-1,0,radio_esfera+0.85])
+             rotate([0,0,-180])
+              rotate([0,45,0])
+               rotate([90,-15,0])
+                difference()
+                  {
+                   cylinder(r1=rad1,r2=rad1,h=alt1+0.25,$fn=4,center=true);
+                   translate([0,rad1-1,0])   
+                    cube([rad1+3,rad1+1,rad1+0.25],center=true);   
+                  }
             }
     }
     //el espacio en donde ira un cable,este ira en el electrodo que esta a 225grados
       rotate([0,0,405])
         translate([-radio_base+radio_electrodo2+1,0,altura_electrodo])
+        {
          rotate([0,90-angulo_desplazamiento,0])
           cylinder(r=radio_cable,h=largo_cable,$fn=fn1);
+          translate([radio_esfera+1.45,-0.2,-radio_esfera+1.30])
+          rotate([0,45,0])
+           rotate([90,-15,0])
+            difference()
+             {
+              cylinder(r1=rad1,r2=rad1,h=alt1+0.25,$fn=4,center=true);
+              translate([0,rad1-1,0])   
+               cube([rad1+3,rad1+1,rad1+0.25],center=true);
+            }
+        }  
+        
     //los espacios en donde ira un cable, estos iran en los electrodos que estan en el eje x
     translate([0,radio_electrodo2/2,0])
     for(i=[1:2])
