@@ -1,4 +1,4 @@
-//cyntia vilte 13 de Junio version 3.0 Cabezal para ECG(Parte de abajo, con 8 electrodos)
+//cyntia vilte 11 de Julio version 4.0 Cabezal para ECG(Parte de abajo, con 8 electrodos)
 
 use <electrodo.scad>
 fn1=20;
