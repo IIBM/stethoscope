@@ -24,7 +24,7 @@
 import itertools
 import pyglet.graphics
 import math
-sample_rate=1000
+sample_rate=1000.0
 
 
 def from_iterable(iterables):
@@ -57,27 +57,42 @@ class Grid(object):
         v_colors = flatten([self.color for x in range(num_v_lines*2)])
         self.h_vertex_list = pyglet.graphics.vertex_list(num_h_lines*2, ('v2f\static', h_vertexs), ("c3B\static", h_colors))
         self.v_vertex_list = pyglet.graphics.vertex_list(num_v_lines*2 , ('v2f\static', v_vertexs), ("c3B\static", v_colors))
+        old_height = 500
+
+        self.up_label = pyglet.text.Label("UP: +", font_size=12, x=5, y=position[1]+size[1]-20, anchor_x='left', anchor_y='center')
+        self.down_label = pyglet.text.Label("DOWN: -", font_size=12, x=5, y=position[1]+size[1]-40, anchor_x='left', anchor_y='center')
+        self.W_label = pyglet.text.Label("w: up", font_size=12, x=5, y=position[1]+size[1]-60, anchor_x='left', anchor_y='center')
+        self.S_label = pyglet.text.Label("s: down", font_size=12, x=5, y=position[1]+size[1]-80, anchor_x='left', anchor_y='center')
+        self.R_label = pyglet.text.Label("r: reset", font_size=12, x=5, y=position[1]+size[1]-100, anchor_x='left', anchor_y='center')
+        self.P_label = pyglet.text.Label("p: pause", font_size=12, x=5, y=position[1]+size[1]-120, anchor_x='left', anchor_y='center')
+        self.C_label = pyglet.text.Label("c: change", font_size=12, x=5, y=position[1]+size[1]-140, anchor_x='left', anchor_y='center')
         
     def draw(self):
         self.h_vertex_list.draw(pyglet.gl.GL_LINES)
         self.v_vertex_list.draw(pyglet.gl.GL_LINES)
+        self.up_label.draw()
+        self.down_label.draw()
+        self.W_label.draw()
+        self.S_label.draw()
+        self.R_label.draw()
+        self.P_label.draw()
 
 
 class StreamGraph(object):
     def __init__(self, n_samples, size, position, line_color, graph_num, amplification=5):
         
-	self.n_samples = n_samples
+        self.n_samples = n_samples
         self.samples = [0] * n_samples
         self.actual_sample_index = 0
-	self.width = size[0]
+        self.width = size[0]
         self.heigth = size[1]/4
-	old_height=size[1];
+        old_height=size[1];
         self.position = position
         self.color = line_color
-	self.amplification = amplification
-	self.graph_num=graph_num
+        self.amplification = amplification
+        self.graph_num=graph_num
         line_color+=(255,)
-	self.label_color=line_color
+        self.label_color=line_color
         
         
         vertexs = self._vertex_list_from_samples(self.samples)
@@ -86,21 +101,34 @@ class StreamGraph(object):
         
         self.grid = Grid((size[0], size[1]-100), position, h_sep=50, v_sep=50)
         
-        self.samples_per_h_division = int(self.n_samples * float(self.grid.h_sep) / float(self.width))
-        self.samples_per_h_division_label = pyglet.text.Label(str(float(self.samples_per_h_division*1000/sample_rate))+ "mseg/div", font_size=14, x=size[0]/2.0 + position[0]-80*(math.pow(-1,self.graph_num)), y=position[1]- 10, anchor_x='center', anchor_y='center',color=self.label_color)
+        if (self.graph_num==1):
+          self.samples_per_h_division = self.n_samples * float(self.grid.h_sep) / float(self.width)
+          self.samples_per_h_division_label = pyglet.text.Label(" ms/div", font_size=14, x=size[0]/2.0 + position[0], y=position[1] - 10, anchor_x='center', anchor_y='center',color=self.label_color)
+          if (self.samples_per_h_division > sample_rate):
+            self.samples_per_h_division_label.text  = '%6.2f' % (self.samples_per_h_division/sample_rate) + " s/div"
+          elif (self.samples_per_h_division > (sample_rate/1000.0)):
+            self.samples_per_h_division_label.text  = '%6.2f' % (self.samples_per_h_division*1000.0/sample_rate) + " ms/div"
+          else :
+            self.samples_per_h_division_label.text  = '%6.2f' % (self.samples_per_h_division*1000000.0/sample_rate) + " us/div"
                           
-        self.values_per_v_division = int(self.grid.v_sep / float(self.amplification))
-        self.values_per_v_division_label = pyglet.text.Label("CH" + str(self.graph_num)+":"+str(self.values_per_v_division)+"/div",font_size=10, x=position[0]-40, y=position[1]+self.heigth/2.0-20*(math.pow(-1,self.graph_num)), anchor_x='center', anchor_y='center',color=self.label_color)
+        self.values_per_v_division = self.grid.v_sep / float(self.amplification)
+        self.values_per_v_division_label = pyglet.text.Label("CH " + str(self.graph_num)+": "+'%6.2f' % self.values_per_v_division+" uV/div",font_size=14, x=position[0]+size[0]/2.0-100+((self.graph_num+1)%2)*200, y=position[1] - 40 - (((self.graph_num-1)/2)%2)*30, anchor_x='center', anchor_y='center',color=self.label_color)
 
-	self.up_label = pyglet.text.Label("UP: +", font_size=12, x=position[0]-45, y=position[1]+old_height*0.75, anchor_x='center', anchor_y='center')
-
-	self.down_label = pyglet.text.Label("DOWN: -", font_size=12, x=position[0]-45, y=position[1]+old_height*0.70, anchor_x='center', anchor_y='center')
-
-	self.W_label = pyglet.text.Label("w: up", font_size=12, x=position[0]-45, y=position[1]+old_height*0.60, anchor_x='center', anchor_y='center')
-
-	self.S_label = pyglet.text.Label("s: down", font_size=12, x=position[0]-45, y=position[1]+old_height*0.55, anchor_x='center', anchor_y='center')
-
-	self.R_label = pyglet.text.Label("r: reset", font_size=12, x=position[0]-45, y=position[1]+old_height*0.45, anchor_x='center', anchor_y='center')
+#        self.samples_per_h_division = int(self.n_samples * float(self.grid.h_sep) / float(self.width))
+#        self.samples_per_h_division_label = pyglet.text.Label(str(float(self.samples_per_h_division*1000/sample_rate))+ "mseg/div", font_size=14, x=size[0]/2.0 + position[0]-80*(math.pow(-1,self.graph_num)), y=position[1]- 10, anchor_x='center', anchor_y='center',color=self.label_color)
+#                          
+#        self.values_per_v_division = int(self.grid.v_sep / float(self.amplification))
+#        self.values_per_v_division_label = pyglet.text.Label("CH" + str(self.graph_num)+":"+str(self.values_per_v_division)+"/div",font_size=10, x=position[0]-40, y=position[1]+self.heigth/2.0-20*(math.pow(-1,self.graph_num)), anchor_x='center', anchor_y='center',color=self.label_color)
+#
+#	self.up_label = pyglet.text.Label("UP: +", font_size=12, x=position[0]-45, y=position[1]+old_height*0.75, anchor_x='center', anchor_y='center')
+#
+#	self.down_label = pyglet.text.Label("DOWN: -", font_size=12, x=position[0]-45, y=position[1]+old_height*0.70, anchor_x='center', anchor_y='center')
+#
+#	self.W_label = pyglet.text.Label("w: up", font_size=12, x=position[0]-45, y=position[1]+old_height*0.60, anchor_x='center', anchor_y='center')
+#
+#	self.S_label = pyglet.text.Label("s: down", font_size=12, x=position[0]-45, y=position[1]+old_height*0.55, anchor_x='center', anchor_y='center')
+#
+#	self.R_label = pyglet.text.Label("r: reset", font_size=12, x=position[0]-45, y=position[1]+old_height*0.45, anchor_x='center', anchor_y='center')
 
     
     def draw(self, samples):
@@ -108,25 +136,17 @@ class StreamGraph(object):
         self.add_samples(samples)
         self.grid.draw()
         self._vertex_list.draw(pyglet.gl.GL_LINE_STRIP)
-        self.samples_per_h_division_label.draw()
+        if (self.graph_num == 1):
+          self.samples_per_h_division_label.draw()
         self.values_per_v_division_label.draw()
-	self.up_label.draw()
-	self.down_label.draw()
-	self.W_label.draw()
-	self.S_label.draw()
-	self.R_label.draw()
 
     def redraw(self):
         "Draw the graph"
         self.grid.draw()
         self._vertex_list.draw(pyglet.gl.GL_LINE_STRIP)
-        self.samples_per_h_division_label.draw()
+        if (self.graph_num == 1):
+          self.samples_per_h_division_label.draw()
         self.values_per_v_division_label.draw()
-	self.up_label.draw()
-	self.down_label.draw()
-	self.W_label.draw()
-	self.S_label.draw()
-	self.R_label.draw()
 
     def add_samples(self, samples):
         "Add a list of samples to the graph"
@@ -136,7 +156,7 @@ class StreamGraph(object):
             self._vertex_list.vertices[index*2:index*2+2] = self._vertex_from_sample(sample, index)
             self.actual_sample_index +=1
             if self.actual_sample_index >= self.n_samples:
-                    self.actual_sample_index = 0
+                self.actual_sample_index = 0
 
     def set_n_samples(self, n_samples):
         "Set a new value of n_samples"
@@ -145,7 +165,7 @@ class StreamGraph(object):
         self.n_samples = n_samples
         new_samples = [0]*n_samples
         for i in range(n_samples):
-            try:
+            try :
                 new_samples[i] = self.samples[i]
             except IndexError:
                 break
@@ -155,17 +175,29 @@ class StreamGraph(object):
         self.set_color(self.color)
         self.actual_sample_index = min(self.actual_sample_index, n_samples-1)
         
-        self.samples_per_h_division = int(self.n_samples * float(self.grid.h_sep) / float(self.width))
-        self.samples_per_h_division_label.text  = str(float(self.samples_per_h_division*1000/sample_rate))+ "mseg/div"
+        if (self.graph_num == 1):
+          self.samples_per_h_division = self.n_samples * float(self.grid.h_sep) / float(self.width)
+          if (self.samples_per_h_division > sample_rate):
+            self.samples_per_h_division_label.text  = '%6.2f' % (self.samples_per_h_division/sample_rate) + "  s/div"
+          elif (self.samples_per_h_division > (sample_rate/1000.0)):
+            self.samples_per_h_division_label.text  = '%6.2f' % (self.samples_per_h_division*1000.0/sample_rate) + " ms/div"
+          else :
+            self.samples_per_h_division_label.text  = '%6.2f' % (self.samples_per_h_division*1000000.0/sample_rate) + " us/div"
+
 
     def set_amplification(self, amplification):
         self.amplification = amplification
         self._regenerate_vertex_list()
-        self.values_per_v_division = int(self.grid.v_sep / float(self.amplification))
-        self.values_per_v_division_label.text = "CH" + str(self.graph_num)+":"+str(self.values_per_v_division)+"/div"
+        self.values_per_v_division = self.grid.v_sep / float(self.amplification)
+        if (self.values_per_v_division > 1.0):
+          self.values_per_v_division_label.text = "CH " + str(self.graph_num)+": "+'%6.2f' % (self.values_per_v_division )+"  V/div"
+        elif ((self.values_per_v_division*1000.0) > 1.0):
+          self.values_per_v_division_label.text = "CH " + str(self.graph_num)+": "+'%6.2f' % (self.values_per_v_division*1000.0)+" mV/div"
+        else :
+          self.values_per_v_division_label.text = "CH " + str(self.graph_num)+": "+'%6.2f' % (self.values_per_v_division*1000000.0)+" uV/div"
 
     def set_position(self, position):
- 	self.position=position
+        self.position=position
         self._regenerate_vertex_list()
 
     def set_color(self, color):
