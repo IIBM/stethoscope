@@ -66,7 +66,8 @@ filt_45hz_2nd = IIRFilter((1.0, 2.0, 1.0),(1.0, -1.6692031429, 0.7166338735))
     
     
 from filters.notch import Notch
-notch_c1_50Hz = Notch(1/1000.0,50.0, 2.0)
+notch_c1_50Hz = Notch(1/1000.0,50.45, 2.0) #Filtra 50Hz
+#notch_c1_50Hz = Notch(1/1000.0,50.0, 2.0) #Filtra 50Hz
 notch_c2_50Hz = Notch(1/1000.0,50.0, 2.0)
 
 import pyglet
@@ -202,29 +203,30 @@ def update(dt):
         #para el vector de muestras actual sé si los elementos pares son del c1 o del c2 (lo mismo para los
         #impares). Finalmente en base a esto actualizo la variable last_sample.
 
-        if last_sample=="C2":
-            samples_c1=samples_even
-            samples_c2=samples_odd
-            if (len(samples)%2==0): #acá pregunto si el resto de dividir la long del arreglo por 2 es cero (PAR)
-                last_sample="C2"
-            else:
-                last_sample="C1"
-
-        else:
-            samples_c2=samples_even
-            samples_c1=samples_odd
-            if (len(samples)%2==0): 
-                last_sample="C1"
-            else:
-                last_sample="C2"
-
-        out_file_c1.write("\n".join([str(sample) for sample in samples_c1])+"\n")
-        out_file_c2.write("\n".join([str(sample) for sample in samples_c2])+"\n")
+#        if last_sample=="C2":
+#            samples_c1=samples_even
+#            samples_c2=samples_odd
+#            if (len(samples)%2==0): #acá pregunto si el resto de dividir la long del arreglo por 2 es cero (PAR)
+#                last_sample="C2"
+#            else:
+#                last_sample="C1"
+#
+#        else:
+#            samples_c2=samples_even
+#            samples_c1=samples_odd
+#            if (len(samples)%2==0): 
+#                last_sample="C1"
+#            else:
+#                last_sample="C2"
+#
+#        out_file_c1.write("\n".join([str(sample) for sample in samples_c1])+"\n")
+#        out_file_c2.write("\n".join([str(sample) for sample in samples_c2])+"\n")
         
-    stream_widgets[0].graph.add_samples([sample*SCALE for sample in samples_c1])
-    stream_widgets[1].graph.add_samples([notch_c1_50Hz(sample)*SCALE for sample in samples_c1])
-    stream_widgets[2].graph.add_samples([sample*SCALE for sample in samples_c2])
-    stream_widgets[3].graph.add_samples([notch_c2_50Hz(sample)*SCALE for sample in samples_c2])
+        out_file_c1.write("\n".join([str(sample) for sample in samples])+"\n")
+    stream_widgets[0].graph.add_samples([sample*SCALE for sample in samples])
+    stream_widgets[1].graph.add_samples([notch_c1_50Hz(sample)*SCALE for sample in samples])
+   # stream_widgets[2].graph.add_samples([sample*SCALE for sample in samples])
+   # stream_widgets[3].graph.add_samples([notch_c2_50Hz(sample)*SCALE for sample in samples])
       
 pyglet.clock.schedule_interval(update, 0.05)
 
