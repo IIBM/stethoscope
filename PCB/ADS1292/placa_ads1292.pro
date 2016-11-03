@@ -1,4 +1,4 @@
-update=mar 01 nov 2016 19:16:55 ART
+update=jue 03 nov 2016 18:31:37 ART
 version=1
 last_client=kicad
 [pcbnew]
@@ -57,5 +57,6 @@ LibName27=atmel
 LibName28=contrib
 LibName29=valves
 LibName30=ads1292
+LibName31=reg
 [general]
 version=1

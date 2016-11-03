@@ -66,8 +66,8 @@ module grupo_de_electrodos(){
     }
 }
 
-//difference(){
-    %cabezal();
+difference(){
+    cabezal();
     microfono();
     grupo_de_electrodos();
-//}
+}
