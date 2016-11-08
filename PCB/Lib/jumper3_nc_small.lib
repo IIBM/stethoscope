@@ -1,0 +1,23 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#
+# Jumper3_NC_Small
+#
+DEF ~Jumper3_NC_Small JP 0 30 N N 1 F N
+F0 "JP" 0 80 50 H V C CNN
+F1 "Jumper3_NC_Small" 0 -110 50 H I C CNN
+F2 "" -45 0 50 H V C CNN
+F3 "" -45 0 50 H V C CNN
+DRAW
+A -45 -10 57 450 1350 0 1 0 N -5 30 -85 30
+A 45 -10 57 450 1350 0 1 0 N 85 30 5 30
+C -80 0 20 0 1 0 N
+C 0 0 20 0 1 0 N
+C 80 0 20 0 1 0 N
+X 1 1 -150 0 50 R 50 50 0 1 P
+X 2 2 0 -50 30 U 50 50 0 1 P
+X 3 3 150 0 50 L 50 50 0 1 P
+ENDDRAW
+ENDDEF
+#
+#End Library
