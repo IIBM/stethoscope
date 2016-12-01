@@ -1,4 +1,4 @@
-update=mar 08 nov 2016 16:39:47 ART
+update=jue 24 nov 2016 17:14:06 ART
 version=1
 last_client=kicad
 [pcbnew]
@@ -23,8 +23,16 @@ ModuleOutlineThickness=0.150000000000
 [cvpcb]
 version=1
 NetIExt=net
-[general]
+[schematic_editor]
 version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=Pcbnew
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60
 [eeschema]
 version=1
 LibDir=../Lib
@@ -61,13 +69,6 @@ LibName29=valves
 LibName30=ads1292
 LibName31=reg
 LibName32=jumper3_nc_small
-[schematic_editor]
+LibName33=AIC1117
+[general]
 version=1
-PageLayoutDescrFile=
-PlotDirectoryName=
-SubpartIdSeparator=0
-SubpartFirstId=65
-NetFmtName=Pcbnew
-SpiceForceRefPrefix=0
-SpiceUseNetNumbers=0
-LabSize=60
