@@ -31,8 +31,6 @@ LIBS:valves
 LIBS:ads1292
 LIBS:reg
 LIBS:jumper3_nc_small
-LIBS:AIC1117
-LIBS:placa_ads1292-cache
 EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
@@ -528,7 +526,7 @@ F 1 "CONN_02X07" V 9150 3350 50  0000 C CNN
 F 2 "Pin_Headers:Pin_Header_Straight_2x07" H 9150 2150 50  0001 C CNN
 F 3 "" H 9150 2150 50  0000 C CNN
 	1    9150 3350
-	-1   0    0    -1  
+	-1   0    0    1   
 $EndComp
 Wire Wire Line
 	6950 5200 6950 5250
