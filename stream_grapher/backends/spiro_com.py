@@ -4,10 +4,13 @@
 
 import serial
 import struct
+import time
 
 class Spiro(object):
-    def __init__(self, port="/dev/ttyACM0", timeout=0.5):
+    #def __init__(self, port="/dev/ttyACM0", timeout=0.5):
+    def __init__(self, port="/dev/ttyUSB0", timeout=0.5):
          self.ser = serial.Serial(port=port, baudrate=115200, timeout=timeout)
+         time.sleep(6)
          self.ser.flushInput 
     #def get_sample(self):
     #    self.ser.write("0")
@@ -18,19 +21,20 @@ class Spiro(object):
     #    return [self.get_sample() for x in range(n_samples)]
     def get_100_samples(self):
         blk = self.ser.read(100)
-        samples = struct.unpack("H"*(len(blk)/2), blk)
+        samples = struct.unpack("h"*(len(blk)/2), blk)
         return samples
     def get_sample(self):
         blk = self.ser.read(2)
-        samples = struct.unpack("H"*(len(blk)/2), blk)
+        samples = struct.unpack("h"*(len(blk)/2), blk)
         return samples
     def get_remaining_samples(self):
         blk = self.ser.read(1)
         a = self.ser.inWaiting()
         blk += self.ser.read(a +1 - a % 2)
-        samples = struct.unpack("H"*(len(blk)/2), blk)
+        samples = struct.unpack("h"*(len(blk)/2), blk)
         return samples
     def run(self):
+        self.ser.flushInput 
         self.ser.write("1")
     def stop(self):
         self.ser.write("0")    

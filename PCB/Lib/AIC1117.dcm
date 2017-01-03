@@ -1,0 +1,8 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP AIC1117
+D 800mA Low Dropout Positive Adjustable Regulator
+K POWER REGUL
+$ENDCMP
+#
+#End Doc Library

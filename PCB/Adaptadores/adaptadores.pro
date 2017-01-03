@@ -1,4 +1,4 @@
-update=mar 13 dic 2016 19:19:19 ART
+update=mié 22 jun 2016 16:22:56 ART
 version=1
 last_client=kicad
 [pcbnew]
@@ -25,7 +25,7 @@ version=1
 NetIExt=net
 [eeschema]
 version=1
-LibDir=../Lib
+LibDir=
 [eeschema/libraries]
 LibName1=power
 LibName2=device
@@ -56,19 +56,5 @@ LibName26=opto
 LibName27=atmel
 LibName28=contrib
 LibName29=valves
-LibName30=ads1292
-LibName31=reg
-LibName32=jumper3_nc_small
-LibName33=AIC1117
 [general]
 version=1
-[schematic_editor]
-version=1
-PageLayoutDescrFile=
-PlotDirectoryName=
-SubpartIdSeparator=0
-SubpartFirstId=65
-NetFmtName=Pcbnew
-SpiceForceRefPrefix=0
-SpiceUseNetNumbers=0
-LabSize=60

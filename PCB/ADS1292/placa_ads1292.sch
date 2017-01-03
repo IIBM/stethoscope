@@ -872,4 +872,6 @@ Wire Wire Line
 Wire Wire Line
 	3650 2450 3650 2400
 Connection ~ 3650 2400
+Text Notes 4500 4950 0    60   ~ 0
+1.8nF->
 $EndSCHEMATC

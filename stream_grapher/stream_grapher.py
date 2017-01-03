@@ -36,7 +36,9 @@ backend= "1"
 if backend == "1":
     from backends.spiro_com import Spiro
     #com = raw_input("COM port:")
-    com="/dev/ttyACM0"
+    com="/dev/ttyUSB0"
+    #com="/dev/ttyUSB1"
+    #com="/dev/ttyACM0"
     #com="COM4"   #/dev/ttyACM0 para la compu con Ubuntu
     if com == "":
         spiro = Spiro(timeout=0.5)
@@ -82,7 +84,9 @@ import random, math
 SIZE= (1024,600)
 N_SAMPLES = 250
 
-SCALE = 3.3/4096.0 #cuanto representa 1 muestra en tension, revisar
+#SCALE = 3.3/4096.0 #cuanto representa 1 muestra en tension, revisar
+#SCALE = 2.42/6/((2**23)-1) #cuanto representa 1 muestra en tension, revisar
+SCALE =256*(2.42/6/((2**23)-1)) #cuanto representa 1 muestra en tension, revisar
 
 config = pyglet.gl.Config(double_buffer=True, buffer_size=24)
 window = pyglet.window.Window(SIZE[0], SIZE[1], config=config)
@@ -224,8 +228,8 @@ def update(dt):
         out_file_c2.write("\n".join([str(sample) for sample in samples_c2])+"\n")
         
         #out_file_c1.write("\n".join([str(sample) for sample in samples])+"\n")
-    #stream_widgets[0].graph.add_samples([sample*SCALE for sample in samples_c1])
-    #stream_widgets[2].graph.add_samples([sample*SCALE for sample in samples_c2])
+    stream_widgets[0].graph.add_samples([sample*SCALE for sample in samples_c1])
+    stream_widgets[2].graph.add_samples([sample*SCALE for sample in samples_c2])
     stream_widgets[1].graph.add_samples([filt_45hz_2nd_c1(sample)*SCALE for sample in samples_c1])
     stream_widgets[3].graph.add_samples([filt_45hz_2nd_c2(sample)*SCALE for sample in samples_c2])
     
