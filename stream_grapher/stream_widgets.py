@@ -113,7 +113,17 @@ class StreamGraph(object):
             self.samples_per_h_division_label.text  = '%6.2f' % (self.samples_per_h_division*1000000.0/sample_rate) + " us/div"
                           
         self.values_per_v_division = self.grid.v_sep / float(self.amplification)
-        self.values_per_v_division_label = pyglet.text.Label("CH " + str(self.graph_num)+": "+'%6.2f' % self.values_per_v_division+" uV/div",font_size=14, x=position[0]+size[0]/2.0-100+((self.graph_num+1)%2)*200, y=position[1] - 40 - (((self.graph_num-1)/2)%2)*30, anchor_x='center', anchor_y='center',color=self.label_color)
+
+        if (self.graph_num==1):
+            texto_canal="CH 1 (1): "
+        elif (self.graph_num==2):
+            texto_canal="CH 1 filt. (2): "
+        elif (self.graph_num==3):
+            texto_canal="CH 2 (3): "
+        elif (self.graph_num==4):
+            texto_canal="CH 2 filt. (4): "
+
+        self.values_per_v_division_label = pyglet.text.Label(texto_canal+'%6.2f' % self.values_per_v_division+" uV/div",font_size=14, x=position[0]+size[0]/2.0-100+((self.graph_num+1)%2)*300, y=position[1] - 40 - (((self.graph_num-1)/2)%2)*30, anchor_x='center', anchor_y='center',color=self.label_color)
 
 #        self.samples_per_h_division = int(self.n_samples * float(self.grid.h_sep) / float(self.width))
 #        self.samples_per_h_division_label = pyglet.text.Label(str(float(self.samples_per_h_division*1000/sample_rate))+ "mseg/div", font_size=14, x=size[0]/2.0 + position[0]-80*(math.pow(-1,self.graph_num)), y=position[1]- 10, anchor_x='center', anchor_y='center',color=self.label_color)
@@ -192,12 +202,22 @@ class StreamGraph(object):
         self.amplification = amplification
         self._regenerate_vertex_list()
         self.values_per_v_division = self.grid.v_sep / float(self.amplification)
+        
+        if (self.graph_num==1):
+            texto_canal="CH 1 (1): "
+        elif (self.graph_num==2):
+            texto_canal="CH 1 filt. (2): "
+        elif (self.graph_num==3):
+            texto_canal="CH 2 (3): "
+        elif (self.graph_num==4):
+            texto_canal="CH 2 filt. (4): "
+        
         if (self.values_per_v_division > 1.0):
-          self.values_per_v_division_label.text = "CH " + str(self.graph_num)+": "+'%6.2f' % (self.values_per_v_division )+"  V/div"
+          self.values_per_v_division_label.text = texto_canal+'%6.2f' % (self.values_per_v_division )+"  V/div"
         elif ((self.values_per_v_division*1000.0) > 1.0):
-          self.values_per_v_division_label.text = "CH " + str(self.graph_num)+": "+'%6.2f' % (self.values_per_v_division*1000.0)+" mV/div"
+          self.values_per_v_division_label.text = texto_canal+'%6.2f' % (self.values_per_v_division*1000.0)+" mV/div"
         else :
-          self.values_per_v_division_label.text = "CH " + str(self.graph_num)+": "+'%6.2f' % (self.values_per_v_division*1000000.0)+" uV/div"
+          self.values_per_v_division_label.text = texto_canal+'%6.2f' % (self.values_per_v_division*1000000.0)+" uV/div"
 
     def set_position(self, position):
         self.position=position

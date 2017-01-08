@@ -69,9 +69,10 @@ filt_45hz_2nd_c2 = IIRFilter((1.0, 2.0, 1.0),(1.0, -1.6692031429, 0.7166338735))
     
     
 from filters.notch import Notch
-notch_c1_50Hz = Notch(1/1000.0,50.45, 2.0) #Filtra 50Hz
-#notch_c1_50Hz = Notch(1/1000.0,50.0, 2.0) #Filtra 50Hz
-notch_c2_50Hz = Notch(1/1000.0,50.45, 2.0)
+#notch_c1_50Hz = Notch(1/1000.0,50.45, 2.0) #Filtra 50Hz
+notch_c1_50Hz = Notch(1/1000.0,50.0, 0.5) #Filtra 50Hz
+#notch_c2_50Hz = Notch(1/1000.0,50.45, 2.0)
+notch_c2_50Hz = Notch(1/1000.0,50.0, 0.5) #Filtra 50Hz
 
 import pyglet
 from pyglet.window import key
