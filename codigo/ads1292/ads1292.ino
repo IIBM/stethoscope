@@ -116,9 +116,8 @@ void setup(){
   Serial.print("-- ID CHIP is:" + String(chSet) + "--");
   
   //datasheet page 40-44
-  //write_byte(CONFIG1, 0x03); //For normal operation 0x02 (500 SPS) or 0x03 (1 kSPS) (p.40)
-  write_byte(CONFIG1, 0x01);
-  write_byte(CONFIG2, 0xA0); //For normal operation 0xA0. For test signal 0xA3 (p.41)
+  write_byte(CONFIG1, 0x01); //Operacion normal: 0x01 (250 SPS), 0x02 (500 SPS), 0x03 (1 kSPS) (p.40)
+  write_byte(CONFIG2, 0xA0); //Operacion normal: 0xA0. Test signal 0xA3 (p.41)
   delay(1000);
   
   //this part is just to check if you send and read correct data
@@ -131,9 +130,9 @@ void setup(){
   }
   
   
-  write_byte(CH1SET, 0x60); //For test signal 0x05. For normal electrodes 0x00 (p.43)
-  write_byte(CH2SET, 0x60); //For test signal 0x05. For normal electrodes 0x00 (p.44)
-  write_byte(RLD_SENS, 0x0f);
+  write_byte(CH1SET, 0x60); //Test signal: 0x05. Electrodos normales: 0x00 (amplif. x6), 0x60 (x12) (p.43)
+  write_byte(CH2SET, 0x60); //Test signal: 0x05. Electrodos normales: 0x00 (amplif. x6), 0x60 (x12) (p.44)
+  write_byte(RLD_SENS, 0x0f); 
   write_byte(RESP1, 0x02); //Para el ADS1292 0x02 (p. 48)
   write_byte(RESP2, 0x08); //(p.49)
 
