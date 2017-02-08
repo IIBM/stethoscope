@@ -32,7 +32,8 @@ subjectID= raw_input("Ingrese el nombre del paciente: ")
 #backend = raw_input("Choose backend: 1 = Spiro,  2 = x^3: ")
 
 #Acá elijo el backend para que Mario no lo tenga que tipear
-backend= "1"
+#backend= "1"
+backend= "2"
 if backend == "1":
     from backends.spiro_com import Spiro
     #com = raw_input("COM port:")
@@ -83,7 +84,8 @@ import random, math
 
 #SIZE = (user32.GetSystemMetrics(0), user32.GetSystemMetrics(1))
 SIZE= (1024,600)
-N_SAMPLES = 250
+#N_SAMPLES = 250 #escala de tiempo inicial: 13.88 ms/div
+N_SAMPLES = 3600 #escala de tiempo inicial: 200 ms/div
 
 #SCALE = 3.3/4096.0 #cuanto representa 1 muestra en tension, revisar
 #SCALE = 2.42/6/((2**23)-1) #cuanto representa 1 muestra en tension, revisar
@@ -107,7 +109,7 @@ if ( (len(baseparam['amp']) != len(baseparam['position']) ) or (len(baseparam['c
   raise ValueError('Cantidades de parametros incorrecta')
 
 for i in range(len(baseparam['position'])) :
-  stream_widgets.append(StreamWidget(N_SAMPLES, (SIZE[0]-124, SIZE[1]-150), (100,100), baseparam['color'][i], i+1))
+  stream_widgets.append(StreamWidget(N_SAMPLES, (SIZE[0]-124, SIZE[1]-50), (100,100), baseparam['color'][i], i+1))
 
 for i in range(len(stream_widgets)):
   stream_widgets[i].graph.set_position(baseparam['position'][i])
@@ -181,6 +183,13 @@ def on_key_press(symbol, modifiers):
         paused = False
       else:
         paused = True
+
+  elif symbol == key.C:
+      stream_widgets[stream_widget_ind].graph.center_position()
+  
+  elif symbol == key.M:
+      stream_widgets[stream_widget_ind].graph.max_amplification()
+
 
   #DEBUG
   elif symbol == key.E:

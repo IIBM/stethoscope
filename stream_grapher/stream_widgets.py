@@ -59,13 +59,14 @@ class Grid(object):
         self.v_vertex_list = pyglet.graphics.vertex_list(num_v_lines*2 , ('v2f\static', v_vertexs), ("c3B\static", v_colors))
         old_height = 500
 
-        self.up_label = pyglet.text.Label("UP: +", font_size=12, x=5, y=position[1]+size[1]-20, anchor_x='left', anchor_y='center')
-        self.down_label = pyglet.text.Label("DOWN: -", font_size=12, x=5, y=position[1]+size[1]-40, anchor_x='left', anchor_y='center')
+        self.up_label = pyglet.text.Label(u'\u2191'+": amplif", font_size=12, x=5, y=position[1]+size[1]-20, anchor_x='left', anchor_y='center')
+        self.down_label = pyglet.text.Label(u'\u2193'+": aten", font_size=12, x=5, y=position[1]+size[1]-40, anchor_x='left', anchor_y='center')
         self.W_label = pyglet.text.Label("w: up", font_size=12, x=5, y=position[1]+size[1]-60, anchor_x='left', anchor_y='center')
         self.S_label = pyglet.text.Label("s: down", font_size=12, x=5, y=position[1]+size[1]-80, anchor_x='left', anchor_y='center')
         self.R_label = pyglet.text.Label("r: reset", font_size=12, x=5, y=position[1]+size[1]-100, anchor_x='left', anchor_y='center')
         self.P_label = pyglet.text.Label("p: pause", font_size=12, x=5, y=position[1]+size[1]-120, anchor_x='left', anchor_y='center')
-        self.C_label = pyglet.text.Label("c: change", font_size=12, x=5, y=position[1]+size[1]-140, anchor_x='left', anchor_y='center')
+        self.C_label = pyglet.text.Label("c: center", font_size=12, x=5, y=position[1]+size[1]-140, anchor_x='left', anchor_y='center')
+        self.M_label = pyglet.text.Label("m: max amp", font_size=12, x=5, y=position[1]+size[1]-160, anchor_x='left', anchor_y='center')
         
     def draw(self):
         self.h_vertex_list.draw(pyglet.gl.GL_LINES)
@@ -76,6 +77,8 @@ class Grid(object):
         self.S_label.draw()
         self.R_label.draw()
         self.P_label.draw()
+        self.C_label.draw()
+        self.M_label.draw()
 
 
 class StreamGraph(object):
@@ -227,6 +230,24 @@ class StreamGraph(object):
     def set_color(self, color):
         colors = tuple(flatten([color for x in range(self.n_samples)])) 
         self._vertex_list.colors = colors
+
+    def center_position(self):
+        "Centers vertical position of the signal"
+        v_med = ((max(self.samples)+min(self.samples))/2)*self.amplification #Valor medio de la señal, pasado a pixels
+        center = self.height*2-v_med #height es el alto de la pantalla /4
+        center_position=(self.position[0], center)
+        self.set_position(center_position)
+
+    def max_amplification(self):
+        "Amplificates or attenuates the signal to fit all the screen"
+        total_height=self.height*4
+        amplitude = max(self.samples)-min(self.samples)
+        if (amplitude < total_height):
+            max_amp = total_height/amplitude
+        else:
+            max_amp = amplitude/total_height
+        self.set_amplification(max_amp)
+        self.center_position()
  
     def _regenerate_vertex_list(self):
         "Regenerates the internal vertex list from self.samples data"
