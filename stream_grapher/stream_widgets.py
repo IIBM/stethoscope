@@ -24,7 +24,8 @@
 import itertools
 import pyglet.graphics
 import math
-sample_rate=1000.0
+#sample_rate=1000.0
+sample_rate=250.0
 
 
 def from_iterable(iterables):
@@ -67,6 +68,7 @@ class Grid(object):
         self.P_label = pyglet.text.Label("p: pause", font_size=12, x=5, y=position[1]+size[1]-120, anchor_x='left', anchor_y='center')
         self.C_label = pyglet.text.Label("c: center", font_size=12, x=5, y=position[1]+size[1]-140, anchor_x='left', anchor_y='center')
         self.M_label = pyglet.text.Label("m: max amp", font_size=12, x=5, y=position[1]+size[1]-160, anchor_x='left', anchor_y='center')
+        self.G_label = pyglet.text.Label("g: guardar", font_size=12, x=5, y=position[1]+size[1]-180, anchor_x='left', anchor_y='center')
         
     def draw(self):
         self.h_vertex_list.draw(pyglet.gl.GL_LINES)
@@ -79,6 +81,7 @@ class Grid(object):
         self.P_label.draw()
         self.C_label.draw()
         self.M_label.draw()
+        self.G_label.draw()
 
 
 class StreamGraph(object):
@@ -128,22 +131,8 @@ class StreamGraph(object):
 
         self.values_per_v_division_label = pyglet.text.Label(texto_canal+'%6.2f' % self.values_per_v_division+" uV/div",font_size=14, x=position[0]+size[0]/2.0-100+((self.graph_num+1)%2)*300, y=position[1] - 40 - (((self.graph_num-1)/2)%2)*30, anchor_x='center', anchor_y='center',color=self.label_color)
 
-#        self.samples_per_h_division = int(self.n_samples * float(self.grid.h_sep) / float(self.width))
-#        self.samples_per_h_division_label = pyglet.text.Label(str(float(self.samples_per_h_division*1000/sample_rate))+ "mseg/div", font_size=14, x=size[0]/2.0 + position[0]-80*(math.pow(-1,self.graph_num)), y=position[1]- 10, anchor_x='center', anchor_y='center',color=self.label_color)
-#                          
-#        self.values_per_v_division = int(self.grid.v_sep / float(self.amplification))
-#        self.values_per_v_division_label = pyglet.text.Label("CH" + str(self.graph_num)+":"+str(self.values_per_v_division)+"/div",font_size=10, x=position[0]-40, y=position[1]+self.height/2.0-20*(math.pow(-1,self.graph_num)), anchor_x='center', anchor_y='center',color=self.label_color)
-#
-#	self.up_label = pyglet.text.Label("UP: +", font_size=12, x=position[0]-45, y=position[1]+old_height*0.75, anchor_x='center', anchor_y='center')
-#
-#	self.down_label = pyglet.text.Label("DOWN: -", font_size=12, x=position[0]-45, y=position[1]+old_height*0.70, anchor_x='center', anchor_y='center')
-#
-#	self.W_label = pyglet.text.Label("w: up", font_size=12, x=position[0]-45, y=position[1]+old_height*0.60, anchor_x='center', anchor_y='center')
-#
-#	self.S_label = pyglet.text.Label("s: down", font_size=12, x=position[0]-45, y=position[1]+old_height*0.55, anchor_x='center', anchor_y='center')
-#
-#	self.R_label = pyglet.text.Label("r: reset", font_size=12, x=position[0]-45, y=position[1]+old_height*0.45, anchor_x='center', anchor_y='center')
-
+        self.guardando_label = pyglet.text.Label("GUARDANDO", font_size=12, x=50, y=position[1]+size[1]-500, anchor_x='left', anchor_y='center')
+        self.guardando_label.draw()
     
     def draw(self, samples):
         "Add a list of samples to the graph and then draw it"
@@ -249,6 +238,17 @@ class StreamGraph(object):
         self.set_amplification(max_amp)
         self.center_position()
  
+    def mostrar_cartel_guardando(self):
+        self.grid.draw()
+        self.Ref.draw()
+        if (self.graph_num == 1):
+            self.guardando_label.draw()
+#    
+#    def ocultar_cartel_guardando(self):
+#        self.guardando_label.undraw()
+#        self.grid.draw()
+#        self.Ref.draw()
+
     def _regenerate_vertex_list(self):
         "Regenerates the internal vertex list from self.samples data"
         self._vertex_list.vertices = self._vertex_list_from_samples(self.samples)

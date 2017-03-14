@@ -32,7 +32,6 @@ subjectID= raw_input("Ingrese el nombre del paciente: ")
 #backend = raw_input("Choose backend: 1 = Spiro,  2 = x^3: ")
 
 #Acá elijo el backend para que Mario no lo tenga que tipear
-#backend= "1"
 backend= "2"
 if backend == "1":
     from backends.spiro_com import Spiro
@@ -82,10 +81,22 @@ import random, math
 #import ctypes
 #user32 = ctypes.windll.user32
 
+
 #SIZE = (user32.GetSystemMetrics(0), user32.GetSystemMetrics(1))
-SIZE= (1024,600)
+SIZE= (1024,600) #resolucion de la pantalla
+GRID_SIZE=(SIZE[0]-124, SIZE[1]-10)
+
 #N_SAMPLES = 250 #escala de tiempo inicial: 13.88 ms/div
 N_SAMPLES = 3600 #escala de tiempo inicial: 200 ms/div
+# Cuenta para la escala de tiempo:
+#     N_SAMPLES x h_sep
+#     ----------------- = x ms/div
+#       GRID_SIZE[0]
+#    
+# h_sep=50 (ver stream_widgets linea 107)
+
+
+N_SENIALES=2 #Cantidad de señales a graficar
 
 #SCALE = 3.3/4096.0 #cuanto representa 1 muestra en tension, revisar
 #SCALE = 2.42/6/((2**23)-1) #cuanto representa 1 muestra en tension, revisar
@@ -101,21 +112,29 @@ fps_display = pyglet.clock.ClockDisplay()
 
 stream_widgets=[]
 baseparam = {}
-baseparam['position'] = [(100,340),(100,260),(100,180),(100,100)]
-baseparam['amp'] = [100,100,100,100]
-baseparam['color'] = [(255,0,90),(255,255,0),(255,127,0),(255,127,125)]
+#baseparam['position'] = list((100,i) for i in range(GRID_SIZE[1]/(2*N_SENIALES), GRID_SIZE[1], (GRID_SIZE[1]-100)/N_SENIALES)) #Para equiespaciar las señales al principio
+base=GRID_SIZE[1]/(2*N_SENIALES) #ubicación de la primera señal
+baseparam['position'] = list((100,i) for i in (base+x*(GRID_SIZE[1]-base)/N_SENIALES for x in range(N_SENIALES))) #como el linspace de octave
+#baseparam['position'] = [(100,340),(100,260),(100,180),(100,100)]
+baseparam['amp'] = list(100 for i in range(N_SENIALES))
+if N_SENIALES == 2:
+    baseparam['color'] = [(255,255,0),(255,127,125)]
+else:
+    baseparam['color'] = [(255,0,90),(255,255,0),(255,127,0),(255,127,125)]
+
 
 if ( (len(baseparam['amp']) != len(baseparam['position']) ) or (len(baseparam['color']) != len(baseparam['position'])) ):
   raise ValueError('Cantidades de parametros incorrecta')
 
 for i in range(len(baseparam['position'])) :
-  stream_widgets.append(StreamWidget(N_SAMPLES, (SIZE[0]-124, SIZE[1]-50), (100,100), baseparam['color'][i], i+1))
+  stream_widgets.append(StreamWidget(N_SAMPLES, (GRID_SIZE[0], GRID_SIZE[1]), (100,100), baseparam['color'][i], i+1))
 
 for i in range(len(stream_widgets)):
   stream_widgets[i].graph.set_position(baseparam['position'][i])
   stream_widgets[i].graph.set_amplification(baseparam['amp'][i])
 
 paused = False
+guardando = False
 stream_widget_ind = 0
 
 @window.event
@@ -138,6 +157,7 @@ def on_key_press(symbol, modifiers):
 
   global stream_widget_ind
   global freq  #DEBUG
+  numero_medicion = 0 #número para separar las mediciones guardadas
 
   if (symbol >= key._1) and (symbol <= key._5):
     if ( ((symbol - key._1 + 1) > 0) and ((symbol - key._1 + 1) <= len(stream_widgets)) ):
@@ -151,7 +171,7 @@ def on_key_press(symbol, modifiers):
   elif symbol == key.LEFT: # Decrease sample per screen in 20%
     n_samples = stream_widgets[stream_widget_ind].graph.n_samples
     #new_n_samples = int(n_samples - n_samples*0.2)
-    new_n_samples = int(n_samples - 50)
+    new_n_samples = int(n_samples - 100)
     if new_n_samples > 1:
       for i in stream_widgets:
         i.graph.set_n_samples(new_n_samples)
@@ -190,6 +210,16 @@ def on_key_press(symbol, modifiers):
   elif symbol == key.M:
       stream_widgets[stream_widget_ind].graph.max_amplification()
 
+  elif symbol == key.G:
+      global guardando
+      if guardando == True:
+        guardando = False
+        #stream_widgets[stream_widget_ind].graph.ocultar_cartel_guardando()
+      else:
+        guardando = True
+        numero_medicion += 1
+        Grid.mostrar_cartel_guardando()
+
 
   #DEBUG
   elif symbol == key.E:
@@ -197,6 +227,9 @@ def on_key_press(symbol, modifiers):
   elif symbol == key.D:
       freq = freq - 1
   #DEBUG
+
+  #print numero_medicion
+
 tau = 2*math.pi  #DEBUG
 it=0  #DEBUG
 def update(dt):
@@ -234,17 +267,20 @@ def update(dt):
             else:
                 last_sample="C2"
 
-        out_file_c1.write("\n".join([str(sample) for sample in samples_c1])+"\n")
-        out_file_c2.write("\n".join([str(sample) for sample in samples_c2])+"\n")
+#        if guardando:
+#            out_file_c1.write("\n"+str(numero_medicion)+" "+("\n"+str(numero_medicion)+" ").join([str(sample) for sample in samples_c1])+"\n")
+#            out_file_c2.write("\n"+str(numero_medicion)+" "+("\n"+str(numero_medicion)+" ").join([str(sample) for sample in samples_c2])+"\n")
+            out_file_c1.write(" ".join([str(sample) for sample in samples_c1])+"\n")
+            out_file_c2.write(" ".join([str(sample) for sample in samples_c2])+"\n")
         
         #out_file_c1.write("\n".join([str(sample) for sample in samples])+"\n")
-    stream_widgets[0].graph.add_samples([sample*SCALE for sample in samples_c1])
-    stream_widgets[2].graph.add_samples([sample*SCALE for sample in samples_c2])
-    stream_widgets[1].graph.add_samples([filt_45hz_2nd_c1(sample)*SCALE for sample in samples_c1])
-    stream_widgets[3].graph.add_samples([filt_45hz_2nd_c2(sample)*SCALE for sample in samples_c2])
+    stream_widgets[0].graph.add_samples([filt_45hz_2nd_c1(sample)*SCALE for sample in samples_c1])
+    stream_widgets[1].graph.add_samples([filt_45hz_2nd_c2(sample)*SCALE for sample in samples_c2])
     
-    #stream_widgets[1].graph.add_samples([notch_c1_50Hz(sample)*SCALE for sample in samples_c1])
-    #stream_widgets[3].graph.add_samples([notch_c2_50Hz(sample)*SCALE for sample in samples_c2])
+#    stream_widgets[0].graph.add_samples([sample*SCALE for sample in samples_c1])
+#    stream_widgets[2].graph.add_samples([sample*SCALE for sample in samples_c2])
+#    stream_widgets[1].graph.add_samples([notch_c1_50Hz(sample)*SCALE for sample in samples_c1])
+#    stream_widgets[3].graph.add_samples([notch_c2_50Hz(sample)*SCALE for sample in samples_c2])
       
 pyglet.clock.schedule_interval(update, 0.05)
 

@@ -9,7 +9,8 @@ import time
 class Spiro(object):
     #def __init__(self, port="/dev/ttyACM0", timeout=0.5):
     def __init__(self, port="/dev/ttyUSB0", timeout=0.5):
-         self.ser = serial.Serial(port=port, baudrate=115200, timeout=timeout)
+         #self.ser = serial.Serial(port=port, baudrate=115200, timeout=timeout)
+         self.ser = serial.Serial(port=port, baudrate=38400, timeout=timeout)
          time.sleep(6)
          self.ser.flushInput 
     #def get_sample(self):
