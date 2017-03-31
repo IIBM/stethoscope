@@ -1,4 +1,4 @@
-update=mar 13 dic 2016 19:19:19 ART
+update=vie 31 mar 2017 18:52:50 -03
 version=1
 last_client=kicad
 [pcbnew]
@@ -23,6 +23,16 @@ ModuleOutlineThickness=0.150000000000
 [cvpcb]
 version=1
 NetIExt=net
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=Pcbnew
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+LabSize=60
 [eeschema]
 version=1
 LibDir=../Lib
@@ -60,15 +70,6 @@ LibName30=ads1292
 LibName31=reg
 LibName32=jumper3_nc_small
 LibName33=AIC1117
+LibName34=w_connectors
 [general]
 version=1
-[schematic_editor]
-version=1
-PageLayoutDescrFile=
-PlotDirectoryName=
-SubpartIdSeparator=0
-SubpartFirstId=65
-NetFmtName=Pcbnew
-SpiceForceRefPrefix=0
-SpiceUseNetNumbers=0
-LabSize=60

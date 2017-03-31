@@ -15,6 +15,8 @@ ch1 = zeros(1, 1000);
 #ch2_temp = cell(10,1);
 ch2 = zeros(1, 1000);
 
+SCALE =256*(2.42/6/((2**23)-1)) #cuanto representa 1 muestra en tension, revisar
+
 j=0;
 
 srl_flush(s1);
