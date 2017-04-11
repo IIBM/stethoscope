@@ -63,8 +63,6 @@ Text Label 3900 3400 0    60   ~ 0
 RESET
 Text Label 5000 4200 0    60   ~ 0
 MISO
-Wire Wire Line
-	5000 4200 5250 4200
 $Comp
 L R R18
 U 1 1 58DEDAB5
@@ -175,28 +173,6 @@ F 3 "" H 3850 3550 50  0000 C CNN
 	1    3850 3550
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	5250 3600 5200 3600
-Wire Wire Line
-	5250 3500 4600 3500
-Wire Wire Line
-	5250 3400 4850 3400
-Wire Wire Line
-	3850 3400 4550 3400
-Wire Wire Line
-	4050 3500 4300 3500
-Wire Wire Line
-	4800 3600 4900 3600
-Wire Wire Line
-	5250 4100 4800 4100
-Wire Wire Line
-	4250 4100 4500 4100
-Wire Wire Line
-	5950 4200 6050 4200
-Wire Wire Line
-	6350 4200 6550 4200
-Wire Wire Line
-	6550 4200 6550 4250
 $Comp
 L GND #PWR017
 U 1 1 58DEE785
@@ -208,8 +184,6 @@ F 3 "" H 4800 3950 50  0000 C CNN
 	1    4800 3950
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	4800 3900 4800 3950
 $Comp
 L GND #PWR018
 U 1 1 58DEE8B4
@@ -254,14 +228,6 @@ F 3 "" H 6550 4600 50  0000 C CNN
 	1    6550 4600
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	3850 3700 3850 3750
-Wire Wire Line
-	4050 3800 4050 3850
-Wire Wire Line
-	4250 4450 4250 4500
-Wire Wire Line
-	6550 4550 6550 4600
 $Comp
 L GND #PWR022
 U 1 1 58DEEAC7
@@ -273,10 +239,6 @@ F 3 "" H 4750 3150 50  0000 C CNN
 	1    4750 3150
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	4750 3150 4750 3100
-Wire Wire Line
-	4750 3100 5250 3100
 $Comp
 L GND #PWR023
 U 1 1 58DEEB83
@@ -288,41 +250,14 @@ F 3 "" H 6100 2950 50  0000 C CNN
 	1    6100 2950
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	6100 2950 6100 2900
-Wire Wire Line
-	6100 2900 5950 2900
 Text Label 4050 3500 0    60   ~ 0
 START
 Text Label 4800 3600 0    60   ~ 0
 CS
 Text Label 4300 4100 0    60   ~ 0
 MOSI
-Wire Wire Line
-	4250 4150 4250 4100
 Text Label 6550 4200 2    60   ~ 0
 SCK
-NoConn ~ 5250 2800
-NoConn ~ 5250 2900
-NoConn ~ 5250 3000
-NoConn ~ 5250 3300
-NoConn ~ 5250 3700
-NoConn ~ 5250 3800
-NoConn ~ 5250 3900
-NoConn ~ 5250 4000
-NoConn ~ 5950 4100
-NoConn ~ 5950 4000
-NoConn ~ 5950 3900
-NoConn ~ 5950 3800
-NoConn ~ 5950 3700
-NoConn ~ 5950 3600
-NoConn ~ 5950 3500
-NoConn ~ 5950 3400
-NoConn ~ 5950 3300
-NoConn ~ 5950 3200
-NoConn ~ 5950 3100
-NoConn ~ 5950 3000
-NoConn ~ 5950 2800
 $Comp
 L CONN_02X05 P2
 U 1 1 58DEF814
@@ -349,33 +284,15 @@ Text Label 3100 2950 2    60   ~ 0
 $Comp
 L GND #PWR024
 U 1 1 58DEFFE8
-P 3200 2750
-F 0 "#PWR024" H 3200 2500 50  0001 C CNN
-F 1 "GND" H 3200 2600 50  0000 C CNN
-F 2 "" H 3200 2750 50  0000 C CNN
-F 3 "" H 3200 2750 50  0000 C CNN
-	1    3200 2750
+P 3200 2850
+F 0 "#PWR024" H 3200 2600 50  0001 C CNN
+F 1 "GND" H 3200 2700 50  0000 C CNN
+F 2 "" H 3200 2850 50  0000 C CNN
+F 3 "" H 3200 2850 50  0000 C CNN
+	1    3200 2850
 	1    0    0    -1  
 $EndComp
-Wire Wire Line
-	2800 2650 3100 2650
-Wire Wire Line
-	3200 2750 2800 2750
-Wire Wire Line
-	2800 2950 3100 2950
-Wire Wire Line
-	3100 3050 2800 3050
-Wire Wire Line
-	2000 2650 2300 2650
-Wire Wire Line
-	2300 2750 2000 2750
-Wire Wire Line
-	2000 2850 2300 2850
-Wire Wire Line
-	2300 2950 2000 2950
-Wire Wire Line
-	2000 3050 2300 3050
-NoConn ~ 2800 2850
+NoConn ~ 2800 2750
 Text Label 2000 3050 0    60   ~ 0
 MISO
 Text Label 2000 2850 0    60   ~ 0
@@ -386,8 +303,6 @@ Text Notes 1700 2850 0    60   ~ 0
 DIN
 Text Label 5000 3200 0    60   ~ 0
 DRDY
-Wire Wire Line
-	5000 3200 5250 3200
 $Comp
 L CONN_01X02 P5
 U 1 1 58E805EF
@@ -410,12 +325,143 @@ F 3 "" H 2850 4200 50  0000 C CNN
 	1    2850 4200
 	1    0    0    -1  
 $EndComp
+Text Label 2850 4050 2    60   ~ 0
++BATT
+Wire Wire Line
+	5000 4200 5250 4200
+Wire Wire Line
+	5250 3600 5200 3600
+Wire Wire Line
+	5250 3500 4600 3500
+Wire Wire Line
+	5250 3400 4850 3400
+Wire Wire Line
+	3850 3400 4550 3400
+Wire Wire Line
+	4050 3500 4300 3500
+Wire Wire Line
+	4800 3600 4900 3600
+Wire Wire Line
+	5250 4100 4800 4100
+Wire Wire Line
+	4250 4100 4500 4100
+Wire Wire Line
+	5950 4200 6050 4200
+Wire Wire Line
+	6350 4200 6550 4200
+Wire Wire Line
+	6550 4200 6550 4250
+Wire Wire Line
+	4800 3900 4800 3950
+Wire Wire Line
+	3850 3700 3850 3750
+Wire Wire Line
+	4050 3800 4050 3850
+Wire Wire Line
+	4250 4450 4250 4500
+Wire Wire Line
+	6550 4550 6550 4600
+Wire Wire Line
+	4750 3150 4750 3100
+Wire Wire Line
+	4750 3100 5250 3100
+Wire Wire Line
+	6100 2950 6100 2900
+Wire Wire Line
+	6100 2900 5950 2900
+Wire Wire Line
+	4250 4150 4250 4100
+Wire Wire Line
+	2800 2650 3100 2650
+Wire Wire Line
+	3200 2850 2800 2850
+Wire Wire Line
+	2800 2950 3100 2950
+Wire Wire Line
+	3100 3050 2800 3050
+Wire Wire Line
+	2000 2650 2300 2650
+Wire Wire Line
+	2300 2750 2000 2750
+Wire Wire Line
+	2000 2850 2300 2850
+Wire Wire Line
+	2300 2950 2000 2950
+Wire Wire Line
+	2000 3050 2300 3050
+Wire Wire Line
+	5000 3200 5250 3200
 Wire Wire Line
 	2850 4200 2850 4150
 Wire Wire Line
 	2850 4150 2550 4150
-Text Label 2850 4050 2    60   ~ 0
-+BATT
 Wire Wire Line
 	2850 4050 2550 4050
+NoConn ~ 5250 3300
+NoConn ~ 5250 4000
+NoConn ~ 5250 3900
+NoConn ~ 5250 3800
+NoConn ~ 5250 3700
+NoConn ~ 5250 3000
+NoConn ~ 5250 2900
+NoConn ~ 5250 2800
+NoConn ~ 5950 2800
+NoConn ~ 5950 3000
+NoConn ~ 5950 3100
+NoConn ~ 5950 3200
+NoConn ~ 5950 3300
+NoConn ~ 5950 3400
+NoConn ~ 5950 3500
+NoConn ~ 5950 3600
+NoConn ~ 5950 3700
+NoConn ~ 5950 3800
+NoConn ~ 5950 3900
+NoConn ~ 5950 4000
+NoConn ~ 5950 4100
+$Comp
+L CONN_01X01 P6
+U 1 1 58ED5DF7
+P 6750 1900
+F 0 "P6" H 6750 2000 50  0000 C CNN
+F 1 "CONN_01X01" V 6850 1900 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3" H 6750 1900 50  0001 C CNN
+F 3 "" H 6750 1900 50  0000 C CNN
+	1    6750 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X01 P8
+U 1 1 58ED5E68
+P 7250 1900
+F 0 "P8" H 7250 2000 50  0000 C CNN
+F 1 "CONN_01X01" V 7350 1900 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3" H 7250 1900 50  0001 C CNN
+F 3 "" H 7250 1900 50  0000 C CNN
+	1    7250 1900
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X01 P9
+U 1 1 58ED5F14
+P 7250 2400
+F 0 "P9" H 7250 2500 50  0000 C CNN
+F 1 "CONN_01X01" V 7350 2400 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3" H 7250 2400 50  0001 C CNN
+F 3 "" H 7250 2400 50  0000 C CNN
+	1    7250 2400
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_01X01 P7
+U 1 1 58ED5F64
+P 6750 2400
+F 0 "P7" H 6750 2500 50  0000 C CNN
+F 1 "CONN_01X01" V 6850 2400 50  0000 C CNN
+F 2 "Mounting_Holes:MountingHole_3.2mm_M3" H 6750 2400 50  0001 C CNN
+F 3 "" H 6750 2400 50  0000 C CNN
+	1    6750 2400
+	1    0    0    -1  
+$EndComp
+Text Notes 6550 1500 0    60   ~ 0
+Agujeros para la placa
 $EndSCHEMATC
