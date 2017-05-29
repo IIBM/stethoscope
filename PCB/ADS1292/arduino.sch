@@ -69,7 +69,7 @@ U 1 1 58DEDAB5
 P 6550 4400
 F 0 "R18" V 6630 4400 50  0000 C CNN
 F 1 "3k3" V 6550 4400 50  0000 C CNN
-F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM7mm" V 6480 4400 50  0001 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 6480 4400 50  0001 C CNN
 F 3 "" H 6550 4400 50  0000 C CNN
 	1    6550 4400
 	1    0    0    -1  
@@ -80,7 +80,7 @@ U 1 1 58DEDB0C
 P 6200 4200
 F 0 "R17" V 6280 4200 50  0000 C CNN
 F 1 "1k8" V 6200 4200 50  0000 C CNN
-F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM7mm" V 6130 4200 50  0001 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 6130 4200 50  0001 C CNN
 F 3 "" H 6200 4200 50  0000 C CNN
 	1    6200 4200
 	0    1    1    0   
@@ -91,7 +91,7 @@ U 1 1 58DEE279
 P 4650 4100
 F 0 "R13" V 4730 4100 50  0000 C CNN
 F 1 "1k8" V 4650 4100 50  0000 C CNN
-F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM7mm" V 4580 4100 50  0001 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 4580 4100 50  0001 C CNN
 F 3 "" H 4650 4100 50  0000 C CNN
 	1    4650 4100
 	0    1    1    0   
@@ -102,7 +102,7 @@ U 1 1 58DEE305
 P 4250 4300
 F 0 "R11" V 4330 4300 50  0000 C CNN
 F 1 "3k3" V 4250 4300 50  0000 C CNN
-F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM7mm" V 4180 4300 50  0001 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 4180 4300 50  0001 C CNN
 F 3 "" H 4250 4300 50  0000 C CNN
 	1    4250 4300
 	1    0    0    -1  
@@ -113,7 +113,7 @@ U 1 1 58DEE35F
 P 5050 3600
 F 0 "R16" V 5130 3600 50  0000 C CNN
 F 1 "1k8" V 5050 3600 50  0000 C CNN
-F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM7mm" V 4980 3600 50  0001 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 4980 3600 50  0001 C CNN
 F 3 "" H 5050 3600 50  0000 C CNN
 	1    5050 3600
 	0    1    1    0   
@@ -124,7 +124,7 @@ U 1 1 58DEE3AD
 P 4450 3500
 F 0 "R12" V 4530 3500 50  0000 C CNN
 F 1 "1k8" V 4450 3500 50  0000 C CNN
-F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM7mm" V 4380 3500 50  0001 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 4380 3500 50  0001 C CNN
 F 3 "" H 4450 3500 50  0000 C CNN
 	1    4450 3500
 	0    1    1    0   
@@ -135,7 +135,7 @@ U 1 1 58DEE3E2
 P 4700 3400
 F 0 "R14" V 4780 3400 50  0000 C CNN
 F 1 "1k8" V 4700 3400 50  0000 C CNN
-F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM7mm" V 4630 3400 50  0001 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 4630 3400 50  0001 C CNN
 F 3 "" H 4700 3400 50  0000 C CNN
 	1    4700 3400
 	0    1    1    0   
@@ -146,7 +146,7 @@ U 1 1 58DEE42E
 P 4800 3750
 F 0 "R15" V 4880 3750 50  0000 C CNN
 F 1 "3k3" V 4800 3750 50  0000 C CNN
-F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM7mm" V 4730 3750 50  0001 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 4730 3750 50  0001 C CNN
 F 3 "" H 4800 3750 50  0000 C CNN
 	1    4800 3750
 	1    0    0    -1  
@@ -157,7 +157,7 @@ U 1 1 58DEE489
 P 4050 3650
 F 0 "R10" V 4130 3650 50  0000 C CNN
 F 1 "3k3" V 4050 3650 50  0000 C CNN
-F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM7mm" V 3980 3650 50  0001 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 3980 3650 50  0001 C CNN
 F 3 "" H 4050 3650 50  0000 C CNN
 	1    4050 3650
 	1    0    0    -1  
@@ -168,7 +168,7 @@ U 1 1 58DEE4C7
 P 3850 3550
 F 0 "R9" V 3930 3550 50  0000 C CNN
 F 1 "3k3" V 3850 3550 50  0000 C CNN
-F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM7mm" V 3780 3550 50  0001 C CNN
+F 2 "Resistors_ThroughHole:Resistor_Horizontal_RM10mm" V 3780 3550 50  0001 C CNN
 F 3 "" H 3850 3550 50  0000 C CNN
 	1    3850 3550
 	1    0    0    -1  
@@ -292,7 +292,6 @@ F 3 "" H 3200 2850 50  0000 C CNN
 	1    3200 2850
 	1    0    0    -1  
 $EndComp
-NoConn ~ 2800 2750
 Text Label 2000 3050 0    60   ~ 0
 MISO
 Text Label 2000 2850 0    60   ~ 0
@@ -464,4 +463,13 @@ F 3 "" H 6750 2400 50  0000 C CNN
 $EndComp
 Text Notes 6550 1500 0    60   ~ 0
 Agujeros para la placa
+Wire Wire Line
+	2800 2750 2850 2750
+Wire Wire Line
+	2850 2750 2850 2850
+Connection ~ 2850 2850
+Text Notes 1550 1600 0    60   ~ 0
+START->Marrón\nCS->Verde\nMOSI->Blanco\nSCK->Naranja\nMISO->Amarillo
+Text Notes 2950 1600 0    60   ~ 0
+RESET->Azul\nSHIELD->Termocontraíble\nGND->Negro\n+BATT->Rojo\nDRDY->Violeta
 $EndSCHEMATC

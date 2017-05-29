@@ -844,4 +844,8 @@ Wire Wire Line
 	9550 3250 9550 3350
 Wire Wire Line
 	9550 3350 9400 3350
+Text Notes 8700 4350 0    60   ~ 0
+START->Marrón\nCS->Verde\nMOSI->Blanco\nSCK->Naranja\nMISO->Amarillo
+Text Notes 9650 4350 0    60   ~ 0
+RESET->Azul\nSHIELD->Termocontraíble\nGND->Negro\n+BATT->Rojo\nDRDY->Violeta
 $EndSCHEMATC

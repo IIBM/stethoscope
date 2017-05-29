@@ -32,7 +32,7 @@ subjectID= raw_input("Ingrese el nombre del paciente: ")
 #backend = raw_input("Choose backend: 1 = Spiro,  2 = x^3: ")
 
 #Acá elijo el backend para que Mario no lo tenga que tipear
-backend= "2"
+backend= "1"
 if backend == "1":
     from backends.spiro_com import Spiro
     #com = raw_input("COM port:")
