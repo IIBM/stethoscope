@@ -1,16 +1,16 @@
-margen_error=0.5;
+margen_error=0.7;
 
 //Tuercas M3
 radio_tuercas_M3=3+(margen_error/2);
 alto_tuerca_M3=2.3;
-alto_hexagono_tuerca_ciega_M3=2.5;
+alto_hexagono_tuerca_ciega_M3=3;
 radio_tornillo_M3=1.5+(margen_error/2);
 
 //Tuercas M4 
 radio_tuercas_M4=3.85+(margen_error/2);
 alto_tuerca_M4=3.1;
 //alto_hexagono_tuerca_ciega_M4=5.5;
-alto_hexagono_tuerca_ciega_M4=3.5;
+alto_hexagono_tuerca_ciega_M4=4.5;
 radio_tornillo_M4=2+(margen_error/2);
 
 radio_exterior_cabezal=22;
