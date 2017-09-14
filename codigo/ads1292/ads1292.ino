@@ -33,6 +33,12 @@ MAREK CERMAK, 2016
 #define TESTaa 0xaa
 #define TEST55 0x55
 
+/* Prototipos */
+String hex_to_char(int); 
+int read_byte(int reg_addr);
+void send_command(uint8_t cmd);
+void write_byte(int reg_addr, int val_hex);
+
 // filtering IIR
 
   float koefA [3] ={1, -1.01, 0.73};
@@ -78,8 +84,8 @@ MAREK CERMAK, 2016
   
 void setup(){
 
-  //Serial.begin(115200);
-  Serial.begin(38400);
+  //Serial.begin(38400);
+  Serial.begin(115200);
   Serial.flush();
   delayMicroseconds(100);
   
@@ -131,8 +137,8 @@ void setup(){
   }
   
   
-  write_byte(CH1SET, 0x60); //Test signal: 0x05. Electrodos normales: 0x00 (amplif. x6), 0x60 (x12) (p.43)
-  write_byte(CH2SET, 0x60); //Test signal: 0x05. Electrodos normales: 0x00 (amplif. x6), 0x60 (x12) (p.44)
+  write_byte(CH1SET, 0x30); //Test signal: 0x05. Electrodos normales: 0x00 (amplif. x6), 0x60 (x12) (p.43)
+  write_byte(CH2SET, 0x30); //Test signal: 0x05. Electrodos normales: 0x00 (amplif. x6), 0x60 (x12) (p.44)
   write_byte(RLD_SENS, 0x0f); 
   write_byte(RESP1, 0x02); //Para el ADS1292 0x02 (p. 48)
   write_byte(RESP2, 0x08); //(p.49)

@@ -79,7 +79,8 @@ module grupo_de_electrodos_M4(){
 //!grupo_de_electrodos_M4();
 module grupo_de_electrodos(){
     angulo_electrodo=acos(separacion_electrodo/radio_ubicacion_electrodos);
-    for(i=[angulo_electrodo,90-angulo_electrodo, 90+angulo_electrodo, 360-angulo_electrodo]){
+    //for(i=[angulo_electrodo,90-angulo_electrodo, 90+angulo_electrodo, 360-angulo_electrodo]){
+    for(i=[0, 120, 240]){
     //for(i=[angulo_electrodo,90-angulo_electrodo, 90+angulo_electrodo, 360-angulo_electrodo, angulo_RL]){
         rotate([0, 0, i])
             translate([radio_ubicacion_electrodos, 0, 0])
@@ -91,9 +92,11 @@ difference(){
     cabezal();
     microfono();
     #grupo_de_electrodos();
+    /*
     rotate([0, 0, angulo_RL])
         //translate([-((radio_exterior_cabezal-radio_microfono)/2+radio_microfono), 0, -alto_cilindro_cabeza_bulon])
         translate([radio_ubicacion_electrodos, 0, 0])
             tuerca_M4();
+    */
 }
 
