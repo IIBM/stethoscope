@@ -78,8 +78,8 @@ a=[1.0, -1.9749029659, 0.9765156251];
 fwrite(s,'1');
 pause(1)
 while running
-    c = fread(s,100);
-    if(length(c)<100)
+    c = fread(s,200);
+    if(length(c)<200)
         delete(instrfindall)
         break;
     end
@@ -89,8 +89,8 @@ while running
     end
     c1aux=cint(1:2:end)';
     c2aux=cint(2:2:end)';
-    c1=[c1(26:end) c1aux];
-    c2=[c2(26:end) c2aux];
+    c1=[c1(51:end) c1aux];
+    c2=[c2(51:end) c2aux];
     c1hp=filter(b,a,c1);
     c2hp=filter(b,a,c2);
     wo=50/(250/2);bw=wo/5;

@@ -1,7 +1,8 @@
 close all
 clear all
 delete(instrfindall)
-s = serial('/dev/tty.wchusbserial1410','BaudRate',38400);
+%s = serial('/dev/tty.wchusbserial1410','BaudRate',38400);
+s = serial('/dev/ttyUSB0','BaudRate',115200);
 flp=lowpass();
 fhp=highpass();
 
