@@ -50,7 +50,10 @@ global save;
 save=0;
 global fid;
 fid=fopen('output.txt','wb');
-
+global archivo_c1;
+archivo_c1=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
+global archivo_c2;
+archivo_c2=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
 
 % UIWAIT makes ecg wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -68,6 +71,8 @@ global running;
 global c1 c2;
 global L1 L2;
 global fid;
+global archivo_c1;
+global archivo_c2;
 global save;
 running=1;
 
@@ -83,7 +88,7 @@ while running
         delete(instrfindall)
         break;
     end
-    cint=c(1:2:end)+256*c(2:2:end);
+    cint=c(1:2:end)+256*c(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
     if(save==1)
         fwrite(fid,cint,'int16');
     end
@@ -93,10 +98,14 @@ while running
     c2=[c2(51:end) c2aux];
     c1hp=filter(b,a,c1);
     c2hp=filter(b,a,c2);
-    wo=50/(250/2);bw=wo/5;
+    wo=50/(250/2);bw=wo/5
     [bn,an]=iirnotch(wo,bw);
     c1filt=smooth(c1hp,5);%  filter(fhp,c1notch);
     c2filt=smooth(c2hp,5);%filter(fhp,c2notch);
+    if(save==1)
+        dlmwrite(archivo_c1, c1filt(end-50:end), '-append');
+        dlmwrite(archivo_c2, c2filt(end-50:end), '-append');
+    end
 %     c1filt=filter(fhp,c1filt);
 %     c2filt=filter(fhp,c2filt);    
     axes(handles.C1)
@@ -185,3 +194,4 @@ function TimerCallback(obj,event,hObject,handles)
 global var;
 set(handles.text1,'String',var.x);
 var.x=var.x+1;
+
