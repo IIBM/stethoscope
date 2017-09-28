@@ -81,10 +81,29 @@ void write_byte(int reg_addr, int val_hex);
 
   boolean flag = false;
   boolean debug_msg = false;
+
+  boolean gActiveChan [2];
+  int nChannels = 2;
+  int gMaxChan=2;
+
+// Variables para la trama
+  const int cant_muestras_trama = 64;
+  const int largo_trama = cant_muestras_trama*2 + 3;
+  int cont_trama = 2;
   
+  byte buf_ch1[largo_trama];
+  buf_ch1[0] = 1; //Identifica el canal
+  buf_ch1[1] = cant_muestras_trama; //Indica la cantidad de muestras por trama
+  
+  byte buf_ch2[largo_trama];
+  buf_ch2[0] = 2; //Identifica el canal
+  buf_ch2[1] = cant_muestras_trama; //Indica la cantidad de muestras por trama
+  
+  int chksum_ch1=0;
+  int chksum_ch2=0;
+
 void setup(){
 
-  //Serial.begin(38400);
   Serial.begin(115200);
   Serial.flush();
   delayMicroseconds(100);
@@ -161,59 +180,6 @@ void setup(){
 }//Cierra setup
 
 
-String hex_to_char(int hex_in) {
-  int precision = 2;
-  char tmp[16];
-  char format[128];
-  sprintf(format, "0x%%.%dX", precision);
-  sprintf(tmp, format, hex_in);
-  return(String(tmp));
-}
-
-// see datasheet 38
-int read_byte(int reg_addr){
-  int out = 0;
-  digitalWrite(PIN_CS, LOW);
-  SPI.transfer(0x20 | reg_addr);
-  delayMicroseconds(5);
-  SPI.transfer(0x00);
-  delayMicroseconds(5);
-  out = SPI.transfer(0x00);
-  delayMicroseconds(1);
-  digitalWrite(PIN_CS, HIGH);
-
-  Serial.println( "sent:\t" + hex_to_char(reg_addr) );
-  Serial.println( "recieved:\t" + hex_to_char(out) );
-
-  return(out);
-}
-
-void send_command(uint8_t cmd) {
-  digitalWrite(PIN_CS, LOW);
-  delayMicroseconds(5); 
-  SPI.transfer(cmd);
-  delayMicroseconds(10);
-  digitalWrite(PIN_CS, HIGH);
-}
-
-//see page 38
-void write_byte(int reg_addr, int val_hex) {
-  digitalWrite(PIN_CS, LOW);
-  delayMicroseconds(5);
-  SPI.transfer(0x40 | reg_addr);
-  delayMicroseconds(5);
-  SPI.transfer(0x00);
-  delayMicroseconds(5);
-  SPI.transfer(val_hex);
-  delayMicroseconds(10);
-  digitalWrite(PIN_CS, HIGH);
-
-}
-
-boolean gActiveChan [2];
-int nChannels = 2;
-int gMaxChan=2;
-
 
 void loop(){
 
@@ -285,14 +251,40 @@ void loop(){
     //Serial.write(rampa & 0x00ff);
     //Serial.write((rampa & 0xff00)>>8);
     
-     //Serial.println(neco);
-    
+    //Serial.println(neco);
+
+    if (cont_trama < (largo_trama-2)){
+
+      buf_ch1[cont_trama]=necoi_ch1 & 0x00ff;
+      buf_ch1[cont_trama+1]=(necoi_ch1 & 0xff00)>>8;
+
+      buf_ch2[cont_trama]=necoi_ch2 & 0x00ff;
+      buf_ch2[cont_trama+1]=(necoi_ch2 & 0xff00)>>8;
+
+      chksum_ch1 = chksum_ch1 ^ buf_ch1[cont_trama] ^ buf_ch1[cont_trama+1];
+      chksum_ch2 = chksum_ch2 ^ buf_ch2[cont_trama] ^ buf_ch2[cont_trama+1];
+
+      cont_trama += 2;
+    }else{
+      buf_ch1[1] = ; //Identifica el canal
+      buf_ch1[largo_trama-1] = chksum_ch1;
+      buf_ch2[largo_trama-1] = chksum_ch2;
+      
+      Serial.write(buf_ch1, sizeof(buf_ch1));
+      Serial.write(buf_ch2, sizeof(buf_ch2));
+
+      cont_trama=2;
+      chksum_ch1=0;
+      chksum_ch2=0;
+    }
+
+    /*
     Serial.write(necoi_ch1 & 0x00ff);
     Serial.write((necoi_ch1 & 0xff00)>>8);
     
     Serial.write(necoi_ch2 & 0x00ff);
     Serial.write((necoi_ch2 & 0xff00)>>8);
-    
+    */
     //Serial.println(neco);
   }
   
@@ -301,4 +293,54 @@ void loop(){
   }
 
 }//ciera el loop()
+
+
+String hex_to_char(int hex_in) {
+  int precision = 2;
+  char tmp[16];
+  char format[128];
+  sprintf(format, "0x%%.%dX", precision);
+  sprintf(tmp, format, hex_in);
+  return(String(tmp));
+}
+
+// see datasheet 38
+int read_byte(int reg_addr){
+  int out = 0;
+  digitalWrite(PIN_CS, LOW);
+  SPI.transfer(0x20 | reg_addr);
+  delayMicroseconds(5);
+  SPI.transfer(0x00);
+  delayMicroseconds(5);
+  out = SPI.transfer(0x00);
+  delayMicroseconds(1);
+  digitalWrite(PIN_CS, HIGH);
+
+  Serial.println( "sent:\t" + hex_to_char(reg_addr) );
+  Serial.println( "recieved:\t" + hex_to_char(out) );
+
+  return(out);
+}
+
+void send_command(uint8_t cmd) {
+  digitalWrite(PIN_CS, LOW);
+  delayMicroseconds(5); 
+  SPI.transfer(cmd);
+  delayMicroseconds(10);
+  digitalWrite(PIN_CS, HIGH);
+}
+
+//see page 38
+void write_byte(int reg_addr, int val_hex) {
+  digitalWrite(PIN_CS, LOW);
+  delayMicroseconds(5);
+  SPI.transfer(0x40 | reg_addr);
+  delayMicroseconds(5);
+  SPI.transfer(0x00);
+  delayMicroseconds(5);
+  SPI.transfer(val_hex);
+  delayMicroseconds(10);
+  digitalWrite(PIN_CS, HIGH);
+
+}
 

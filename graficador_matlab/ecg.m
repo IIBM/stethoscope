@@ -83,17 +83,28 @@ a=[1.0, -1.9749029659, 0.9765156251];
 fwrite(s,'1');
 pause(1)
 while running
-    c = fread(s,200);
-    if(length(c)<200)
+    c = fread(s, 131);
+    if(length(c)<131)
         delete(instrfindall)
         break;
     end
-    cint=c(1:2:end)+256*c(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
+        num_canal=c(1);
+        cant_muestras=c(2)/2;
+        muestras=c(3:end-1);
+        chksum=c(end);
+        
+        
+        %cint=c(1:2:end)+256*c(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
+    if (c(1)==1)
+        c1aux=(c(1:2:end)+256*c(2:2:end))';
+    elseif (c(1)==2)
+        c2aux=(c(1:2:end)+256*c(2:2:end))';
+
     if(save==1)
         fwrite(fid,cint,'int16');
     end
-    c1aux=cint(1:2:end)';
-    c2aux=cint(2:2:end)';
+    %c1aux=cint(1:2:end)';
+    %c2aux=cint(2:2:end)';
     c1=[c1(51:end) c1aux];
     c2=[c2(51:end) c2aux];
     c1hp=filter(b,a,c1);
