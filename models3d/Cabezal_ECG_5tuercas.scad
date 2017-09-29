@@ -23,6 +23,9 @@ radio_cable_microfono=2.5;
 
 radio_esfera_marcador=0.7;
 
+alto_traba=2;
+radio_traba=1.5;
+
 /*
 echo("Diametro tuercas",radio_tuercas*2);
 */
@@ -107,7 +110,16 @@ module cunia(){
         }
 }
 
-//!cunia();
+//Trabas
+module trabas(){
+    //for(i=[0, 120, 240]){
+    for(i=[0, 90, 180, 270]){
+        rotate([0, 0, i])
+            translate([radio_interior_cabezal-0.5, 0, alto_exterior_cabezal+(alto_interior_cabezal/2)])
+        rotate([0, 90, 0])
+                cylinder(r=radio_traba, h=alto_traba, $fn=50);
+    }
+}
 
 //Marcadores para poder armar el cabezal según la regleta de ángulos
 module marcadores(){
@@ -128,3 +140,4 @@ difference(){
     cunia();
 }
 marcadores();
+trabas();
