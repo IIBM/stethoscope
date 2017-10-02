@@ -252,7 +252,16 @@ void loop(){
     //Serial.write((rampa & 0xff00)>>8);
     
     //Serial.println(neco);
+    
+    buf_ch1[0]=necoi_ch1 & 0x00ff;
+    buf_ch1[1]=(necoi_ch1 & 0xff00)>>8;
 
+    buf_ch2[0]=necoi_ch2 & 0x00ff;
+    buf_ch2[1]=(necoi_ch2 & 0xff00)>>8;
+
+    Serial.write(buf_ch1, sizeof(buf_ch1));
+    Serial.write(buf_ch2, sizeof(buf_ch2));
+    /* Para el checksum
     if (cont_trama < (largo_trama-2)){
 
       buf_ch1[cont_trama]=necoi_ch1 & 0x00ff;
@@ -277,6 +286,7 @@ void loop(){
       chksum_ch1=0;
       chksum_ch2=0;
     }
+    */
 
     /*
     Serial.write(necoi_ch1 & 0x00ff);
