@@ -39,13 +39,19 @@ delete(instrfindall)
 s = serial('/dev/ttyUSB0','BaudRate',115200);
 fopen(s)
 pause(6)
+global escalado;
+escalado=2.42/6/((2^23)-1); %cuanto representa 1 muestra en tension
 global c1 c2;
 c1=zeros(1,2000);
 c2=zeros(1,2000);
 global L1;
-L1=100*(2.42/6/((2^23)-1));
+L1=100*escalado;
 global L2;
-L2=100*(2.42/6/((2^23)-1));
+L2=100*escalado;
+global X1;
+X1=1000;
+global X2;
+X2=2000;
 global save;
 save=0;
 global fid;
@@ -68,13 +74,17 @@ varargout{1} = handles.output;
 function Start_Callback(hObject, eventdata, handles)
 global s;
 global running;
+global leer_muestras;
+global escalado;
 global c1 c2;
 global L1 L2;
+global X1 X2;
 global fid;
 global archivo_c1;
 global archivo_c2;
 global save;
 running=1;
+leer_muestras=1;
 
 flp=lowpass();
 fhp=highpass();
@@ -83,55 +93,55 @@ a=[1.0, -1.9749029659, 0.9765156251];
 fwrite(s,'1');
 pause(1)
 while running
-    c = fread(s, 200, 'int16');
-    if(length(c)<200)
-        delete(instrfindall)
-        break;
-    end
-    cint=c;
-   %     num_canal=c(1);
-   %     cant_muestras=c(2)/2;
-   %     muestras=c(3:end-1);
-   %     chksum=c(end);
-   %     
-   %     
-   %     %cint=c(1:2:end)+256*c(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
-   % if (c(1)==1)
-   %     c1aux=(c(1:2:end)+256*c(2:2:end))';
-   % elseif (c(1)==2)
-   %     c2aux=(c(1:2:end)+256*c(2:2:end))';
+    if (leer_muestras==1)
+        c = fread(s, 200, 'int16');
+        if(length(c)<200)
+            delete(instrfindall)
+            break;
+        end
+        cint=c;
+       %     num_canal=c(1);
+       %     cant_muestras=c(2)/2;
+       %     muestras=c(3:end-1);
+       %     chksum=c(end);
+       %     
+       %     
+       %     %cint=c(1:2:end)+256*c(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
+       % if (c(1)==1)
+       %     c1aux=(c(1:2:end)+256*c(2:2:end))';
+       % elseif (c(1)==2)
+       %     c2aux=(c(1:2:end)+256*c(2:2:end))';
 
-    escalado =(2.42/6/((2^23)-1)); %cuanto representa 1 muestra en tension
-
-    if(save==1)
-        fwrite(fid,cint,'int16');
+        %if(save==1)
+        %    fwrite(fid,cint,'int16');
+        %end
+        c1aux=cint(1:2:end)'*escalado;
+        c2aux=cint(2:2:end)'*escalado;
+        c1=[c1(101:end) c1aux];
+        c2=[c2(101:end) c2aux];
+        c1hp=filter(b,a,c1);
+        c2hp=filter(b,a,c2);
+        wo=50/(250/2);
+        bw=wo/5;
+        [bn,an]=iirnotch(wo,bw);
+        c1filt=smooth(c1hp,5);%  filter(fhp,c1notch);
+        c2filt=smooth(c2hp,5);%filter(fhp,c2notch);
+        if(save==1)
+            dlmwrite(archivo_c1, c1filt(end-50:end), '-append');
+            dlmwrite(archivo_c2, c2filt(end-50:end), '-append');
+        end
+    %     c1filt=filter(fhp,c1filt);
+    %     c2filt=filter(fhp,c2filt);
     end
-    c1aux=cint(1:2:end)'*escalado;
-    c2aux=cint(2:2:end)'*escalado;
-    c1=[c1(101:end) c1aux];
-    c2=[c2(101:end) c2aux];
-    c1hp=filter(b,a,c1);
-    c2hp=filter(b,a,c2);
-    wo=50/(250/2);
-    bw=wo/5;
-    [bn,an]=iirnotch(wo,bw);
-    c1filt=smooth(c1hp,5);%  filter(fhp,c1notch);
-    c2filt=smooth(c2hp,5);%filter(fhp,c2notch);
-    if(save==1)
-        dlmwrite(archivo_c1, c1filt(end-50:end), '-append');
-        dlmwrite(archivo_c2, c2filt(end-50:end), '-append');
-    end
-%     c1filt=filter(fhp,c1filt);
-%     c2filt=filter(fhp,c2filt);    
     axes(handles.C1)
     plot(c1filt,'linewidth',2)
     set(gca,'xtick',1000:250:2000,'xticklabel',0:4)
     ylim([-L1 L1])
-    xlim([1000 2000])
+    xlim([X1 X2])
     axes(handles.C2)
     plot(c2filt,'linewidth',2)
     ylim([-L2 L2])
-    xlim([1000 2000])
+    xlim([X1 X2])
     axes(handles.V1)
     [y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2))
     plot(c2filt(end-250:end),-c1filt(end-250:end))
@@ -209,4 +219,43 @@ function TimerCallback(obj,event,hObject,handles)
 global var;
 set(handles.text1,'String',var.x);
 var.x=var.x+1;
+
+
+% --- Executes on button press in Atras.
+function Atras_Callback(hObject, eventdata, handles)
+% hObject    handle to Atras (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)global running;
+global leer_muestras;
+global running;
+global X1 X2;
+leer_muestras=0;
+running=1;
+X1=X1-100;
+X2=X2-100;
+if (X2<900)
+    set(handles.Atras,'Enable','off')
+end
+if (X2<2000)
+    set(handles.Adelante,'Enable','on')
+end
+
+% --- Executes on button press in Adelante.
+function Adelante_Callback(hObject, eventdata, handles)
+% hObject    handle to Adelante (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global leer_muestras;
+global running;
+global X1 X2;
+leer_muestras=0;
+running=1;
+X1=X1+100;
+X2=X2+100;
+if (X2>900)
+    set(handles.Atras,'Enable','on')
+end
+if (X2>2000)
+    set(handles.Adelante,'Enable','off')
+end
 
