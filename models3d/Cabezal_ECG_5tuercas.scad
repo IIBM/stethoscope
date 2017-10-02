@@ -132,12 +132,13 @@ module marcadores(){
 
 difference(){
     cabezal();
-    microfono();
-    grupo_de_electrodos_M4();
+    //microfono();
+    //grupo_de_electrodos_M4();
     rotate([0, 0, angulo_RL])
         translate([radio_ubicacion_electrodos, 0, alto_total_cabezal-(alto_tuerca_M4/2)])
             cube([10, 10, alto_tuerca_M4], center=true);
     cunia();
+    cylinder(r=radio_ubicacion_electrodos+radio_tuercas_M4-1,h=alto_total_cabezal, $fn=50);
 }
 marcadores();
 trabas();
