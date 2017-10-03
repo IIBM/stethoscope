@@ -1,19 +1,19 @@
 margen_error=0.7;
 
 /* Sector que engancha con el cabezal */
-radio_exterior_cabezal=22;
-radio_interior_cabezal=20.5;
+radio_exterior_cabezal=22.25;
+radio_interior_cabezal=20.75;
 alto_interior_cabezal=7;
 alto_cabezal=10; //Alto del cilindro donde engancha el cabezal
 alto_traba=2;
-radio_traba=1.5;
+radio_traba=1.6;
 
 alto_cono=10;
 
 /* Sector donde va la placa */
 radio_interior_cuerpo=15;
-radio_exterior_cuerpo=15+radio_exterior_cabezal-radio_interior_cabezal;
-alto_cuerpo=105-alto_cabezal-alto_cono;
+radio_exterior_cuerpo=18; //3mm de ancho de pared
+alto_cuerpo=100-alto_cabezal-alto_cono;
 
 radio_prensacable=8; //MEDIR BIEN
 
@@ -60,12 +60,14 @@ module guia_placa(){
 
 //!guia_placa();
 
+/* Enganche con el cabezal */
 difference(){
     cylinder(r=radio_exterior_cabezal, h=alto_cabezal, $fn=50);
     cylinder(r=radio_interior_cabezal, h=alto_cabezal, $fn=50);
     grupo_enganches();
 }
 
+/* Transición entre el cabezal y donde va la placa */
 translate([0, 0, alto_cabezal]){
     difference(){
         cylinder(r1=radio_exterior_cabezal, r2=radio_exterior_cuerpo, h=alto_cono, $fn=50);
@@ -73,6 +75,7 @@ translate([0, 0, alto_cabezal]){
     }
 }
 
+/* Sector donde va la placa */
 translate([0, 0, alto_cabezal+alto_cono]){
     difference(){
         cylinder(r=radio_exterior_cuerpo, h=alto_cuerpo, $fn=50);
@@ -80,18 +83,28 @@ translate([0, 0, alto_cabezal+alto_cono]){
     }
 }
 
-translate([0, 0, alto_cabezal+alto_cono+alto_cuerpo]){
-    difference(){
-        cylinder(r=radio_exterior_cuerpo, h=3, $fn=50);
-        cylinder(r=radio_prensacable, h=3, $fn=50);
-    }
-}
-
+/* Guías para la placa */
 translate([radio_interior_cuerpo-4, 0, alto_cabezal+alto_cono])
     guia_placa();
-
 rotate([0, 0, 180]){
     translate([radio_interior_cuerpo-4, 0, alto_cabezal+alto_cono])
         guia_placa();
+}
+
+/* Transición entre el cabezal y donde va la placa */
+translate([0, 0, alto_cabezal+alto_cono+alto_cuerpo]){
+    difference(){
+        cylinder(r1=radio_exterior_cuerpo, r2=13, h=5, $fn=50);
+        cylinder(r1=radio_interior_cuerpo, r2=10, h=5, $fn=50);
+    }
+}
+
+/* Cierre con agujero para el prensacables */
+
+translate([0, 0, alto_cabezal+alto_cono+alto_cuerpo+2]){
+    difference(){
+        cylinder(r=13, h=3, $fn=50);
+        cylinder(r=radio_prensacable, h=3, $fn=50);
+    }
 }
 

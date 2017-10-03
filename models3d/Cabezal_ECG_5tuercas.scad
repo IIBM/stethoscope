@@ -1,13 +1,13 @@
 margen_error=0.7;
 
 //Tuercas M4 
-radio_tuercas_M4=3.85+(margen_error/2);
+radio_tuercas_M4=3.9+(margen_error/2);
 alto_tuerca_M4=3.1;
 //alto_hexagono_tuerca_ciega_M4=5.5;
-alto_hexagono_tuerca_ciega_M4=4;
+alto_hexagono_tuerca_ciega_M4=4.5;
 radio_tornillo_M4=2+(margen_error/2);
 
-radio_exterior_cabezal=22;
+radio_exterior_cabezal=22.25;
 radio_interior_cabezal=20.5;
 alto_exterior_cabezal=5;
 alto_interior_cabezal=7;
@@ -133,12 +133,12 @@ module marcadores(){
 difference(){
     cabezal();
     //microfono();
-    //grupo_de_electrodos_M4();
+    grupo_de_electrodos_M4();
     rotate([0, 0, angulo_RL])
         translate([radio_ubicacion_electrodos, 0, alto_total_cabezal-(alto_tuerca_M4/2)])
-            cube([10, 10, alto_tuerca_M4], center=true);
+            cube([12, 10, alto_tuerca_M4], center=true);
     cunia();
-    cylinder(r=radio_ubicacion_electrodos+radio_tuercas_M4-1,h=alto_total_cabezal, $fn=50);
+    //cylinder(r=radio_ubicacion_electrodos+radio_tuercas_M4-1,h=alto_total_cabezal, $fn=50);
 }
 marcadores();
 trabas();
