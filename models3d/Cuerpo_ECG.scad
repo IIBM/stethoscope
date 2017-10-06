@@ -4,7 +4,7 @@ margen_error=0.7;
 radio_exterior_cabezal=22.25;
 radio_interior_cabezal=20.75;
 alto_interior_cabezal=7;
-alto_cabezal=10; //Alto del cilindro donde engancha el cabezal
+alto_cabezal=20; //Alto del cilindro donde engancha el cabezal
 alto_traba=2;
 radio_traba=1.6;
 
@@ -15,11 +15,12 @@ radio_interior_cuerpo=15;
 radio_exterior_cuerpo=18; //3mm de ancho de pared
 alto_cuerpo=100-alto_cabezal-alto_cono;
 
-radio_prensacable=8; //MEDIR BIEN
+radio_prensacable=8.5; //MEDIR BIEN
 
+radio_esfera_marcador=0.5;
 
 module enganche(){
-    for(i=[-10:0]){
+    for(i=[-15:0]){
         rotate([0, 0, i]){
             translate([radio_interior_cabezal-0.5, 0, alto_interior_cabezal/2])
                 rotate([0, 90, 0])
@@ -27,7 +28,7 @@ module enganche(){
         }    
     }
     
-    rotate([0, 0, -10]){
+    rotate([0, 0, -15]){
         hull(){
             translate([radio_interior_cabezal-0.5, 0, 0])
                 rotate([0, 90, 0])
@@ -49,16 +50,41 @@ module grupo_enganches(){
 }
 
 module guia_placa(){
-    translate([0, -2.5, 0]){ 
+    translate([0, -3.5, 0]){ 
         difference(){
-            cube([5, 5, alto_cuerpo]);
-            translate([0, 1, 0])
+            cube([5, 7, alto_cuerpo]);
+            translate([0, 2, 0])
                 cube([2, 3, alto_cuerpo]);
         }
     }   
 }
 
 //!guia_placa();
+
+/* Regleta de ángulos */
+module regleta(){
+    for(i=[0:30:330]){
+        rotate([0, 0, i]){
+            hull(){
+                translate([radio_exterior_cabezal, 0, alto_interior_cabezal+6])
+                    sphere(r=radio_esfera_marcador, $fn=50);
+                translate([radio_exterior_cabezal, 0, alto_interior_cabezal])
+                    sphere(r=radio_esfera_marcador, $fn=50);
+            }
+        }
+    }
+    for(i=[0:10:350]){
+        rotate([0, 0, i]){
+            hull(){
+                translate([radio_exterior_cabezal, 0, alto_interior_cabezal+3])
+                    sphere(r=radio_esfera_marcador, $fn=50);
+                translate([radio_exterior_cabezal, 0, alto_interior_cabezal])
+                    sphere(r=radio_esfera_marcador, $fn=50);
+            }
+        }
+    }
+}
+regleta();
 
 /* Enganche con el cabezal */
 difference(){
@@ -91,7 +117,7 @@ rotate([0, 0, 180]){
         guia_placa();
 }
 
-/* Transición entre el cabezal y donde va la placa */
+/* Transición entre donde va la placa y el cierre*/
 translate([0, 0, alto_cabezal+alto_cono+alto_cuerpo]){
     difference(){
         cylinder(r1=radio_exterior_cuerpo, r2=13, h=5, $fn=50);
@@ -100,7 +126,6 @@ translate([0, 0, alto_cabezal+alto_cono+alto_cuerpo]){
 }
 
 /* Cierre con agujero para el prensacables */
-
 translate([0, 0, alto_cabezal+alto_cono+alto_cuerpo+2]){
     difference(){
         cylinder(r=13, h=3, $fn=50);

@@ -100,21 +100,30 @@ while running
             break;
         end
         cint=c;
-       %     num_canal=c(1);
-       %     cant_muestras=c(2)/2;
-       %     muestras=c(3:end-1);
-       %     chksum=c(end);
-       %     
-       %     
-       %     %cint=c(1:2:end)+256*c(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
-       % if (c(1)==1)
-       %     c1aux=(c(1:2:end)+256*c(2:2:end))';
-       % elseif (c(1)==2)
-       %     c2aux=(c(1:2:end)+256*c(2:2:end))';
+%%
+        %Busca el inicio de la trama
+%         while c!= inicio_trama
+%             c = fread(s, 3, 'int8');
+%         end
+% 
+%         c = fread(s, largo_trama, 'int16');
+
+        %num_canal=c(1);
+        %cant_muestras=c(2);
+        %muestras=c(3:end-1);
+        %chksum=c(end);
+        %     
+        %     
+        %     %cint=c(1:2:end)+256*c(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
+        % if (c(1)==1)
+        %     c1aux=(c(1:2:end)+256*c(2:2:end))';
+        % elseif (c(1)==2)
+        %     c2aux=(c(1:2:end)+256*c(2:2:end))';
 
         %if(save==1)
         %    fwrite(fid,cint,'int16');
         %end
+%%
         c1aux=cint(1:2:end)'*escalado;
         c2aux=cint(2:2:end)'*escalado;
         c1=[c1(101:end) c1aux];
