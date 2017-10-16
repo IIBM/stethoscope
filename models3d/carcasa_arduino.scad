@@ -10,6 +10,7 @@ radio_prensacable=8.5;
 ancho_usb=11.5;
 alto_usb=8;
 
+
 module tapa(){
     difference(){
         union(){
@@ -41,6 +42,11 @@ module tapa(){
         //Agujero para el USB
         translate([ancho_pared+8, placa_y-2, 16])
             cube([ancho_usb, alto_usb, ancho_pared+4]);
+
+        //Texto
+        translate([(placa_x+ancho_pared*2)/2, (placa_y+ancho_pared*2)/2, (placa_z+ancho_tapa*2)-1])
+            rotate([0, 0, 90])
+                #linear_extrude(height = 4) {text("IIBM", font = "Arial", size=22,$fn=25, halign="center", valign="center");}
     }
 }
 

@@ -23,8 +23,8 @@ MAREK CERMAK, 2016
 //Channel configurations
 #define CONFIG1 0x01 //Configuration Register 1 (p.40) 
 #define CONFIG2 0x02 //Configuration Register 2 (p.41)
-#define CH1SET 0x04 //Channel 1 Settings Address
-#define CH2SET 0x05 //Channel 2 Settings Address
+#define CH1SET 0x04 //Channel 1 Settings Address (p. 43)
+#define CH2SET 0x05 //Channel 2 Settings Address (p. 44)
 #define RLD_SENS 0x06 //Right Leg Settings Address (p.45)
 #define RESP1 0x09 //Respiration Control Regsiter 1 Address (p.48)
 #define RESP2 0x09 //Respiration Control Regsiter 2 Address (p.49)
@@ -38,6 +38,7 @@ String hex_to_char(int);
 int read_byte(int reg_addr);
 void send_command(uint8_t cmd);
 void write_byte(int reg_addr, int val_hex);
+void reset_communication(void);
 
 // filtering IIR
 
@@ -88,19 +89,21 @@ void write_byte(int reg_addr, int val_hex);
 
 // Variables para la trama
   const int cant_muestras_trama = 64;
-  const int largo_trama = cant_muestras_trama*2 + 3;
+  const int largo_trama = 2; //cant_muestras_trama*2 + 3;
   int cont_trama = 2;
   
   byte buf_ch1[largo_trama];
-  buf_ch1[0] = 1; //Identifica el canal
-  buf_ch1[1] = cant_muestras_trama; //Indica la cantidad de muestras por trama
+//  buf_ch1[0] = 1; //Identifica el canal
+//  buf_ch1[1] = cant_muestras_trama; //Indica la cantidad de muestras por trama
   
   byte buf_ch2[largo_trama];
-  buf_ch2[0] = 2; //Identifica el canal
-  buf_ch2[1] = cant_muestras_trama; //Indica la cantidad de muestras por trama
+//  buf_ch2[0] = 2; //Identifica el canal
+//  buf_ch2[1] = cant_muestras_trama; //Indica la cantidad de muestras por trama
   
   int chksum_ch1=0;
   int chksum_ch2=0;
+
+  char comando; //Comandos que le llegan del graficador
 
 void setup(){
 
@@ -121,18 +124,8 @@ void setup(){
   pinMode(PIN_RESET, OUTPUT);
   pinMode(IPIN_DRDY, INPUT);
 
-  //reset communication, see datasheet (p.30)
-  digitalWrite(PIN_CS, HIGH);
-  digitalWrite(PIN_RESET, HIGH);
-  delay(1000);
-  digitalWrite(PIN_RESET, LOW);
-  delay(1000);
-  digitalWrite(PIN_RESET, HIGH);
-  delay(100);	
-  digitalWrite(PIN_CS, LOW);
-  delay(1000);
-  digitalWrite(PIN_CS, HIGH);
-
+  reset_communication();
+  
   // Wait longer for TI chip to start
   delay(500);
   send_command(SDATAC);
@@ -148,11 +141,11 @@ void setup(){
   
   //this part is just to check if you send and read correct data
   if(debug_msg){
-  Serial.println("Check Configs");
-  chSet = read_byte(CONFIG1);
-  Serial.println("CONFIG1: " + String(chSet) + "\t\t" + hex_to_char(chSet) );
-  chSet = read_byte(CONFIG2);
-  Serial.println("CONFIG2: " + String(chSet) + "\t\t" + hex_to_char(chSet) );
+    Serial.println("Check Configs");
+    chSet = read_byte(CONFIG1);
+    Serial.println("CONFIG1: " + String(chSet) + "\t\t" + hex_to_char(chSet) );
+    chSet = read_byte(CONFIG2);
+    Serial.println("CONFIG2: " + String(chSet) + "\t\t" + hex_to_char(chSet) );
   }
   
   
@@ -164,25 +157,39 @@ void setup(){
 
   if(debug_msg){
   Serial.println("Check CHSET");
-  chSet = read_byte(CH1SET);
+  chSet = read_byte(CH2SET);
   Serial.println("CONFIG1: " + String(chSet) + "\t\t" + hex_to_char(chSet) );
   chSet = read_byte(CH2SET);
   Serial.println("CONFIG2: " + String(chSet) + "\t\t" + hex_to_char(chSet) );
   }
   
-  while(Serial.read()!='1'); //Espera un "1" del graficador
+  //while(Serial.read()!='1'); //Espera un "1" del graficador
   
   // Start communication, you can use RDATAC or RDATA according to datasheet
-  send_command(RDATAC);
+  
+  //send_command(RDATAC);
   digitalWrite(PIN_START, LOW);
-  delay(150);
-  send_command(START);
+  //delay(150);
+  //send_command(START);
+  
 }//Cierra setup
 
 
 
 void loop(){
-
+  if (Serial.available() > 0) {
+    comando=Serial.read();
+    if(comando=='2'){
+      send_command(SDATAC);
+      delay(10);
+      send_command(STOP);
+      delay(150);
+    }else if(comando=='1'){ 
+      send_command(RDATAC);
+      delay(150);
+      send_command(START);
+    }
+  }
   if (digitalRead(IPIN_DRDY) == LOW && dalsi == 0) {
     dalsi = 1; 
     int numSerialBytes = 3 + (3 * nChannels); //8-bits header plus 24-bits per ACTIVE channel
@@ -354,3 +361,17 @@ void write_byte(int reg_addr, int val_hex) {
 
 }
 
+
+void reset_communication(void){
+//Resetea la comunicación (datasheet p.30)
+  digitalWrite(PIN_CS, HIGH);
+  digitalWrite(PIN_RESET, HIGH);
+  delay(1000);
+  digitalWrite(PIN_RESET, LOW);
+  delay(1000);
+  digitalWrite(PIN_RESET, HIGH);
+  delay(100);  
+  digitalWrite(PIN_CS, LOW);
+  delay(1000);
+  digitalWrite(PIN_CS, HIGH);
+}

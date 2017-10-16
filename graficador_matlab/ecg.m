@@ -38,7 +38,7 @@ delete(instrfindall)
 %4800, 9600, 19200, 57600, 115200
 s = serial('/dev/ttyUSB0','BaudRate',115200);
 fopen(s)
-pause(6)
+pause(6) %Espera que termine la configuración del ADS1292
 global escalado;
 escalado=2.42/6/((2^23)-1); %cuanto representa 1 muestra en tension
 global c1 c2;
@@ -77,7 +77,7 @@ global running;
 global leer_muestras;
 global escalado;
 global c1 c2;
-global L1 L2;
+global L1; %L2;
 global X1 X2;
 global fid;
 global archivo_c1;
@@ -91,7 +91,7 @@ fhp=highpass();
 b=[1.0, -2.0, 1.0];
 a=[1.0, -1.9749029659, 0.9765156251];
 fwrite(s,'1');
-pause(1)
+pause(2)
 while running
     if (leer_muestras==1)
         c = fread(s, 200, 'int16');
@@ -149,12 +149,14 @@ while running
     xlim([X1 X2])
     axes(handles.C2)
     plot(c2filt,'linewidth',2)
-    ylim([-L2 L2])
+    %ylim([-L2 L2])
+    ylim([-L1 L1])
     xlim([X1 X2])
     axes(handles.V1)
-    [y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2))
+    [y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
     plot(c2filt(end-250:end),-c1filt(end-250:end))
-    xlim([-L2 L2])
+    %xlim([-L2 L2])
+    xlim([-L1 L1])
     ylim([-L1 L1])
     pause(0.000001)
 end
@@ -165,9 +167,13 @@ function Stop_Callback(hObject, eventdata, handles)
 % hObject    handle to Stop (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-global running;
-running=0;
-
+global s;
+%global running;
+global leer_muestras;
+%running=0;
+leer_muestras=0;
+fwrite(s,'2');
+pause(1)
 
 
 % --- Executes on button press in upc1.
@@ -188,22 +194,22 @@ global L1
 L1=1.1*L1;
 
 
-% --- Executes on button press in up2.
-function up2_Callback(hObject, eventdata, handles)
-% hObject    handle to up2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global L2
-L2=0.9*L2;
-
-
-% --- Executes on button press in down2.
-function down2_Callback(hObject, eventdata, handles)
-% hObject    handle to down2 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-global L2
-L2=1.1*L2;
+%% --- Executes on button press in up2.
+%function up2_Callback(hObject, eventdata, handles)
+%% hObject    handle to up2 (see GCBO)
+%% eventdata  reserved - to be defined in a future version of MATLAB
+%% handles    structure with handles and user data (see GUIDATA)
+%global L2
+%L2=0.9*L2;
+%
+%
+%% --- Executes on button press in down2.
+%function down2_Callback(hObject, eventdata, handles)
+%% hObject    handle to down2 (see GCBO)
+%% eventdata  reserved - to be defined in a future version of MATLAB
+%% handles    structure with handles and user data (see GUIDATA)
+%global L2
+%L2=1.1*L2;
 
 
 % --- Executes on button press in Save.
@@ -235,11 +241,13 @@ function Atras_Callback(hObject, eventdata, handles)
 % hObject    handle to Atras (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)global running;
+global s;
 global leer_muestras;
 global running;
 global X1 X2;
 leer_muestras=0;
 running=1;
+fwrite(s,'2');
 X1=X1-100;
 X2=X2-100;
 if (X2<900)
@@ -254,11 +262,13 @@ function Adelante_Callback(hObject, eventdata, handles)
 % hObject    handle to Adelante (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+global s;
 global leer_muestras;
 global running;
 global X1 X2;
 leer_muestras=0;
 running=1;
+fwrite(s,'2');
 X1=X1+100;
 X2=X2+100;
 if (X2>900)
