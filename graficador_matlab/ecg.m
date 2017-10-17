@@ -149,6 +149,7 @@ while running
     xlim([X1 X2])
     axes(handles.C2)
     plot(c2filt,'linewidth',2)
+    set(gca,'xtick',1000:250:2000,'xticklabel',0:4)
     %ylim([-L2 L2])
     ylim([-L1 L1])
     xlim([X1 X2])
@@ -278,3 +279,12 @@ if (X2>2000)
     set(handles.Adelante,'Enable','off')
 end
 
+
+% --- Executes when user attempts to close figure1.
+function figure1_CloseRequestFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: delete(hObject) closes the figure
+delete(hObject);
