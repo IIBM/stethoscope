@@ -179,17 +179,21 @@ void setup(){
 void loop(){
   if (Serial.available() > 0) {
     comando=Serial.read();
-    if(comando=='2'){
+    if(comando=='1'){ //Botón "Start"
+      send_command(RDATAC);
+      delay(150);
+      send_command(START);
+    }else if(comando=='2'){ //Botón "Stop"
       send_command(SDATAC);
       delay(10);
       send_command(STOP);
       delay(150);
-    }else if(comando=='1'){ 
-      send_command(RDATAC);
+    }else if(comando=='3'){  //Se cierra la ventana del graficador
       delay(150);
-      send_command(START);
+      reset_communication();
     }
   }
+
   if (digitalRead(IPIN_DRDY) == LOW && dalsi == 0) {
     dalsi = 1; 
     int numSerialBytes = 3 + (3 * nChannels); //8-bits header plus 24-bits per ACTIVE channel

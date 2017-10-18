@@ -1,0 +1,9 @@
+BOARD_TAG=nano328
+ARDUINO_PORT=/dev/ttyUSB0
+ARDUINO_DIR=/usr/share/arduino
+#USER_LIB_PATH:=$(realpath ../bibliotecas)
+ARDUINO_LIBS+=SPI
+MONITOR_PORT=$(ARDUINO_PORT)
+MONITOR_BAUDRATE=115200
+
+include $(ARDUINO_DIR)/Arduino.mk
