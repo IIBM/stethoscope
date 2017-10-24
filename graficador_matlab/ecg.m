@@ -86,6 +86,9 @@ global save;
 running=1;
 leer_muestras=1;
 
+X1=1000;
+X2=2000;
+
 flp=lowpass();
 fhp=highpass();
 b=[1.0, -2.0, 1.0];
@@ -101,28 +104,38 @@ while running
         end
         cint=c;
 %%
-        %Busca el inicio de la trama
-%         while c!= inicio_trama
-%             c = fread(s, 3, 'int8');
-%         end
-% 
-%         c = fread(s, largo_trama, 'int16');
+        %while(true) %Lee tramas nuevas 
+        %    %Busca el inicio de la trama
+        %    aux_inicio_trama=zeros(1,3); 
+        %    while aux_inicio_trama!= inicio_trama
+        %        aux_inicio_trama(end) = fread(s, 1, 'int8');
+        %        shift(c,-1);
+        %    end
 
-        %num_canal=c(1);
-        %cant_muestras=c(2);
-        %muestras=c(3:end-1);
-        %chksum=c(end);
-        %     
-        %     
-        %     %cint=c(1:2:end)+256*c(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
-        % if (c(1)==1)
-        %     c1aux=(c(1:2:end)+256*c(2:2:end))';
-        % elseif (c(1)==2)
-        %     c2aux=(c(1:2:end)+256*c(2:2:end))';
-
-        %if(save==1)
-        %    fwrite(fid,cint,'int16');
+        %    %Lee las distintas partes de la trama
+        %    cant_muestras=fread(s,1, 'int8');
+        %    c = fread(s, cant_muestras+2, 'int8'); %Lee cant_muestras+num_canal+chksum
+        %    num_canal=c(1);
+        %    muestras=c(2:end-1)
+        %    chksum=de2bi(c(end), 8,'left-msb');
+        
+        %    %Calcula el checksum
+        %    aux_chksum=de2bi(muestras(1), 8, 'left-msb');
+        %    for i=2:cant_muestras
+        %        aux_chksum=xor(aux_chksum, de2bi(muestras(i), 8, 'left-msb'));
+        %    end
+        
+        %    if (aux_chksum==chksum)
+        %        cint=muestras(1:2:end)+256*muestras(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
+        %        if (num_canal==1)
+        %            c1aux=cint'*escalado;
+        %        elseif (num_canal==2)
+        %            c2aux=cint'*escalado;
+        %        end
+        %        break
+        %    end
         %end
+
 %%
         c1aux=cint(1:2:end)'*escalado;
         c2aux=cint(2:2:end)'*escalado;
@@ -220,14 +233,14 @@ function Save_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global save;
 global var;
-status=get(handles.Save,'String');
+status=get(handles.Save,'String')
 if status=='Save'
     save=1;
-    start(var.tmr);
+    %start(var.tmr);
     set(handles.Save,'String','Stop')
 else
     save=0;
-    stop(var.tmr);
+    %stop(var.tmr);
     set(handles.Save,'String','Save')
 end
     
@@ -288,7 +301,9 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 
 global s;
 global leer_muestras;
+global save;
 leer_muestras=0;
+save=0;
 fwrite(s,'3');
 pause(1)
 % Hint: delete(hObject) closes the figure
