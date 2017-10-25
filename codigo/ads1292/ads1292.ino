@@ -88,17 +88,13 @@ void reset_communication(void);
   int gMaxChan=2;
 
 // Variables para la trama
-  const int cant_muestras_trama = 64;
-  const int largo_trama = 2; //cant_muestras_trama*2 + 3;
-  int cont_trama = 2;
+  const int max_muestras_trama = 5;//64;
+  const int largo_trama = 16;//133; //2 //max_muestras_trama*2 + 6;
+  int cont_trama = 5; //2
   
   byte buf_ch1[largo_trama];
-//  buf_ch1[0] = 1; //Identifica el canal
-//  buf_ch1[1] = cant_muestras_trama; //Indica la cantidad de muestras por trama
   
   byte buf_ch2[largo_trama];
-//  buf_ch2[0] = 2; //Identifica el canal
-//  buf_ch2[1] = cant_muestras_trama; //Indica la cantidad de muestras por trama
   
   int chksum_ch1=0;
   int chksum_ch2=0;
@@ -188,7 +184,19 @@ void loop(){
       delay(10);
       send_command(STOP);
       delay(150);
-    }else if(comando=='3'){  //Se cierra la ventana del graficador
+      //Manda la trama que se estaba armando
+      //buf_ch1[3] = cont_trama-5 //Indica la cantidad de bytes de muestras por trama
+      //buf_ch2[3] = cont_trama-5 //Indica la cantidad de bytes de muestras por trama
+      //buf_ch1[cont_trama+1] = chksum_ch1;
+      //buf_ch2[cont_trama+1] = chksum_ch2;
+      
+      //Serial.write(buf_ch1, cont_trama+1);
+      //Serial.write(buf_ch2, cont_trama+1);
+
+      //cont_trama=4;
+      //chksum_ch1=0;
+      //chksum_ch2=0;
+    }else if(comando=='3'){ //Se cierra la ventana del graficador
       delay(150);
       reset_communication();
     }
@@ -264,16 +272,16 @@ void loop(){
     
     //Serial.println(neco);
     
-    buf_ch1[0]=necoi_ch1 & 0x00ff;
-    buf_ch1[1]=(necoi_ch1 & 0xff00)>>8;
-
-    buf_ch2[0]=necoi_ch2 & 0x00ff;
-    buf_ch2[1]=(necoi_ch2 & 0xff00)>>8;
-
-    Serial.write(buf_ch1, sizeof(buf_ch1));
-    Serial.write(buf_ch2, sizeof(buf_ch2));
-    /* Para el checksum
-    if (cont_trama < (largo_trama-2)){
+//    buf_ch1[0]=necoi_ch1 & 0x00ff;
+//    buf_ch1[1]=(necoi_ch1 & 0xff00)>>8;
+//
+//    buf_ch2[0]=necoi_ch2 & 0x00ff;
+//    buf_ch2[1]=(necoi_ch2 & 0xff00)>>8;
+//
+//    Serial.write(buf_ch1, sizeof(buf_ch1));
+//    Serial.write(buf_ch2, sizeof(buf_ch2));
+    /* Para el checksum*/
+    if (cont_trama < (largo_trama-1)){
 
       buf_ch1[cont_trama]=necoi_ch1 & 0x00ff;
       buf_ch1[cont_trama+1]=(necoi_ch1 & 0xff00)>>8;
@@ -286,26 +294,40 @@ void loop(){
 
       cont_trama += 2;
     }else{
-      buf_ch1[1] = ; //Identifica el canal
+      buf_ch1[0]=0x00;
+      buf_ch1[1]=0xFF;
+      buf_ch1[2]=0x00;
+      buf_ch1[3] = max_muestras_trama*2; //Indica la cantidad de bytes de muestras por trama
+      buf_ch1[4] = 0x01; //Identifica el canal
+      
+      buf_ch2[0]=0x00;
+      buf_ch2[1]=0xFF;
+      buf_ch2[2]=0x00;
+      buf_ch2[3] = max_muestras_trama*2; //Indica la cantidad de bytes de muestras por trama
+      buf_ch2[4] = 0x02; //Identifica el canal
+
       buf_ch1[largo_trama-1] = chksum_ch1;
       buf_ch2[largo_trama-1] = chksum_ch2;
+    
+//      for(int i=0;i<largo_trama;i++){
+//        Serial.print(buf_ch1[i], HEX);
+//        Serial.print("\n");
+//      } 
+//      Serial.print("Fin trama1\n");
+//      for(int i=0;i<largo_trama;i++){
+//        Serial.print(buf_ch2[i], HEX);
+//        Serial.print("\n");
+//      } 
+//      Serial.print("Fin trama2\n");
       
       Serial.write(buf_ch1, sizeof(buf_ch1));
       Serial.write(buf_ch2, sizeof(buf_ch2));
 
-      cont_trama=2;
+      cont_trama=5;
       chksum_ch1=0;
       chksum_ch2=0;
     }
-    */
-
-    /*
-    Serial.write(necoi_ch1 & 0x00ff);
-    Serial.write((necoi_ch1 & 0xff00)>>8);
     
-    Serial.write(necoi_ch2 & 0x00ff);
-    Serial.write((necoi_ch2 & 0xff00)>>8);
-    */
     //Serial.println(neco);
   }
   

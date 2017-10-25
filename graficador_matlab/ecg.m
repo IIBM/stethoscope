@@ -89,6 +89,9 @@ leer_muestras=1;
 X1=1000;
 X2=2000;
 
+%inicio_trama=[0x00 0xff 0x00];
+inicio_trama=[0 256 0];
+
 flp=lowpass();
 fhp=highpass();
 b=[1.0, -2.0, 1.0];
@@ -97,44 +100,46 @@ fwrite(s,'1');
 pause(2)
 while running
     if (leer_muestras==1)
-        c = fread(s, 200, 'int16');
-        if(length(c)<200)
-            delete(instrfindall)
-            break;
-        end
-        cint=c;
+%        c = fread(s, 200, 'int16');
+%        if(length(c)<200)
+%            delete(instrfindall)
+%            break;
+%        end
+%        cint=c;
 %%
-        %while(true) %Lee tramas nuevas 
-        %    %Busca el inicio de la trama
-        %    aux_inicio_trama=zeros(1,3); 
-        %    while aux_inicio_trama!= inicio_trama
-        %        aux_inicio_trama(end) = fread(s, 1, 'int8');
-        %        shift(c,-1);
-        %    end
+        while(true) %Lee tramas nuevas 
+            %Busca el inicio de la trama
+            aux_inicio_trama = fread(s, 3, 'int8')'
+            while aux_inicio_trama ~= inicio_trama
+                aux_inicio_trama(end) = fread(s, 1, 'int8');
+                aux_inicio_trama
+                aux_inicio_trama = circshift(aux_inicio_trama, [1, -1]);
+            end
 
-        %    %Lee las distintas partes de la trama
-        %    cant_muestras=fread(s,1, 'int8');
-        %    c = fread(s, cant_muestras+2, 'int8'); %Lee cant_muestras+num_canal+chksum
-        %    num_canal=c(1);
-        %    muestras=c(2:end-1)
-        %    chksum=de2bi(c(end), 8,'left-msb');
+            %Lee las distintas partes de la trama
+            cant_muestras=fread(s,1, 'int8')
+            c = fread(s, cant_muestras+2, 'int8'); %Lee cant_muestras+num_canal+chksum
+            num_canal=c(1)
+            muestras=c(2:end-1);
+            %chk=c(end)
+            chksum=de2bi(c(end), 8,'left-msb');
         
-        %    %Calcula el checksum
-        %    aux_chksum=de2bi(muestras(1), 8, 'left-msb');
-        %    for i=2:cant_muestras
-        %        aux_chksum=xor(aux_chksum, de2bi(muestras(i), 8, 'left-msb'));
-        %    end
+            %Calcula el checksum
+            aux_chksum=de2bi(muestras(1), 8, 'left-msb');
+            for i=2:cant_muestras
+                aux_chksum=xor(aux_chksum, de2bi(muestras(i), 8, 'left-msb'));
+            end
         
-        %    if (aux_chksum==chksum)
-        %        cint=muestras(1:2:end)+256*muestras(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
-        %        if (num_canal==1)
-        %            c1aux=cint'*escalado;
-        %        elseif (num_canal==2)
-        %            c2aux=cint'*escalado;
-        %        end
-        %        break
-        %    end
-        %end
+            if (aux_chksum==chksum)
+                cint=muestras(1:2:end)+256*muestras(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
+                if (num_canal==1)
+                    c1aux=cint'*escalado;
+                elseif (num_canal==2)
+                    c2aux=cint'*escalado;
+                end
+                break
+            end%if
+        end%while
 
 %%
         c1aux=cint(1:2:end)'*escalado;
