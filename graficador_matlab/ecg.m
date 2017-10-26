@@ -110,7 +110,7 @@ while running
         while(true) %Lee tramas nuevas 
             %Busca el inicio de la trama
             aux_inicio_trama = fread(s, 3, 'int8')'
-            while aux_inicio_trama ~= inicio_trama
+            while ~all(aux_inicio_trama ~= inicio_trama)
                 aux_inicio_trama(end) = fread(s, 1, 'int8');
                 aux_inicio_trama
                 aux_inicio_trama = circshift(aux_inicio_trama, [1, -1]);
