@@ -88,8 +88,8 @@ void reset_communication(void);
   int gMaxChan=2;
 
 // Variables para la trama
-  const int max_muestras_trama = 5;//64;
-  const int largo_trama = 16;//133; //2 //max_muestras_trama*2 + 6;
+  const int max_muestras_trama = 100;
+  const int largo_trama = 206; //2 //max_muestras_trama*2 + 6;
   int cont_trama = 5; //2
   
   byte buf_ch1[largo_trama];
@@ -103,7 +103,7 @@ void reset_communication(void);
 
 void setup(){
 
-  Serial.begin(115200);
+  Serial.begin(115200, SERIAL_8N1);
   Serial.flush();
   delayMicroseconds(100);
   
@@ -126,10 +126,11 @@ void setup(){
   delay(500);
   send_command(SDATAC);
   delay(10);
-  chSet = read_byte(0x00);
-  // see datasheet page 39
-  Serial.print("-- ID CHIP is:" + String(chSet) + "--");
-  
+  if(debug_msg){
+    chSet = read_byte(0x00);
+    // see datasheet page 39
+    Serial.print("-- ID CHIP is:" + String(chSet) + "--");
+  }
   //datasheet page 40-44
   write_byte(CONFIG1, 0x01); //Operacion normal: 0x01 (250 SPS), 0x02 (500 SPS), 0x03 (1 kSPS) (p.40)
   write_byte(CONFIG2, 0xA0); //Operacion normal: 0xA0. Test signal 0xA3 (p.41)
@@ -297,7 +298,7 @@ void loop(){
       buf_ch1[0]=0x00;
       buf_ch1[1]=0xFF;
       buf_ch1[2]=0x00;
-      buf_ch1[3] = max_muestras_trama*2; //Indica la cantidad de bytes de muestras por trama
+      buf_ch1[3] = max_muestras_trama; //Indica la cantidad de bytes de muestras por trama
       buf_ch1[4] = 0x01; //Identifica el canal
       
       buf_ch2[0]=0x00;
