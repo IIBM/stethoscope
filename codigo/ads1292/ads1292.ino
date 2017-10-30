@@ -298,7 +298,7 @@ void loop(){
       buf_ch1[0]=0x00;
       buf_ch1[1]=0xFF;
       buf_ch1[2]=0x00;
-      buf_ch1[3] = max_muestras_trama; //Indica la cantidad de bytes de muestras por trama
+      buf_ch1[3] = max_muestras_trama*2; //Indica la cantidad de bytes de muestras por trama
       buf_ch1[4] = 0x01; //Identifica el canal
       
       buf_ch2[0]=0x00;

@@ -111,32 +111,30 @@ while running
         while(true) %Lee tramas nuevas 
             %Busca el inicio de la trama
             aux_inicio_trama = fread(s, 3, 'uint8')';
+            
             while ~all(aux_inicio_trama == inicio_trama)
                 aux_inicio_trama(end) = fread(s, 1, 'uint8');
                 aux_inicio_trama = circshift(aux_inicio_trama, [1, -1]);
             end
-
+            
             %Lee las distintas partes de la trama
             cant_muestras=fread(s,1, 'uint8');
-            c = fread(s, cant_muestras+2, 'int8'); %Lee cant_muestras+num_canal+chksum
-            num_canal=c(1)
+            c = fread(s, cant_muestras+2, 'uint8'); %Lee cant_muestras+num_canal+chksum
+            num_canal=c(1);
             muestras=c(2:end-1);
-            %chk=c(end)
-            %chksum=de2bi(c(end), 8,'left-msb');
             chksum=typecast(int8(c(end)), 'uint8');
         
             %Calcula el checksum
-            %aux_chksum=de2bi(muestras(1), 8, 'left-msb');
             aux_chksum=typecast(int8(muestras(1)), 'uint8');
             for i=2:cant_muestras
-                %aux_chksum=xor(aux_chksum, de2bi(muestras(i), 8, 'left-msb'));
                 aux_chksum=bitxor(aux_chksum, typecast(int8(muestras(i)), 'uint8'));
             end
             
             if (aux_chksum==chksum)
                 cint=muestras(1:2:end)+256*muestras(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
                 if (num_canal==1)
-                    c1aux=cint'*escalado;
+                    %c1aux=cint'*escalado;
+                    c1aux=cint';
                 elseif (num_canal==2)
                     c2aux=cint'*escalado;
                 end
@@ -147,8 +145,8 @@ while running
 %%
         c1aux=cint(1:2:end)'*escalado;
         c2aux=cint(2:2:end)'*escalado;
-        c1=[c1(101:end) c1aux];
-        c2=[c2(101:end) c2aux];
+        c1=[c1(51:end) c1aux];
+        c2=[c2(51:end) c2aux];
         c1hp=filter(b,a,c1);
         c2hp=filter(b,a,c2);
         wo=50/(250/2);
