@@ -77,6 +77,8 @@ global running;
 global leer_muestras;
 global escalado;
 global c1 c2;
+global c1aux c2aux;
+global c1filt c2filt;
 global L1; %L2;
 global X1 X2;
 global fid;
@@ -86,8 +88,15 @@ global save;
 running=1;
 leer_muestras=1;
 
+global j k;
+j=0;
+k=0;
+
 X1=1000;
 X2=2000;
+
+c1aux=zeros(1000, 1);
+c2aux=zeros(1000, 1);
 
 %inicio_trama=[0x00 0xff 0x00];
 inicio_trama=[0 255 0];
@@ -95,10 +104,15 @@ inicio_trama=[0 255 0];
 
 flp=lowpass();
 fhp=highpass();
+wo=50/(250/2);
+bw=wo/5;
+[bn,an]=iirnotch(wo,bw);
+
 b=[1.0, -2.0, 1.0];
 a=[1.0, -1.9749029659, 0.9765156251];
 fwrite(s,'1');
 pause(2)
+
 while running
     if (leer_muestras==1)
 %        c = fread(s, 200, 'int16');
@@ -111,15 +125,14 @@ while running
         while(true) %Lee tramas nuevas 
             %Busca el inicio de la trama
             aux_inicio_trama = fread(s, 3, 'uint8')';
-            
             while ~all(aux_inicio_trama == inicio_trama)
                 aux_inicio_trama(end) = fread(s, 1, 'uint8');
                 aux_inicio_trama = circshift(aux_inicio_trama, [1, -1]);
             end
-            
+            j=j+1
             %Lee las distintas partes de la trama
             cant_muestras=fread(s,1, 'uint8');
-            c = fread(s, cant_muestras+2, 'uint8'); %Lee cant_muestras+num_canal+chksum
+            c = fread(s, cant_muestras+2, 'int8'); %Lee cant_muestras+num_canal+chksum
             num_canal=c(1);
             muestras=c(2:end-1);
             chksum=typecast(int8(c(end)), 'uint8');
@@ -130,36 +143,47 @@ while running
                 aux_chksum=bitxor(aux_chksum, typecast(int8(muestras(i)), 'uint8'));
             end
             
+            %Si el checksum dio bien, pone las muestras en el canal que
+            %corresponda
             if (aux_chksum==chksum)
                 cint=muestras(1:2:end)+256*muestras(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
+                %cint=typecast(int8(muestras), 'int16');
                 if (num_canal==1)
-                    %c1aux=cint'*escalado;
-                    c1aux=cint';
+                    c1aux=cint'*escalado;
+                    c1=[c1(51:end) c1aux];
+                    c1hp=filter(b,a,c1);
+                    c1filt=smooth(c1hp,5);
+                    c1filt=filter(fhp,c1filt);
                 elseif (num_canal==2)
                     c2aux=cint'*escalado;
+                    c2=[c2(51:end) c2aux];
+                    c2hp=filter(b,a,c2);
+                    c2filt=smooth(c2hp,5);
+                    c2filt=filter(fhp,c2filt);
                 end
+                k=k+1
                 break
             end%if
         end%while
 
 %%
-        c1aux=cint(1:2:end)'*escalado;
-        c2aux=cint(2:2:end)'*escalado;
-        c1=[c1(51:end) c1aux];
-        c2=[c2(51:end) c2aux];
-        c1hp=filter(b,a,c1);
-        c2hp=filter(b,a,c2);
-        wo=50/(250/2);
-        bw=wo/5;
-        [bn,an]=iirnotch(wo,bw);
-        c1filt=smooth(c1hp,5);%  filter(fhp,c1notch);
-        c2filt=smooth(c2hp,5);%filter(fhp,c2notch);
+%         c1aux=cint(1:2:end)'*escalado;
+%         c2aux=cint(2:2:end)'*escalado;
+%         c1=[c1(51:end) c1aux];
+%         c2=[c2(51:end) c2aux];
+%         c1hp=filter(b,a,c1);
+%         c2hp=filter(b,a,c2);
+%         wo=50/(250/2);
+%         bw=wo/5;
+%         [bn,an]=iirnotch(wo,bw);
+%         c1filt=smooth(c1hp,5);%filter(fhp,c1notch);
+%         c2filt=smooth(c2hp,5);%filter(fhp,c2notch);
         if(save==1)
             dlmwrite(archivo_c1, c1filt(end-50:end), '-append');
             dlmwrite(archivo_c2, c2filt(end-50:end), '-append');
         end
-    %     c1filt=filter(fhp,c1filt);
-    %     c2filt=filter(fhp,c2filt);
+%         c1filt=filter(fhp,c1filt);
+%         c2filt=filter(fhp,c2filt);
     end
     axes(handles.C1)
     plot(c1filt,'linewidth',2)
