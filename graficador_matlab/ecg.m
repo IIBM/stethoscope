@@ -121,15 +121,17 @@ while running
 %            break;
 %        end
 %        cint=c;
-%%
-        while(true) %Lee tramas nuevas 
+
+        %while(true) %Lee tramas nuevas 
+        num_canal=1;
+        while(num_canal==1) %Lee tramas nuevas 
             %Busca el inicio de la trama
             aux_inicio_trama = fread(s, 3, 'uint8')';
             while ~all(aux_inicio_trama == inicio_trama)
                 aux_inicio_trama(end) = fread(s, 1, 'uint8');
                 aux_inicio_trama = circshift(aux_inicio_trama, [1, -1]);
             end
-            j=j+1
+            
             %Lee las distintas partes de la trama
             cant_muestras=fread(s,1, 'uint8');
             c = fread(s, cant_muestras+2, 'int8'); %Lee cant_muestras+num_canal+chksum
@@ -139,45 +141,40 @@ while running
         
             %Calcula el checksum
             aux_chksum=typecast(int8(muestras(1)), 'uint8');
-            for i=2:cant_muestras
-                aux_chksum=bitxor(aux_chksum, typecast(int8(muestras(i)), 'uint8'));
-            end
+%             for i=2:cant_muestras
+%                 aux_chksum=bitxor(aux_chksum, typecast(int8(muestras(i)), 'uint8'));
+%             end
             
             %Si el checksum dio bien, pone las muestras en el canal que
             %corresponda
-            if (aux_chksum==chksum)
-                cint=muestras(1:2:end)+256*muestras(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
-                %cint=typecast(int8(muestras), 'int16');
+%             if (aux_chksum==chksum)
+                %cint=muestras(1:2:end)+256*muestras(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
+                cint=double(typecast(int8(muestras), 'int16'));
                 if (num_canal==1)
                     c1aux=cint'*escalado;
-                    c1=[c1(51:end) c1aux];
-                    c1hp=filter(b,a,c1);
-                    c1filt=smooth(c1hp,5);
-                    c1filt=filter(fhp,c1filt);
                 elseif (num_canal==2)
                     c2aux=cint'*escalado;
-                    c2=[c2(51:end) c2aux];
-                    c2hp=filter(b,a,c2);
-                    c2filt=smooth(c2hp,5);
-                    c2filt=filter(fhp,c2filt);
-                end
-                k=k+1
-                break
-            end%if
-        end%while
+                end%if
+%             else %Si no da el checksum descarta los datos y pone NaN
+%                 if(num_canal==1)
+%                     c1aux=ones(cant_muestras, 1)*NaN
+%                 elseif(num_canal==2)
+%                     c2aux=ones(cant_muestras, 1)*NaN
+%                 end%if
+%             end%if del checksum
+         end%while
 
-%%
 %         c1aux=cint(1:2:end)'*escalado;
 %         c2aux=cint(2:2:end)'*escalado;
-%         c1=[c1(51:end) c1aux];
-%         c2=[c2(51:end) c2aux];
-%         c1hp=filter(b,a,c1);
-%         c2hp=filter(b,a,c2);
-%         wo=50/(250/2);
-%         bw=wo/5;
-%         [bn,an]=iirnotch(wo,bw);
-%         c1filt=smooth(c1hp,5);%filter(fhp,c1notch);
-%         c2filt=smooth(c2hp,5);%filter(fhp,c2notch);
+        c1=[c1((cant_muestras/2)+1:end) c1aux];
+        c2=[c2((cant_muestras/2)+1:end) c2aux];
+        c1hp=filter(b,a,c1);
+        c2hp=filter(b,a,c2);
+        wo=50/(250/2);
+        bw=wo/5;
+        [bn,an]=iirnotch(wo,bw);
+        c1filt=smooth(c1hp,5);%filter(fhp,c1notch);
+        c2filt=smooth(c2hp,5);%filter(fhp,c2notch);
         if(save==1)
             dlmwrite(archivo_c1, c1filt(end-50:end), '-append');
             dlmwrite(archivo_c2, c2filt(end-50:end), '-append');
@@ -263,7 +260,7 @@ function Save_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global save;
 global var;
-status=get(handles.Save,'String')
+status=get(handles.Save,'String');
 if status=='Save'
     save=1;
     %start(var.tmr);
@@ -338,3 +335,29 @@ fwrite(s,'3');
 pause(1)
 % Hint: delete(hObject) closes the figure
 delete(hObject);
+
+
+% --- Executes on key press with focus on figure1 and none of its controls.
+function figure1_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  structure with the following fields (see FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+switch eventdata.Key
+    case 'uparrow'
+        upc1_Callback(hObject, eventdata, handles);
+    case 'downarrow'
+        downc1_Callback(hObject, eventdata, handles);
+    case 'rightarrow'
+        Adelante_Callback(hObject, eventdata, handles);
+    case 'leftarrow'
+        Atras_Callback(hObject, eventdata, handles);
+    case 'space'
+        Stop_Callback(hObject, eventdata, handles);
+    case 's'
+        Start_Callback(hObject, eventdata, handles)
+    case 'g'
+        Save_Callback(hObject, eventdata, handles)
+end
