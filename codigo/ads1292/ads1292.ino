@@ -88,8 +88,8 @@ void reset_communication(void);
   int gMaxChan=2;
 
 // Variables para la trama
-  const int max_muestras_trama = 100;
-  const int largo_trama = 206; //2 //max_muestras_trama*2 + 6;
+  const int max_muestras_trama = 40; //Con menos muestras se atrasa el graficador
+  const int largo_trama = 86; //max_muestras_trama*2 + 6;
   int cont_trama = 5; //2
   
   byte buf_ch1[largo_trama];

@@ -88,9 +88,8 @@ global save;
 running=1;
 leer_muestras=1;
 
-global j k;
+global j;
 j=0;
-k=0;
 
 X1=1000;
 X2=2000;
@@ -141,31 +140,29 @@ while running
         
             %Calcula el checksum
             aux_chksum=typecast(int8(muestras(1)), 'uint8');
-%             for i=2:cant_muestras
-%                 aux_chksum=bitxor(aux_chksum, typecast(int8(muestras(i)), 'uint8'));
-%             end
+            for i=2:cant_muestras
+                aux_chksum=bitxor(aux_chksum, typecast(int8(muestras(i)), 'uint8'));
+            end
             
             %Si el checksum dio bien, pone las muestras en el canal que
             %corresponda
-%             if (aux_chksum==chksum)
-                %cint=muestras(1:2:end)+256*muestras(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
-                cint=double(typecast(int8(muestras), 'int16'));
+            if (aux_chksum==chksum)
+                cint=muestras(1:2:end)+256*muestras(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
+                %cint=double(typecast(int8(muestras), 'int16'));
                 if (num_canal==1)
                     c1aux=cint'*escalado;
                 elseif (num_canal==2)
                     c2aux=cint'*escalado;
                 end%if
-%             else %Si no da el checksum descarta los datos y pone NaN
-%                 if(num_canal==1)
-%                     c1aux=ones(cant_muestras, 1)*NaN
-%                 elseif(num_canal==2)
-%                     c2aux=ones(cant_muestras, 1)*NaN
-%                 end%if
-%             end%if del checksum
+            else %Si no da el checksum descarta los datos y pone NaN
+                if(num_canal==1)
+                    c1aux=ones(cant_muestras, 1)*NaN
+                elseif(num_canal==2)
+                    c2aux=ones(cant_muestras, 1)*NaN
+                end%if
+            end%if del checksum
          end%while
 
-%         c1aux=cint(1:2:end)'*escalado;
-%         c2aux=cint(2:2:end)'*escalado;
         c1=[c1((cant_muestras/2)+1:end) c1aux];
         c2=[c2((cant_muestras/2)+1:end) c2aux];
         c1hp=filter(b,a,c1);
@@ -176,30 +173,55 @@ while running
         c1filt=smooth(c1hp,5);%filter(fhp,c1notch);
         c2filt=smooth(c2hp,5);%filter(fhp,c2notch);
         if(save==1)
-            dlmwrite(archivo_c1, c1filt(end-50:end), '-append');
-            dlmwrite(archivo_c2, c2filt(end-50:end), '-append');
+            dlmwrite(archivo_c1, c1filt(end-(cant_muestras/2):end), '-append');
+            dlmwrite(archivo_c2, c2filt(end-(cant_muestras/2):end), '-append');
         end
-%         c1filt=filter(fhp,c1filt);
-%         c2filt=filter(fhp,c2filt);
-    end
-    axes(handles.C1)
-    plot(c1filt,'linewidth',2)
-    set(gca,'xtick',1000:250:2000,'xticklabel',0:4)
-    ylim([-L1 L1])
-    xlim([X1 X2])
-    axes(handles.C2)
-    plot(c2filt,'linewidth',2)
-    set(gca,'xtick',1000:250:2000,'xticklabel',0:4)
-    %ylim([-L2 L2])
-    ylim([-L1 L1])
-    xlim([X1 X2])
-    axes(handles.V1)
-    [y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
-    plot(c2filt(end-250:end),-c1filt(end-250:end))
-    %xlim([-L2 L2])
-    xlim([-L1 L1])
-    ylim([-L1 L1])
-    pause(0.000001)
+        
+        %Acomodo los datos para graficar
+        canal1=[c1filt(end-j:end); c1filt(end-X1:end-j)];
+        canal2=[c2filt(end-j:end); c2filt(end-X1:end-j)];
+        
+        axes(handles.C1)
+        plot(canal1,'linewidth',2)
+        %set(gca,'xtick',1000:250:2000,'xticklabel',0:4)
+        line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
+        ylim([-L1 L1])
+        xlim([0 X1])
+        axes(handles.C2)
+        plot(canal2,'linewidth',2)
+        %set(gca,'xtick',1000:250:2000,'xticklabel',0:4)
+        line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
+        ylim([-L1 L1])
+        xlim([0 X1])
+        axes(handles.V1)
+        [y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
+        plot(c2filt(end-250:end),-c1filt(end-250:end))
+        xlim([-L1 L1])
+        ylim([-L1 L1])
+        pause(0.000001)
+        
+        j=j+length(cint);
+        if(j==(X2-X1))
+           j=0;
+        end%if 
+     elseif(leer_muestras==0)
+        axes(handles.C1)
+        plot(c1filt,'linewidth',2)
+        set(gca,'xtick',1000:250:2000,'xticklabel',0:4)
+        ylim([-L1 L1])
+        xlim([X1 X2])
+        axes(handles.C2)
+        plot(c2filt,'linewidth',2)
+        set(gca,'xtick',1000:250:2000,'xticklabel',0:4)
+        ylim([-L1 L1])
+        xlim([X1 X2])
+        axes(handles.V1)
+        [y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
+        plot(c2filt(end-250:end),-c1filt(end-250:end))
+        xlim([-L1 L1])
+        ylim([-L1 L1])
+        pause(0.000001)
+    end%if
 end
 
 
