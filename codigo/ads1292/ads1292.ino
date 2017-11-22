@@ -172,7 +172,6 @@ void setup(){
 }//Cierra setup
 
 
-
 void loop(){
   if (Serial.available() > 0) {
     comando=Serial.read();
