@@ -64,6 +64,16 @@ archivo_c2=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
 % UIWAIT makes ecg wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
+% --- Para el filtro adaptado de linea de base
+global alfa;
+fc = 0.5; %Frecuencia de corte del filtro
+wc = 2*pi*fc;%7;
+Fs=250; %Frecuencia de muestreo del ADS1292
+coswc = cos(wc * 2*pi/Fs);
+p = [1 -2*coswc (-3+4*coswc)];
+beta12 = roots(p);
+alfa12 = 1 - beta12;
+alfa = alfa12(2)
 
 % --- Outputs from this function are returned to the command line.
 function varargout = ecg_OutputFcn(hObject, eventdata, handles) 
@@ -85,6 +95,8 @@ global fid;
 global archivo_c1;
 global archivo_c2;
 global save;
+global alfa;
+
 running=1;
 leer_muestras=1;
 
@@ -166,11 +178,13 @@ while running
 
         c1=[c1((cant_muestras/2)+1:end) c1aux];
         c2=[c2((cant_muestras/2)+1:end) c2aux];
-        c1hp=filter(b,a,c1);
-        c2hp=filter(b,a,c2);
-        wo=50/(250/2);
-        bw=wo/5;
-        [bn,an]=iirnotch(wo,bw);
+        c1hp=hp_adaptado(c1,alfa);
+        c2hp=hp_adaptado(c2,alfa);
+        %c1hp=filter(b,a,c1);
+        %c2hp=filter(b,a,c2);
+        %wo=50/(250/2);
+        %bw=wo/5;
+        %[bn,an]=iirnotch(wo,bw);
         c1filt=smooth(c1hp,5);%filter(fhp,c1notch);
         c2filt=smooth(c2hp,5);%filter(fhp,c2notch);
         
