@@ -57,15 +57,13 @@ save=0;
 global fid;
 fid=fopen('output.txt','wb');
 global archivo_c1;
-archivo_c1=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
 global archivo_c2;
-archivo_c2=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
 
 % UIWAIT makes ecg wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 % --- Para el filtro adaptado de linea de base
-global alfa;
+global alfa w1 w2;
 fc = 0.5; %Frecuencia de corte del filtro
 wc = 2*pi*fc;%7;
 Fs=250; %Frecuencia de muestreo del ADS1292
@@ -73,7 +71,9 @@ coswc = cos(wc * 2*pi/Fs);
 p = [1 -2*coswc (-3+4*coswc)];
 beta12 = roots(p);
 alfa12 = 1 - beta12;
-alfa = alfa12(2)
+alfa = alfa12(2);
+w1 = randn;
+w2 = randn;
 
 % --- Outputs from this function are returned to the command line.
 function varargout = ecg_OutputFcn(hObject, eventdata, handles) 
@@ -95,7 +95,7 @@ global fid;
 global archivo_c1;
 global archivo_c2;
 global save;
-global alfa;
+global alfa w1 w2;
 
 running=1;
 leer_muestras=1;
@@ -106,8 +106,8 @@ j=0;
 X1=1000;
 X2=2000;
 
-c1aux=zeros(1000, 1);
-c2aux=zeros(1000, 1);
+c1hp=zeros(1, 2000);
+c2hp=zeros(1, 2000);
 
 inicio_trama=[0 255 0]; %[0x00 0xFF 0x00]
 
@@ -127,12 +127,6 @@ pause(2)
 
 while running
     if (leer_muestras==1)
-%        c = fread(s, 200, 'int16');
-%        if(length(c)<200)
-%            delete(instrfindall)
-%            break;
-%        end
-%        cint=c;
 
         %while(true) %Lee tramas nuevas 
         num_canal=1;
@@ -160,8 +154,7 @@ while running
             %Si el checksum dio bien, pone las muestras en el canal que
             %corresponda
             if (aux_chksum==chksum)
-                %cint=muestras(1:2:end)+256*muestras(2:2:end); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
-                cint=double(typecast(int8(muestras), 'int16'));
+                cint=double(typecast(int8(muestras), 'int16')); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
                 if (num_canal==1)
                     c1aux=cint'*escalado;
                 elseif (num_canal==2)
@@ -174,19 +167,22 @@ while running
                     c2aux=ones(cant_muestras, 1)*NaN
                 end%if
             end%if del checksum
-         end%while
+         end%while tramas
+        
+         c1=[c1((cant_muestras/2)+1:end) c1aux];
+         c2=[c2((cant_muestras/2)+1:end) c2aux];        
+        
+         c1_50Hz=moving_average_50hz(c1, 250);
+         c2_50Hz=moving_average_50hz(c2, 250);
+         
+         c1hp=hp_adaptado(c1_50Hz, alfa);
+         c2hp=hp_adaptado(c2_50Hz, alfa);
 
-        c1=[c1((cant_muestras/2)+1:end) c1aux];
-        c2=[c2((cant_muestras/2)+1:end) c2aux];
-        c1hp=hp_adaptado(c1,alfa);
-        c2hp=hp_adaptado(c2,alfa);
-        %c1hp=filter(b,a,c1);
-        %c2hp=filter(b,a,c2);
-        %wo=50/(250/2);
-        %bw=wo/5;
-        %[bn,an]=iirnotch(wo,bw);
-        c1filt=smooth(c1hp,5);%filter(fhp,c1notch);
-        c2filt=smooth(c2hp,5);%filter(fhp,c2notch);
+%         c1hp=filter(b,a,c1);
+%         c2hp=filter(b,a,c2);
+        
+        c1filt=c1hp';%smooth(c1hp,1);%filter(fhp,c1notch);
+        c2filt=c2hp';%smooth(c2hp,1);%filter(fhp,c2notch);
         
         if(save==1)
             if(fecha_guardada==0) %Los primeros 6 datos del archivo son la fecha y hora
@@ -287,11 +283,16 @@ function Save_Callback(hObject, eventdata, handles)
 global save;
 global var;
 global fecha_guardada;
+global archivo_c1;
+global archivo_c2;
+
 status=get(handles.Save,'String');
 if status=='Save'
     save=1;
     %start(var.tmr);
     set(handles.Save,'String','Stop')
+    archivo_c1=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
+    archivo_c2=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
 else
     save=0;
     fecha_guardada=0;
@@ -355,10 +356,12 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 global s;
+global running;
 global leer_muestras;
 global save;
 leer_muestras=0;
 save=0;
+running=0;
 fwrite(s,'3');
 pause(1)
 % Hint: delete(hObject) closes the figure

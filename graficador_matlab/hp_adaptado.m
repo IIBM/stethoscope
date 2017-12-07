@@ -1,6 +1,5 @@
 function e = hp_aptado(ecg, alfa)
 % filtro pasa-altos adaptado, para la línea de base
-
     w = randn;
     x = 1;
     for k = 1:length(ecg)
@@ -12,4 +11,4 @@ function e = hp_aptado(ecg, alfa)
     escala = 2/(2-alfa);
     e = e / escala;
 
-endfunction
+end
