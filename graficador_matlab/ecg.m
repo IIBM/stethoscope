@@ -94,9 +94,12 @@ global X1 X2;
 global fid;
 global archivo_c1;
 global archivo_c2;
+global guardar_c1;
+global guardar_c2;
 global save;
 global alfa w1 w2;
 
+global w;
 running=1;
 leer_muestras=1;
 
@@ -126,6 +129,7 @@ fwrite(s,'1');
 pause(2)
 
 while running
+%     tic
     if (leer_muestras==1)
 
         %while(true) %Lee tramas nuevas 
@@ -137,23 +141,29 @@ while running
                 aux_inicio_trama(end) = fread(s, 1, 'uint8');
                 aux_inicio_trama = circshift(aux_inicio_trama, [1, -1]);
             end
-            
+%             toc
+%             1
             %Lee las distintas partes de la trama
             cant_muestras=fread(s,1, 'uint8');
             c = fread(s, cant_muestras+2, 'int8'); %Lee cant_muestras+num_canal+chksum
             num_canal=c(1);
             muestras=c(2:end-1);
             chksum=typecast(int8(c(end)), 'uint8');
-        
+%             toc
+%             2
             %Calcula el checksum
-            aux_chksum=typecast(int8(muestras(1)), 'uint8');
-            for i=2:cant_muestras
-                aux_chksum=bitxor(aux_chksum, typecast(int8(muestras(i)), 'uint8'));
-            end
-            
+            %aux_chksum=typecast(int8(muestras(1)), 'uint8');
+            %for i=2:cant_muestras
+            %    aux_chksum=bitxor(aux_chksum, typecast(int8(muestras(i)), 'uint8'));
+            %end
+            aux_chksum=typecast(int8(muestras), 'uint8');
+            chksum_calculado=bin2dec(num2str(flipdim(mod(sum(de2bi(aux_chksum,8)),2),2)));
+%             toc
+%             3
             %Si el checksum dio bien, pone las muestras en el canal que
             %corresponda
-            if (aux_chksum==chksum)
+            %if (aux_chksum==chksum)
+            if (chksum_calculado==chksum)
                 cint=double(typecast(int8(muestras), 'int16')); %Pasa a enteros de 16 bits los 2 bytes de cada canal que se reciben
                 if (num_canal==1)
                     c1aux=cint'*escalado;
@@ -168,37 +178,68 @@ while running
                 end%if
             end%if del checksum
          end%while tramas
-        
+%          toc
+%          4
+%          c1_50Hz=moving_average_50hz(c1aux, 250);
+%          c2_50Hz=moving_average_50hz(c2aux, 250);
+%          
+%          c1hp=hp_adaptado(c1_50Hz, alfa);
+%          c2hp=hp_adaptado(c2_50Hz, alfa);
+%          
+%          c1=[c1(length(c1hp)+1:end) c1hp];
+%          c2=[c2(length(c2hp)+1:end) c2hp];
+%          
+%          c1filt=c1';
+%          c2filt=c2';
+         
          c1=[c1((cant_muestras/2)+1:end) c1aux];
          c2=[c2((cant_muestras/2)+1:end) c2aux];        
-        
+%         toc
+%         5
          c1_50Hz=moving_average_50hz(c1, 250);
          c2_50Hz=moving_average_50hz(c2, 250);
-         
+%          toc
+%          6
          c1hp=hp_adaptado(c1_50Hz, alfa);
          c2hp=hp_adaptado(c2_50Hz, alfa);
+%         toc
+%         7
+         c1filt=c1hp';
+         c2filt=c2hp';
+%        toc
+%        8
+%          if(save==1)
+%             if(fecha_guardada==0) %Los primeros 6 datos del archivo son la fecha y hora
+%                 fecha=clock';
+%                 dlmwrite(archivo_c1, fecha);
+%                 dlmwrite(archivo_c2, fecha);
+%                 fecha_guardada=1;
+%                 w=0
+%             end%if
+%             dlmwrite(archivo_c1, c1filt(end-length(c1aux):end), '-append');
+%             dlmwrite(archivo_c2, c2filt(end-length(c2aux):end), '-append');
+%             w=w+1
+%          end
+         
+         if(save==1)
+%             if(fecha_guardada==0) %Los primeros 6 datos del archivo son la fecha y hora
+%                 fecha=clock';
+%                 archivo_c1=fecha;
+%                 archivo_c2=fecha;
+%                 fecha_guardada=1;
 
-%         c1hp=filter(b,a,c1);
-%         c2hp=filter(b,a,c2);
-        
-        c1filt=c1hp';%smooth(c1hp,1);%filter(fhp,c1notch);
-        c2filt=c2hp';%smooth(c2hp,1);%filter(fhp,c2notch);
-        
-        if(save==1)
-            if(fecha_guardada==0) %Los primeros 6 datos del archivo son la fecha y hora
-                fecha=clock';
-                dlmwrite(archivo_c1, fecha);
-                dlmwrite(archivo_c2, fecha);
-                fecha_guardada=1;
-            end%if
-            dlmwrite(archivo_c1, c1filt(end-(cant_muestras/2):end), '-append');
-            dlmwrite(archivo_c2, c2filt(end-(cant_muestras/2):end), '-append');
-        end
-        
+%             end%if
+            guardar_c1=[guardar_c1; c1filt(end-length(c1aux)+1:end)];
+            guardar_c2=[guardar_c2; c2filt(end-length(c2aux)+1:end)];
+            w=w+1;
+         end
+%          toc
+%          9
         %Acomodo los datos para graficar
         canal1=[c1filt(end-j:end); c1filt(end-X1:end-j)];
         canal2=[c2filt(end-j:end); c2filt(end-X1:end-j)];
-        
+%          toc
+%          10
         axes(handles.C1)
         plot(canal1,'linewidth',2)
         line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
@@ -212,16 +253,19 @@ while running
         xlim([0 X1])
         set(gca,'xtick',0:250:X1,'xticklabel',0:4)
         axes(handles.V1)
-        [y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
+        %[y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
         plot(c2filt(end-250:end),-c1filt(end-250:end))
         xlim([-L1 L1])
         ylim([-L1 L1])
         pause(0.000001)
-        
+%          toc
+%          11
         j=j+length(cint);
-        if(j==(X2-X1))
-           j=0;
+        if(j>=(X2-X1))
+           j=j-(X2-X1);
         end%if 
+%          toc
+%         12
      elseif(leer_muestras==0)
         axes(handles.C1)
         plot(c1filt,'linewidth',2)
@@ -285,6 +329,9 @@ global var;
 global fecha_guardada;
 global archivo_c1;
 global archivo_c2;
+global guardar_c1;
+global guardar_c2;
+global w;
 
 status=get(handles.Save,'String');
 if status=='Save'
@@ -293,11 +340,20 @@ if status=='Save'
     set(handles.Save,'String','Stop')
     archivo_c1=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
     archivo_c2=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
+    fecha=clock';
+    guardar_c1=fecha;
+    guardar_c2=fecha;
+    w=0;
+    %tic
 else
     save=0;
     fecha_guardada=0;
     %stop(var.tmr);
+    %toc
+    dlmwrite(archivo_c1, guardar_c1);
+    dlmwrite(archivo_c2, guardar_c2);
     set(handles.Save,'String','Save')
+    w
 end
     
 function TimerCallback(obj,event,hObject,handles)
