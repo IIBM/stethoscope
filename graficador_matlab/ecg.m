@@ -2,7 +2,6 @@
 %%% cuadricula 200 ms / division grande
 %%%             40 ms / division chica
 
-
 function varargout = ecg(varargin)
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
@@ -27,6 +26,7 @@ end
 function ecg_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 guidata(hObject, handles);
+
 
 % global var;
 % var.x=0;
@@ -98,6 +98,16 @@ global guardar_c1;
 global guardar_c2;
 global save;
 global alfa w1 w2;
+global graficar;
+
+graficar=true;
+
+canal1=0;
+canal2=0;
+
+c1filt=zeros(1, 251);
+c2filt=zeros(1, 251);
+% guidata(hObject, handles);
 
 global w;
 running=1;
@@ -127,6 +137,26 @@ b=[1.0, -2.0, 1.0];
 a=[1.0, -1.9749029659, 0.9765156251];
 fwrite(s,'1');
 pause(2)
+
+%         axes(handles.C1)
+%         plot(canal1,'YdataSource','canal1','linewidth',2)
+%         line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
+%         ylim([-L1 L1])
+%         xlim([0 X1])
+%         set(gca,'xtick',0:250:X1,'xticklabel',0:4)
+%         axes(handles.C2)
+%         plot(canal2,'YdataSource','canal2','linewidth',2)
+%         line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
+%         ylim([-L1 L1])
+%         xlim([0 X1])
+%         set(gca,'xtick',0:250:X1,'xticklabel',0:4)
+%         axes(handles.V1)
+%         %[y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
+%         plot(c2filt(end-250:end),-c1filt(end-250:end),'XdataSource','c2filt','YdataSource','c1filt')
+%         xlim([-L1 L1])
+%         ylim([-L1 L1])
+%         pause(0.000001)
+%         linkdata on
 
 while running
 %     tic
@@ -179,19 +209,7 @@ while running
             end%if del checksum
          end%while tramas
 %          toc
-%          4
-%          c1_50Hz=moving_average_50hz(c1aux, 250);
-%          c2_50Hz=moving_average_50hz(c2aux, 250);
-%          
-%          c1hp=hp_adaptado(c1_50Hz, alfa);
-%          c2hp=hp_adaptado(c2_50Hz, alfa);
-%          
-%          c1=[c1(length(c1hp)+1:end) c1hp];
-%          c2=[c2(length(c2hp)+1:end) c2hp];
-%          
-%          c1filt=c1';
-%          c2filt=c2';
-         
+%          4         
          c1=[c1((cant_muestras/2)+1:end) c1aux];
          c2=[c2((cant_muestras/2)+1:end) c2aux];        
 %         toc
@@ -208,56 +226,39 @@ while running
          c2filt=c2hp';
 %        toc
 %        8
-%          if(save==1)
-%             if(fecha_guardada==0) %Los primeros 6 datos del archivo son la fecha y hora
-%                 fecha=clock';
-%                 dlmwrite(archivo_c1, fecha);
-%                 dlmwrite(archivo_c2, fecha);
-%                 fecha_guardada=1;
-%                 w=0
-%             end%if
-%             dlmwrite(archivo_c1, c1filt(end-length(c1aux):end), '-append');
-%             dlmwrite(archivo_c2, c2filt(end-length(c2aux):end), '-append');
-%             w=w+1
-%          end
          
          if(save==1)
-%             if(fecha_guardada==0) %Los primeros 6 datos del archivo son la fecha y hora
-%                 fecha=clock';
-%                 archivo_c1=fecha;
-%                 archivo_c2=fecha;
-%                 fecha_guardada=1;
-
-%             end%if
             guardar_c1=[guardar_c1; c1filt(end-length(c1aux)+1:end)];
             guardar_c2=[guardar_c2; c2filt(end-length(c2aux)+1:end)];
             w=w+1;
+            graficar=~graficar;
          end
 %          toc
 %          9
-        %Acomodo los datos para graficar
-        canal1=[c1filt(end-j:end); c1filt(end-X1:end-j)];
-        canal2=[c2filt(end-j:end); c2filt(end-X1:end-j)];
-%          toc
-%          10
-        axes(handles.C1)
-        plot(canal1,'linewidth',2)
-        line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
-        ylim([-L1 L1])
-        xlim([0 X1])
-        set(gca,'xtick',0:250:X1,'xticklabel',0:4)
-        axes(handles.C2)
-        plot(canal2,'linewidth',2)
-        line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
-        ylim([-L1 L1])
-        xlim([0 X1])
-        set(gca,'xtick',0:250:X1,'xticklabel',0:4)
-        axes(handles.V1)
-        %[y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
-        plot(c2filt(end-250:end),-c1filt(end-250:end))
-        xlim([-L1 L1])
-        ylim([-L1 L1])
-        pause(0.000001)
+        %if(graficar==true)
+            %Acomodo los datos para graficar
+            canal1=[c1filt(end-j:end); c1filt(end-X1:end-j)];
+            canal2=[c2filt(end-j:end); c2filt(end-X1:end-j)];
+        %          toc
+        %          10
+            axes(handles.C1)
+            plot(canal1,'linewidth',2)
+            line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
+            ylim([-L1 L1])
+            xlim([0 X1])
+            set(gca,'xtick',0:250:X1,'xticklabel',0:4)
+            axes(handles.C2)
+            plot(canal2,'linewidth',2)
+            line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
+            ylim([-L1 L1])
+            xlim([0 X1])
+            set(gca,'xtick',0:250:X1,'xticklabel',0:4)
+            axes(handles.V1)
+            plot(c2filt(end-250:end),-c1filt(end-250:end))
+            xlim([-L1 L1])
+            ylim([-L1 L1])
+            pause(0.000001)
+        %end
 %          toc
 %          11
         j=j+length(cint);
@@ -332,6 +333,7 @@ global archivo_c2;
 global guardar_c1;
 global guardar_c2;
 global w;
+global graficar;
 
 status=get(handles.Save,'String');
 if status=='Save'
@@ -354,6 +356,7 @@ else
     dlmwrite(archivo_c2, guardar_c2);
     set(handles.Save,'String','Save')
     w
+    graficar=true;
 end
     
 function TimerCallback(obj,event,hObject,handles)
