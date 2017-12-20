@@ -138,26 +138,6 @@ a=[1.0, -1.9749029659, 0.9765156251];
 fwrite(s,'1');
 pause(2)
 
-%         axes(handles.C1)
-%         plot(canal1,'YdataSource','canal1','linewidth',2)
-%         line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
-%         ylim([-L1 L1])
-%         xlim([0 X1])
-%         set(gca,'xtick',0:250:X1,'xticklabel',0:4)
-%         axes(handles.C2)
-%         plot(canal2,'YdataSource','canal2','linewidth',2)
-%         line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
-%         ylim([-L1 L1])
-%         xlim([0 X1])
-%         set(gca,'xtick',0:250:X1,'xticklabel',0:4)
-%         axes(handles.V1)
-%         %[y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
-%         plot(c2filt(end-250:end),-c1filt(end-250:end),'XdataSource','c2filt','YdataSource','c1filt')
-%         xlim([-L1 L1])
-%         ylim([-L1 L1])
-%         pause(0.000001)
-%         linkdata on
-
 while running
 %     tic
     if (leer_muestras==1)
@@ -228,14 +208,16 @@ while running
 %        8
          
          if(save==1)
-            guardar_c1=[guardar_c1; c1filt(end-length(c1aux)+1:end)];
-            guardar_c2=[guardar_c2; c2filt(end-length(c2aux)+1:end)];
+             guardar_c1=[guardar_c1; c1aux'];
+            guardar_c2=[guardar_c2; c2aux'];
+            %guardar_c1=[guardar_c1; c1filt(end-length(c1aux)+1:end)];
+            %guardar_c2=[guardar_c2; c2filt(end-length(c2aux)+1:end)];
             w=w+1;
             graficar=~graficar;
          end
 %          toc
 %          9
-        %if(graficar==true)
+        if(graficar==true)
             %Acomodo los datos para graficar
             canal1=[c1filt(end-j:end); c1filt(end-X1:end-j)];
             canal2=[c2filt(end-j:end); c2filt(end-X1:end-j)];
@@ -258,7 +240,7 @@ while running
             xlim([-L1 L1])
             ylim([-L1 L1])
             pause(0.000001)
-        %end
+        end
 %          toc
 %          11
         j=j+length(cint);
