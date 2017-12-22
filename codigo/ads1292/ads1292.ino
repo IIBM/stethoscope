@@ -1,12 +1,4 @@
-/*
-ECG shield for arduino
-feel free to use it
-MAREK CERMAK, 2016
-*/
-
-
 #include <SPI.h>
-//#include "TFT_22_ILI9225.h"
 
 /*SPI Command Definitions (p.35)*/
 //System Commands
@@ -15,6 +7,7 @@ MAREK CERMAK, 2016
 #define RESET 0x06
 #define START 0x08
 #define STOP 0x0a
+#define OFFSETCAL 0x1a
 //Data Read Commands
 #define RDATAC 0x10 //Read Data Continuous (p.36 datasheet)
 #define SDATAC 0x11 //Stop Read Data Continuous (p.36-37 datasheet)
@@ -148,6 +141,7 @@ void setup(){
   
   write_byte(CH1SET, 0x30); //Test signal: 0x05. Electrodos normales: 0x00 (amplif. x6), 0x60 (x12) (p.43)
   write_byte(CH2SET, 0x30); //Test signal: 0x05. Electrodos normales: 0x00 (amplif. x6), 0x60 (x12) (p.44)
+  send_command(OFFSETCAL);
   write_byte(RLD_SENS, 0x0f); 
   write_byte(RESP1, 0x02); //Para el ADS1292 0x02 (p. 48)
   write_byte(RESP2, 0x08); //(p.49)
@@ -226,7 +220,7 @@ void loop(){
       
       //if(ch==1){
       // data conversion, data are in twos complement, page 28
-      if (a>0x7F) { //Escala negativa (dato recibido menor a Vref)
+      if (a>=0x7F) { //Escala negativa (dato recibido menor a Vref)
         a=~a;
         b=~b;
         c=~c; 

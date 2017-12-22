@@ -40,7 +40,7 @@ s = serial('/dev/ttyUSB0','BaudRate',115200,'DataBits',8,'Parity','none','StopBi
 fopen(s)
 pause(6) %Espera que termine la configuración del ADS1292
 global escalado;
-escalado=2.42/3/((2^23)-1); %cuanto representa 1 muestra en tension
+escalado=256*(2.42/3/((2^23)-1)); %cuanto representa 1 muestra en tension
 global c1 c2;
 c1=zeros(1,2000);
 c2=zeros(1,2000);
@@ -182,9 +182,9 @@ while running
                 end%if
             else %Si no da el checksum descarta los datos y pone NaN
                 if(num_canal==1)
-                    c1aux=ones(cant_muestras, 1)*NaN
+                    c1aux=ones(cant_muestras, 1)*NaN;
                 elseif(num_canal==2)
-                    c2aux=ones(cant_muestras, 1)*NaN
+                    c2aux=ones(cant_muestras, 1)*NaN;
                 end%if
             end%if del checksum
          end%while tramas
@@ -228,13 +228,15 @@ while running
             line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
             ylim([-L1 L1])
             xlim([0 X1])
-            set(gca,'xtick',0:250:X1,'xticklabel',0:4)
+            set(gca,'xtick',0:50:X1,'xticklabel',0:0.2:4)
+            grid on
             axes(handles.C2)
             plot(canal2,'linewidth',2)
             line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
             ylim([-L1 L1])
             xlim([0 X1])
-            set(gca,'xtick',0:250:X1,'xticklabel',0:4)
+            set(gca,'xtick',0:50:X1,'xticklabel',0:0.2:4)
+            grid on
             axes(handles.V1)
             plot(c2filt(end-250:end),-c1filt(end-250:end))
             xlim([-L1 L1])
@@ -254,12 +256,14 @@ while running
         plot(c1filt,'linewidth',2)
         ylim([-L1 L1])
         xlim([X1 X2])
-        set(gca,'xtick',X1:250:X2,'xticklabel',0:4)
+        set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
+        grid on
         axes(handles.C2)
         plot(c2filt,'linewidth',2)
         ylim([-L1 L1])
         xlim([X1 X2])
-        set(gca,'xtick',X1:250:X2,'xticklabel',0:4)
+        set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
+        grid on
         axes(handles.V1)
         [y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
         plot(c2filt(end-250:end),-c1filt(end-250:end))
@@ -317,13 +321,16 @@ global guardar_c2;
 global w;
 global graficar;
 
+nombre_paciente=getappdata(0,'nombre');
+nombre_paciente=strrep(nombre_paciente,' ','_');
+
 status=get(handles.Save,'String');
 if status=='Save'
     save=1;
     %start(var.tmr);
     set(handles.Save,'String','Stop')
-    archivo_c1=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
-    archivo_c2=strcat('./Datos/', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
+    archivo_c1=strcat('./Datos/', nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
+    archivo_c2=strcat('./Datos/', nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
     fecha=clock';
     guardar_c1=fecha;
     guardar_c2=fecha;
@@ -433,3 +440,13 @@ switch eventdata.Key
     case 'g'
         Save_Callback(hObject, eventdata, handles)
 end
+
+
+% --- Executes during object creation, after setting all properties.
+function nombre_paciente_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to nombre_paciente (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+nombre_paciente=getappdata(0,'nombre');
+nombre=['Paciente: ',' ', nombre_paciente];
+set(hObject,'String',nombre);
