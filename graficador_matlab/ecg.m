@@ -151,16 +151,14 @@ while running
                 aux_inicio_trama(end) = fread(s, 1, 'uint8');
                 aux_inicio_trama = circshift(aux_inicio_trama, [1, -1]);
             end
-%             toc
-%             1
+
             %Lee las distintas partes de la trama
             cant_muestras=fread(s,1, 'uint8');
             c = fread(s, cant_muestras+2, 'int8'); %Lee cant_muestras+num_canal+chksum
             num_canal=c(1);
             muestras=c(2:end-1);
             chksum=typecast(int8(c(end)), 'uint8');
-%             toc
-%             2
+
             %Calcula el checksum
             %aux_chksum=typecast(int8(muestras(1)), 'uint8');
             %for i=2:cant_muestras
@@ -168,8 +166,7 @@ while running
             %end
             aux_chksum=typecast(int8(muestras), 'uint8');
             chksum_calculado=bin2dec(num2str(flipdim(mod(sum(de2bi(aux_chksum,8)),2),2)));
-%             toc
-%             3
+
             %Si el checksum dio bien, pone las muestras en el canal que
             %corresponda
             %if (aux_chksum==chksum)
@@ -188,54 +185,47 @@ while running
                 end%if
             end%if del checksum
          end%while tramas
-%          toc
-%          4         
+         
          c1=[c1((cant_muestras/2)+1:end) c1aux];
          c2=[c2((cant_muestras/2)+1:end) c2aux];        
-%         toc
-%         5
+
          c1_50Hz=moving_average_50hz(c1, 250);
          c2_50Hz=moving_average_50hz(c2, 250);
-%          toc
-%          6
+
          c1hp=hp_adaptado(c1_50Hz, alfa);
          c2hp=hp_adaptado(c2_50Hz, alfa);
-%         toc
-%         7
+
          c1filt=c1hp';
          c2filt=c2hp';
-%        toc
-%        8
+
          
          if(save==1)
              guardar_c1=[guardar_c1; c1aux'];
             guardar_c2=[guardar_c2; c2aux'];
             %guardar_c1=[guardar_c1; c1filt(end-length(c1aux)+1:end)];
             %guardar_c2=[guardar_c2; c2filt(end-length(c2aux)+1:end)];
-            w=w+1;
+            %w=w+1;
             graficar=~graficar;
          end
-%          toc
-%          9
+
         if(graficar==true)
             %Acomodo los datos para graficar
             canal1=[c1filt(end-j:end); c1filt(end-X1:end-j)];
             canal2=[c2filt(end-j:end); c2filt(end-X1:end-j)];
-        %          toc
-        %          10
+
             axes(handles.C1)
-            plot(canal1,'linewidth',2)
+            plot(canal1,'linewidth',1)
             line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
             ylim([-L1 L1])
             xlim([0 X1])
-            set(gca,'xtick',0:50:X1,'xticklabel',0:0.2:4)
+            %set(gca,'xtick',0:50:X1,'xticklabel',0:0.2:4)
             grid on
             axes(handles.C2)
-            plot(canal2,'linewidth',2)
+            plot(canal2,'linewidth',1)
             line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
             ylim([-L1 L1])
             xlim([0 X1])
-            set(gca,'xtick',0:50:X1,'xticklabel',0:0.2:4)
+            %set(gca,'xtick',0:50:X1,'xticklabel',0:0.2:4)
             grid on
             axes(handles.V1)
             plot(c2filt(end-250:end),-c1filt(end-250:end))
@@ -243,23 +233,21 @@ while running
             ylim([-L1 L1])
             pause(0.000001)
         end
-%          toc
-%          11
+
         j=j+length(cint);
         if(j>=(X2-X1))
            j=j-(X2-X1);
         end%if 
-%          toc
-%         12
+
      elseif(leer_muestras==0)
         axes(handles.C1)
-        plot(c1filt,'linewidth',2)
+        plot(c1filt,'linewidth',1)
         ylim([-L1 L1])
         xlim([X1 X2])
         set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
         grid on
         axes(handles.C2)
-        plot(c2filt,'linewidth',2)
+        plot(c2filt,'linewidth',1)
         ylim([-L1 L1])
         xlim([X1 X2])
         set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
@@ -334,7 +322,7 @@ if status=='Save'
     fecha=clock';
     guardar_c1=fecha;
     guardar_c2=fecha;
-    w=0;
+    %w=0;
     %tic
 else
     save=0;
@@ -344,7 +332,7 @@ else
     dlmwrite(archivo_c1, guardar_c1);
     dlmwrite(archivo_c2, guardar_c2);
     set(handles.Save,'String','Save')
-    w
+    %w
     graficar=true;
 end
     
@@ -450,3 +438,10 @@ function nombre_paciente_CreateFcn(hObject, eventdata, handles)
 nombre_paciente=getappdata(0,'nombre');
 nombre=['Paciente: ',' ', nombre_paciente];
 set(hObject,'String',nombre);
+
+
+% --- Executes on button press in pushbutton12.
+function pushbutton12_Callback(hObject, eventdata, handles)
+% hObject    handle to pushbutton12 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
