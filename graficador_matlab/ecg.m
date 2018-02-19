@@ -58,9 +58,19 @@ global fid;
 fid=fopen('output.txt','wb');
 global archivo_c1;
 global archivo_c2;
+global botones_seleccion;
 
 % UIWAIT makes ecg wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
+
+set(get(handles.panel_posicion,'SelectedObject'),'Value',0); %Destildo la posición seleccionada
+set(handles.Save,'Enable','off'); %Deshabilito el botón Save hasta seleccionar una posición
+
+botones_seleccion=[handles.pos_1, handles.pos_2, handles.pos_3, handles.pos_4,...
+                   handles.pos_5, handles.pos_6, handles.pos_7, handles.pos_8,...
+                   handles.pos_9, handles.pos_10, handles.pos_11, handles.pos_12,...
+                   handles.pos_13, handles.pos_14, handles.pos_15, handles.pos_16];
+set(botones_seleccion,'Enable','off');
 
 % --- Para el filtro adaptado de linea de base
 global alfa w1 w2;
@@ -99,6 +109,7 @@ global guardar_c2;
 global save;
 global alfa w1 w2;
 global graficar;
+global botones_seleccion;
 
 graficar=true;
 
@@ -137,6 +148,8 @@ b=[1.0, -2.0, 1.0];
 a=[1.0, -1.9749029659, 0.9765156251];
 fwrite(s,'1');
 pause(2)
+
+set(botones_seleccion,'Enable','on');
 
 while running
 %     tic
@@ -200,7 +213,8 @@ while running
 
          
          if(save==1)
-            if(length(guardar_c1 < 15006)) %250 muestras por seg. por 60 seg + fecha
+            %if(length(guardar_c1 <= 15006)) %250 muestras por seg. por 60 seg + fecha
+            if(length(guardar_c1) <= 2506) %250 muestras por seg. por 10 seg + fecha
                 guardar_c1=[guardar_c1; c1aux'];
                 guardar_c2=[guardar_c2; c2aux'];
                 %guardar_c1=[guardar_c1; c1filt(end-length(c1aux)+1:end)];
@@ -208,7 +222,7 @@ while running
                 %w=w+1;
                 graficar=~graficar;
             else
-                Save_Callback(hObject, eventdata, handles);
+                Save_Callback(hObject, eventdata, handles)
             end
          end
 
@@ -313,38 +327,35 @@ global guardar_c2;
 global w;
 global graficar;
 global posicion;
-
-%botones_seleccion={[handles.pos1, handles.pos2, handles.pos3, handles.pos4,
-%                    handles.pos5, handles.pos6, handles.pos7, handles.pos8,
-%                    handles.pos9, handles.pos10, handles.pos11, handles.pos12,
-%                    handles.pos13, handles.pos14, handles.pos15, handles.pos16];
+global botones_seleccion;
 
 nombre_paciente=getappdata(0,'nombre');
 nombre_paciente=strrep(nombre_paciente,' ','_');
 
 %status=get(handles.Save,'String');
 %if status=='Save'
-    if (get(handles.Save,'Enable')=='on')
-        save=1;
-        %start(var.tmr);
-        set(handles.Save,'Enable','off');
-        %set(handles.Save,'String','Stop')
-        archivo_c1=strcat('./Datos/', nombre_paciente, '_', num2str(posicion), '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
-        archivo_c2=strcat('./Datos/', nombre_paciente, '_', num2str(posicion), '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
-        fecha=clock';
-        guardar_c1=fecha;
-        guardar_c2=fecha;
-    else
-        save=0;
-        fecha_guardada=0;
-        dlmwrite(archivo_c1, guardar_c1);
-        dlmwrite(archivo_c2, guardar_c2);
-        set(handles.Save,'String','Save')
-        graficar=true;
-        set(get(handles.panel_posicion,'SelectedObject'),'Value')=0; %Destildo la posición seleccionada
-        %set(botones_seleccion, 'Value', 0); %Destildo 
-    end
-        
+if (strcmp(lower((get(handles.Save,'Enable'))),'on'))
+    save=1;
+    %start(var.tmr);
+    set(handles.Save,'Enable','off');
+    set(botones_seleccion,'Enable','off');
+    %set(handles.Save,'String','Stop')
+    archivo_c1=strcat('./Datos/', nombre_paciente, '_', num2str(posicion), '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
+    archivo_c2=strcat('./Datos/', nombre_paciente, '_', num2str(posicion), '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
+    fecha=clock';
+    guardar_c1=fecha;
+    guardar_c2=fecha;
+else
+    save=0;
+    fecha_guardada=0;
+    dlmwrite(archivo_c1, guardar_c1);
+    dlmwrite(archivo_c2, guardar_c2);
+    %set(handles.Save,'String','Save')
+    graficar=true;
+    set(get(handles.panel_posicion,'SelectedObject'),'Value',0); %Destildo la posición seleccionada
+    set(botones_seleccion,'Enable','on');
+end
+
     
 function TimerCallback(obj,event,hObject,handles)
 global var;
@@ -437,7 +448,7 @@ switch eventdata.Key
         Start_Callback(hObject, eventdata, handles)
     case 'g'
         Save_Callback(hObject, eventdata, handles)
-
+end
 
 
 % --- Executes during object creation, after setting all properties.
@@ -474,24 +485,6 @@ function panel_posicion_SelectionChangeFcn(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global posicion;
 
-posicion=get(get(handles.panel_posicion,'SelectedObject'),'String')
-
-%switch get(get(handles.panel_posicion,'SelectedObject'),'Tag')
-%     case 'pos_1', posicion=1;
-%     case 'pos_2', posicion=2;
-%     case 'pos_3', posicion=3;
-%     case 'pos_4', posicion=4;
-%     case 'pos_5', posicion=5;
-%     case 'pos_6', posicion=6;
-%     case 'pos_7', posicion=7;
-%     case 'pos_8', posicion=8;
-%     case 'pos_9', posicion=9;
-%     case 'pos_10', posicion=10;
-%     case 'pos_11', posicion=11;
-%     case 'pos_12', posicion=12;
-%     case 'pos_13', posicion=13;
-%     case 'pos_14', posicion=14;
-%     case 'pos_15', posicion=15;
-%     case 'pos_16', posicion=16;
+posicion=get(get(handles.panel_posicion,'SelectedObject'),'String');
 
 set(handles.Save,'Enable','on')
