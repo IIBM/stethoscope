@@ -200,12 +200,16 @@ while running
 
          
          if(save==1)
-             guardar_c1=[guardar_c1; c1aux'];
-            guardar_c2=[guardar_c2; c2aux'];
-            %guardar_c1=[guardar_c1; c1filt(end-length(c1aux)+1:end)];
-            %guardar_c2=[guardar_c2; c2filt(end-length(c2aux)+1:end)];
-            %w=w+1;
-            graficar=~graficar;
+            if(length(guardar_c1 < 15006)) %250 muestras por seg. por 60 seg + fecha
+                guardar_c1=[guardar_c1; c1aux'];
+                guardar_c2=[guardar_c2; c2aux'];
+                %guardar_c1=[guardar_c1; c1filt(end-length(c1aux)+1:end)];
+                %guardar_c2=[guardar_c2; c2filt(end-length(c2aux)+1:end)];
+                %w=w+1;
+                graficar=~graficar;
+            else
+                Save_Callback(hObject, eventdata, handles);
+            end
          end
 
         if(graficar==true)
@@ -308,33 +312,39 @@ global guardar_c1;
 global guardar_c2;
 global w;
 global graficar;
+global posicion;
+
+%botones_seleccion={[handles.pos1, handles.pos2, handles.pos3, handles.pos4,
+%                    handles.pos5, handles.pos6, handles.pos7, handles.pos8,
+%                    handles.pos9, handles.pos10, handles.pos11, handles.pos12,
+%                    handles.pos13, handles.pos14, handles.pos15, handles.pos16];
 
 nombre_paciente=getappdata(0,'nombre');
 nombre_paciente=strrep(nombre_paciente,' ','_');
 
-status=get(handles.Save,'String');
-if status=='Save'
-    save=1;
-    %start(var.tmr);
-    set(handles.Save,'String','Stop')
-    archivo_c1=strcat('./Datos/', nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
-    archivo_c2=strcat('./Datos/', nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
-    fecha=clock';
-    guardar_c1=fecha;
-    guardar_c2=fecha;
-    %w=0;
-    %tic
-else
-    save=0;
-    fecha_guardada=0;
-    %stop(var.tmr);
-    %toc
-    dlmwrite(archivo_c1, guardar_c1);
-    dlmwrite(archivo_c2, guardar_c2);
-    set(handles.Save,'String','Save')
-    %w
-    graficar=true;
-end
+%status=get(handles.Save,'String');
+%if status=='Save'
+    if (get(handles.Save,'Enable')=='on')
+        save=1;
+        %start(var.tmr);
+        set(handles.Save,'Enable','off');
+        %set(handles.Save,'String','Stop')
+        archivo_c1=strcat('./Datos/', nombre_paciente, '_', num2str(posicion), '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
+        archivo_c2=strcat('./Datos/', nombre_paciente, '_', num2str(posicion), '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
+        fecha=clock';
+        guardar_c1=fecha;
+        guardar_c2=fecha;
+    else
+        save=0;
+        fecha_guardada=0;
+        dlmwrite(archivo_c1, guardar_c1);
+        dlmwrite(archivo_c2, guardar_c2);
+        set(handles.Save,'String','Save')
+        graficar=true;
+        set(get(handles.panel_posicion,'SelectedObject'),'Value')=0; %Destildo la posición seleccionada
+        %set(botones_seleccion, 'Value', 0); %Destildo 
+    end
+        
     
 function TimerCallback(obj,event,hObject,handles)
 global var;
@@ -427,7 +437,7 @@ switch eventdata.Key
         Start_Callback(hObject, eventdata, handles)
     case 'g'
         Save_Callback(hObject, eventdata, handles)
-end
+
 
 
 % --- Executes during object creation, after setting all properties.
@@ -440,8 +450,48 @@ nombre=['Paciente: ',' ', nombre_paciente];
 set(hObject,'String',nombre);
 
 
-% --- Executes on button press in pushbutton12.
-function pushbutton12_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton12 (see GCBO)
+% % --- Executes on button press in pushbutton12.
+% function pushbutton12_Callback(hObject, eventdata, handles)
+% % hObject    handle to pushbutton12 (see GCBO)
+% % eventdata  reserved - to be defined in a future version of MATLAB
+% % handles    structure with handles and user data (see GUIDATA)
+
+
+% --------------------------------------------------------------------
+function panel_posicion_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to panel_posicion (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes when selected object is changed in panel_posicion.
+function panel_posicion_SelectionChangeFcn(hObject, eventdata, handles)
+% hObject    handle to the selected object in panel_posicion 
+% eventdata  structure with the following fields (see UIBUTTONGROUP)
+%	EventName: string 'SelectionChanged' (read only)
+%	OldValue: handle of the previously selected object or empty if none was selected
+%	NewValue: handle of the currently selected object
+% handles    structure with handles and user data (see GUIDATA)
+global posicion;
+
+posicion=get(get(handles.panel_posicion,'SelectedObject'),'String')
+
+%switch get(get(handles.panel_posicion,'SelectedObject'),'Tag')
+%     case 'pos_1', posicion=1;
+%     case 'pos_2', posicion=2;
+%     case 'pos_3', posicion=3;
+%     case 'pos_4', posicion=4;
+%     case 'pos_5', posicion=5;
+%     case 'pos_6', posicion=6;
+%     case 'pos_7', posicion=7;
+%     case 'pos_8', posicion=8;
+%     case 'pos_9', posicion=9;
+%     case 'pos_10', posicion=10;
+%     case 'pos_11', posicion=11;
+%     case 'pos_12', posicion=12;
+%     case 'pos_13', posicion=13;
+%     case 'pos_14', posicion=14;
+%     case 'pos_15', posicion=15;
+%     case 'pos_16', posicion=16;
+
+set(handles.Save,'Enable','on')
