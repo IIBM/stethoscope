@@ -246,9 +246,10 @@ while running
             %set(gca,'xtick',0:50:X1,'xticklabel',0:0.2:4)
             grid on
             axes(handles.V1)
-            plot(c2filt(end-250:end),-c1filt(end-250:end))
+            plot(c1filt(end-250:end),c2filt(end-250:end))
             xlim([-L1 L1])
             ylim([-L1 L1])
+            set(gca,'Ydir','reverse')
             pause(0.000001)
         end
 
@@ -272,9 +273,10 @@ while running
         grid on
         axes(handles.V1)
         [y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
-        plot(c2filt(end-250:end),-c1filt(end-250:end))
+        plot(c1filt(end-250:end),c2filt(end-250:end))
         xlim([-L1 L1])
         ylim([-L1 L1])
+        set(gca,'Ydir','reverse')
         pause(0.000001)
     end%if
 end
@@ -469,7 +471,7 @@ set(hObject,'String',nombre);
 
 
 % --------------------------------------------------------------------
-function panel_posicion_ButtonDownFcn(hObject, eventdata, handles)
+%function panel_posicion_ButtonDownFcn(hObject, eventdata, handles)
 % hObject    handle to panel_posicion (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
