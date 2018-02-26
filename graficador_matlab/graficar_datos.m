@@ -57,7 +57,7 @@ for i=1:16
     %archivo_trazado=strcat('trazado',num2str(i,'%02d'));
 
     titulo_vecto=strcat('Vecto',32,num2str(i,'%02d')); %32: caracter de espacio ASCII
-    archivo_vecto=strcat('Img/vecto_inv',num2str(i,'%02d'));
+    archivo_vecto=strcat('Img/vecto',num2str(i,'%02d'));
     %archivo_vecto=strcat('vecto',num2str(i,'%02d'));
 
 
@@ -95,44 +95,45 @@ for i=1:16
     L1=max(max(abs(canal1(X1:X2)), abs(canal2(X1:X2))));
     L1=L1*1.1;
 
-     figure
-         subplot(2,1,1)
-         plot(canal1,'linewidth',1)
-         %ylim([-L1 L1])
-         ylim([-1e-3 1e-3])
-         xlim([X1 X2])
-         set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
-         xlabel('Tiempo [s]')
-         ylabel('Amplitud [V]')
-         grid on
-     
-         %title(titulo_trazado)
-         title('Canal 1')
-         subplot(2,1,2)
-         plot(canal2,'linewidth',1)
-         %ylim([-L1 L1])
-         ylim([-1e-3 1e-3])
-         xlim([X1 X2])
-         set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
-         xlabel('Tiempo [s]')
-         ylabel('Amplitud [V]')
-         grid on
-         title('Canal 2')
-         print(archivo_trazado,'-dpdf')
+    %figure
+    %    subplot(2,1,1)
+    %    plot(canal1,'linewidth',1)
+    %    %ylim([-L1 L1])
+    %    ylim([-1e-3 1e-3])
+    %    xlim([X1 X2])
+    %    set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
+    %    xlabel('Tiempo [s]')
+    %    ylabel('Amplitud [V]')
+    %    grid on
+    %
+    %    %title(titulo_trazado)
+    %    title('Canal 1')
+    %    subplot(2,1,2)
+    %    plot(canal2,'linewidth',1)
+    %    %ylim([-L1 L1])
+    %    ylim([-1e-3 1e-3])
+    %    xlim([X1 X2])
+    %    set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
+    %    xlabel('Tiempo [s]')
+    %    ylabel('Amplitud [V]')
+    %    grid on
+    %    title('Canal 2')
+    %    print(archivo_trazado,'-dpdf')
 
-%    figure
-%        plot(canal1(X2-250:X2),canal2(X2-250:X2))
-%        xlim([-L1 L1])
-%        ylim([-L1 L1])
-%        set(gca,'Ydir','reverse')
-%        xlabel('Amplitud [V]')
-%        ylabel('Amplitud [V]')
-%
-%        %title(titulo_vecto)
-%        title('Vectorcardiograma')
-%        print(archivo_vecto,'-dpdf')
+    figure
+        plot(canal1(X2-250:X2),canal2(X2-250:X2))
+        xlim([-L1 L1])
+        ylim([-L1 L1])
+        set(gca,'Ydir','reverse')
+        xlabel('Amplitud [V]')
+        ylabel('Amplitud [V]')
+        xL = xlim;
+        yL = ylim;
+        line(xL, [0 0],'color','k','LineStyle',':','linewidth',1) %x-axis
+        line([0 0], yL,'color','k','LineStyle',':','linewidth',1) %y-axis
+
+        title(titulo_vecto)
+        %title('Vectorcardiograma')
+        print(archivo_vecto,'-dpdf')
    
-    i=i+1;
-%    close all
-%    clear all
 end
