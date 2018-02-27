@@ -58,19 +58,10 @@ global fid;
 fid=fopen('output.txt','wb');
 global archivo_c1;
 global archivo_c2;
-global botones_seleccion;
+
 
 % UIWAIT makes ecg wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
-
-set(get(handles.panel_posicion,'SelectedObject'),'Value',0); %Destildo la posición seleccionada
-set(handles.Save,'Enable','off'); %Deshabilito el botón Save hasta seleccionar una posición
-
-botones_seleccion=[handles.pos_1, handles.pos_2, handles.pos_3, handles.pos_4,...
-                   handles.pos_5, handles.pos_6, handles.pos_7, handles.pos_8,...
-                   handles.pos_9, handles.pos_10, handles.pos_11, handles.pos_12,...
-                   handles.pos_13, handles.pos_14, handles.pos_15, handles.pos_16];
-set(botones_seleccion,'Enable','off');
 
 % --- Para el filtro adaptado de linea de base
 global alfa w1 w2;
@@ -109,7 +100,7 @@ global guardar_c2;
 global save;
 global alfa w1 w2;
 global graficar;
-global botones_seleccion;
+global muestras_guardar;
 
 graficar=true;
 
@@ -149,7 +140,7 @@ a=[1.0, -1.9749029659, 0.9765156251];
 fwrite(s,'1');
 pause(2)
 
-set(botones_seleccion,'Enable','on');
+set(lista_seleccion,'Enable','on');
 
 while running
 %     tic
@@ -213,13 +204,9 @@ while running
 
          
          if(save==1)
-            %if(length(guardar_c1 <= 15006)) %250 muestras por seg. por 60 seg + fecha
-            if(length(guardar_c1) <= 2506) %250 muestras por seg. por 10 seg + fecha
+            if(length(guardar_c1) <= muestras_guardar)
                 guardar_c1=[guardar_c1; c1aux'];
                 guardar_c2=[guardar_c2; c2aux'];
-                %guardar_c1=[guardar_c1; c1filt(end-length(c1aux)+1:end)];
-                %guardar_c2=[guardar_c2; c2filt(end-length(c2aux)+1:end)];
-                %w=w+1;
                 graficar=~graficar;
             else
                 Save_Callback(hObject, eventdata, handles)
@@ -326,22 +313,22 @@ global archivo_c1;
 global archivo_c2;
 global guardar_c1;
 global guardar_c2;
-global w;
 global graficar;
 global posicion;
-global botones_seleccion;
+
 
 nombre_paciente=getappdata(0,'nombre');
 nombre_paciente=strrep(nombre_paciente,' ','_');
 
-%status=get(handles.Save,'String');
-%if status=='Save'
-if (strcmp(lower((get(handles.Save,'Enable'))),'on'))
+status=get(handles.Save,'String');
+if status=='Guardar'
+%if (strcmp(lower((get(handles.Save,'Enable'))),'on'))
+%if save==0
     save=1;
     %start(var.tmr);
     set(handles.Save,'Enable','off');
-    set(botones_seleccion,'Enable','off');
-    %set(handles.Save,'String','Stop')
+    %set(lista_seleccion,'Enable','off');
+    set(handles.Save,'String','Parar')
     archivo_c1=strcat('./Datos/', nombre_paciente, '_', num2str(posicion), '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
     archivo_c2=strcat('./Datos/', nombre_paciente, '_', num2str(posicion), '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
     fecha=clock';
@@ -352,10 +339,8 @@ else
     fecha_guardada=0;
     dlmwrite(archivo_c1, guardar_c1);
     dlmwrite(archivo_c2, guardar_c2);
-    %set(handles.Save,'String','Save')
+    set(handles.Save,'String','Guardar')
     graficar=true;
-    set(get(handles.panel_posicion,'SelectedObject'),'Value',0); %Destildo la posición seleccionada
-    set(botones_seleccion,'Enable','on');
 end
 
     
@@ -463,30 +448,55 @@ nombre=['Paciente: ',' ', nombre_paciente];
 set(hObject,'String',nombre);
 
 
-% % --- Executes on button press in pushbutton12.
-% function pushbutton12_Callback(hObject, eventdata, handles)
-% % hObject    handle to pushbutton12 (see GCBO)
-% % eventdata  reserved - to be defined in a future version of MATLAB
-% % handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-%function panel_posicion_ButtonDownFcn(hObject, eventdata, handles)
-% hObject    handle to panel_posicion (see GCBO)
+function posicion_Callback(hObject, eventdata, handles)
+% hObject    handle to posicion (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-% --- Executes when selected object is changed in panel_posicion.
-function panel_posicion_SelectionChangeFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in panel_posicion 
-% eventdata  structure with the following fields (see UIBUTTONGROUP)
-%	EventName: string 'SelectionChanged' (read only)
-%	OldValue: handle of the previously selected object or empty if none was selected
-%	NewValue: handle of the currently selected object
-% handles    structure with handles and user data (see GUIDATA)
+% Hints: get(hObject,'String') returns contents of posicion as text
+%        str2double(get(hObject,'String')) returns contents of posicion as a double
 global posicion;
+posicion=get(hObject,'String');
+%set(handles.Save,'Enable','on')
 
-posicion=get(get(handles.panel_posicion,'SelectedObject'),'String');
 
-set(handles.Save,'Enable','on')
+% --- Executes during object creation, after setting all properties.
+function posicion_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to posicion (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function segundos_Callback(hObject, eventdata, handles)
+% hObject    handle to segundos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of segundos as text
+%        str2double(get(hObject,'String')) returns contents of segundos as a double
+global muestras_guardar;
+
+tiempo=str2double(get(hObject,'String'));
+muestras_guardar=(tiempo*250)+6; %Cantidad de muestras a guardar.
+                                 %(Segundos*SPS)+fecha
+
+
+
+% --- Executes during object creation, after setting all properties.
+function segundos_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to segundos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
