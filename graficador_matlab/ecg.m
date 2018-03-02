@@ -27,6 +27,7 @@ function ecg_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 guidata(hObject, handles);
 
+%movegui('north')
 
 % global var;
 % var.x=0;
@@ -59,6 +60,11 @@ fid=fopen('output.txt','wb');
 global archivo_c1;
 global archivo_c2;
 
+
+set(handles.C1,'xlim',[0 X1],'xtick',0:50:X1,'xticklabel',0:0.2:4)
+hold(handles.C1,'on');
+set(handles.C2,'xlim',[0 X1],'xtick',0:50:X1,'xticklabel',0:0.2:4)
+hold(handles.C2,'on');
 
 % UIWAIT makes ecg wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -109,7 +115,6 @@ canal2=0;
 
 c1filt=zeros(1, 251);
 c2filt=zeros(1, 251);
-% guidata(hObject, handles);
 
 global w;
 running=1;
@@ -121,6 +126,9 @@ j=0;
 X1=1000;
 X2=2000;
 
+set(handles.C1,'xlim',[0 X1],'xtick',0:50:X1,'xticklabel',0:0.2:4)
+set(handles.C2,'xlim',[0 X1],'xtick',0:50:X1,'xticklabel',0:0.2:4)
+
 c1hp=zeros(1, 2000);
 c2hp=zeros(1, 2000);
 
@@ -129,18 +137,8 @@ inicio_trama=[0 255 0]; %[0x00 0xFF 0x00]
 global fecha_guardada;
 fecha_guardada=0;
 
-flp=lowpass();
-fhp=highpass();
-wo=50/(250/2);
-bw=wo/5;
-[bn,an]=iirnotch(wo,bw);
-
-b=[1.0, -2.0, 1.0];
-a=[1.0, -1.9749029659, 0.9765156251];
 fwrite(s,'1');
 pause(2)
-
-set(lista_seleccion,'Enable','on');
 
 while running
 %     tic
@@ -190,12 +188,15 @@ while running
             end%if del checksum
          end%while tramas
          
-         c1=[c1((cant_muestras/2)+1:end) c1aux];
+         % -- Agrego las nuevas muestras
+         c1=[c1((cant_muestras/2)+1:end) c1aux]; 
          c2=[c2((cant_muestras/2)+1:end) c2aux];        
-
+            
+         % -- Filtro los 50Hz con un MA
          c1_50Hz=moving_average_50hz(c1, 250);
          c2_50Hz=moving_average_50hz(c2, 250);
 
+         % -- Filtro la línea de basecon con un hp adaptado
          c1hp=hp_adaptado(c1_50Hz, alfa);
          c2hp=hp_adaptado(c2_50Hz, alfa);
 
@@ -203,12 +204,12 @@ while running
          c2filt=c2hp';
 
          
-         if(save==1)
-            if(length(guardar_c1) <= muestras_guardar)
+         if(save==1) % Si se seleccionó 'Guardar' voy armando el vector
+            if(length(guardar_c1) <= muestras_guardar) %Guarda hasta que se termine el tiempo
                 guardar_c1=[guardar_c1; c1aux'];
                 guardar_c2=[guardar_c2; c2aux'];
                 graficar=~graficar;
-            else
+            else % Si se terminó el tiempo o se seleccionó 'Parar' llamo a save para que deje de guardar
                 Save_Callback(hObject, eventdata, handles)
             end
          end
@@ -219,24 +220,24 @@ while running
             canal2=[c2filt(end-j:end); c2filt(end-X1:end-j)];
 
             axes(handles.C1)
-            plot(canal1,'linewidth',1)
-            line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
+            set(gca,'NextPlot','replacechildren') %Para que resetee el gráfico
+            plot(canal1,'linewidth',1) %Trazado del Canal1
+            line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1) %Linea que sigue el final del trazado
             ylim([-L1 L1])
-            xlim([0 X1])
-            %set(gca,'xtick',0:50:X1,'xticklabel',0:0.2:4)
             grid on
+            
             axes(handles.C2)
-            plot(canal2,'linewidth',1)
-            line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1)
+            set(gca,'NextPlot','replacechildren') %Para que resetee el gráfico
+            plot(canal2,'linewidth',1) %Trazado del Canal2
+            line([j j], [-L1 L1], 'Color', 'g', 'linewidth',1) %Linea que sigue el final del trazado
             ylim([-L1 L1])
-            xlim([0 X1])
-            %set(gca,'xtick',0:50:X1,'xticklabel',0:0.2:4)
             grid on
+            
             axes(handles.V1)
-            plot(c1filt(end-250:end),c2filt(end-250:end))
+            plot(c1filt(end-250:end),c2filt(end-250:end)) %Vectocardiograma
             xlim([-L1 L1])
             ylim([-L1 L1])
-            set(gca,'Ydir','reverse')
+            set(gca,'Ydir','reverse') %Doy vuelta el eje y para que coincida con el cabezal
             pause(0.000001)
         end
 
@@ -252,12 +253,14 @@ while running
         xlim([X1 X2])
         set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
         grid on
+        
         axes(handles.C2)
         plot(c2filt,'linewidth',1)
         ylim([-L1 L1])
         xlim([X1 X2])
         set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
         grid on
+        
         axes(handles.V1)
         [y0 x0]=find(min(c1filt(end-250:end).^2+c2filt(end-250:end).^2));
         plot(c1filt(end-250:end),c2filt(end-250:end))
@@ -275,9 +278,7 @@ function Stop_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global s;
-%global running;
 global leer_muestras;
-%running=0;
 leer_muestras=0;
 fwrite(s,'2');
 pause(1)
@@ -314,23 +315,18 @@ global archivo_c2;
 global guardar_c1;
 global guardar_c2;
 global graficar;
-global posicion;
+%global muestras_guardar;
 
+posicion=get(handles.posicion,'String');
 
-nombre_paciente=getappdata(0,'nombre');
-nombre_paciente=strrep(nombre_paciente,' ','_');
+nombre_paciente=get(handles.nombre_paciente,'String');
+nombre_paciente=strrep(nombre_paciente,' ','-'); %Reemplazo los espacios por "-"
 
-status=get(handles.Save,'String');
-if status=='Guardar'
-%if (strcmp(lower((get(handles.Save,'Enable'))),'on'))
-%if save==0
+if (strcmp(lower((get(handles.Save,'String'))),'guardar'))
     save=1;
-    %start(var.tmr);
-    set(handles.Save,'Enable','off');
-    %set(lista_seleccion,'Enable','off');
     set(handles.Save,'String','Parar')
-    archivo_c1=strcat('./Datos/', nombre_paciente, '_', num2str(posicion), '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c1.txt');
-    archivo_c2=strcat('./Datos/', nombre_paciente, '_', num2str(posicion), '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'),'_c2.txt');
+    archivo_c1=strcat('./Datos/', nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '_', num2str(posicion), '_c1.txt');
+    archivo_c2=strcat('./Datos/', nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '_', num2str(posicion), '_c2.txt');
     fecha=clock';
     guardar_c1=fecha;
     guardar_c2=fecha;
@@ -443,9 +439,9 @@ function nombre_paciente_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to nombre_paciente (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
-nombre_paciente=getappdata(0,'nombre');
-nombre=['Paciente: ',' ', nombre_paciente];
-set(hObject,'String',nombre);
+%nombre_paciente=getappdata(0,'nombre');
+%nombre=['Paciente: ',' ', nombre_paciente];
+%set(hObject,'String',nombre);
 
 
 function posicion_Callback(hObject, eventdata, handles)
@@ -455,9 +451,36 @@ function posicion_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of posicion as text
 %        str2double(get(hObject,'String')) returns contents of posicion as a double
-global posicion;
-posicion=get(hObject,'String');
+%global posicion;
+%posicion=get(hObject,'String');
 %set(handles.Save,'Enable','on')
+
+
+function segundos_Callback(hObject, eventdata, handles)
+% hObject    handle to segundos (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of segundos as text
+%        str2double(get(hObject,'String')) returns contents of segundos as a double
+global muestras_guardar;
+
+tiempo=str2double(get(hObject,'String'));
+if isnan(tiempo) %str2double devuelve NaN si el string no es un número
+    set(handles.Save,'Enable','off')
+else
+    set(handles.Save,'Enable','on')
+    muestras_guardar=(tiempo*250)+6; %Cantidad de muestras a guardar.
+                                     %(Segundos*SPS)+fecha
+end
+
+function nombre_paciente_Callback(hObject, eventdata, handles)
+% hObject    handle to nombre_paciente (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of nombre_paciente as text
+%        str2double(get(hObject,'String')) returns contents of nombre_paciente as a double
 
 
 % --- Executes during object creation, after setting all properties.
@@ -471,23 +494,6 @@ function posicion_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
-
-
-function segundos_Callback(hObject, eventdata, handles)
-% hObject    handle to segundos (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of segundos as text
-%        str2double(get(hObject,'String')) returns contents of segundos as a double
-global muestras_guardar;
-
-tiempo=str2double(get(hObject,'String'));
-muestras_guardar=(tiempo*250)+6; %Cantidad de muestras a guardar.
-                                 %(Segundos*SPS)+fecha
-
-
 
 % --- Executes during object creation, after setting all properties.
 function segundos_CreateFcn(hObject, eventdata, handles)
