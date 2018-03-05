@@ -1,4 +1,4 @@
-function e = hp_aptado(ecg, alfa)
+function e = hp_adaptado(ecg, alfa)
 % filtro pasa-altos adaptado, para la línea de base
     w = randn;
     x = 1;
