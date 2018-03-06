@@ -7,34 +7,33 @@
 %endfor
 %printf("\n")
 
-narginchk(2,2);
+narginchk(3,3);
 
 arg_list=argv();
 
 
 archivo_canal_1=arg_list{1};
 archivo_canal_2=arg_list{2};
-%archivo_canal_1='Datos/prueba-nombre_2018-02-28_18-02-42_123_c1.txt';
-%archivo_canal_2='Datos/prueba-nombre_2018-02-28_18-02-42_123_c2.txt';
+directorio_graficos=arg_list{3};
 
 c1=dlmread(archivo_canal_1,'',6,0); %Los primeros 6 datos son la fecha y hora del registro
 c2=dlmread(archivo_canal_2,'',6,0); %Los primeros 6 datos son la fecha y hora del registro
 
-pos=strsplit(archivo_canal_1,'_'){end-1}; %Encuentra la posicion donde se hizo el registro
+pos=regexp(archivo_canal_1, '[_.]', 'split'){end-1}; %Encuentra la posicion donde se hizo el registro
 
 % --- Genero los nombres de los archivos y títulos
 titulo_trazado=cstrcat('Trazado ',num2str(pos));
-archivo_trazado=strcat('Img/trazado',num2str(pos,'%02d'));
+archivo_trazado=strcat(directorio_graficos, '/trazado',num2str(pos,'%02d'));
 %archivo_trazado=strcat('trazado',num2str(pos,'%02d'));
 
 titulo_vecto=cstrcat('Vecto ',num2str(pos));
-archivo_vecto=strcat('Img/vecto',num2str(pos,'%02d'));
+archivo_vecto=strcat(directorio_graficos, '/vecto',num2str(pos,'%02d'));
 %archivo_vecto=strcat('vecto',num2str(pos,'%02d'));
 
-X1=1;
-X2=760;
-%X1=1000;
-%X2=2000;
+%X1=1;
+%X2=760;
+X1=1000;
+X2=2000;
 
 % --- Para el filtro adaptado de linea de base
 fc = 0.5; %Frecuencia de corte del filtro

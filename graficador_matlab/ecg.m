@@ -57,8 +57,8 @@ global save;
 save=0;
 global fid;
 fid=fopen('output.txt','wb');
-global archivo_c1;
-global archivo_c2;
+%global archivo_c1;
+%global archivo_c2;
 
 
 set(handles.C1,'xlim',[0 X1],'xtick',0:50:X1,'xticklabel',0:0.2:4)
@@ -318,15 +318,18 @@ global graficar;
 %global muestras_guardar;
 
 posicion=get(handles.posicion,'String');
+posicion=strrep(posicion,' ','-'); %Reemplazo los espacios por "-"
 
 nombre_paciente=get(handles.nombre_paciente,'String');
 nombre_paciente=strrep(nombre_paciente,' ','-'); %Reemplazo los espacios por "-"
 
+aux_nombre_archivo=strcat('./Datos/', nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '_');
+
 if (strcmp(lower((get(handles.Save,'String'))),'guardar'))
     save=1;
     set(handles.Save,'String','Parar')
-    archivo_c1=strcat('./Datos/', nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '_', num2str(posicion), '_c1.txt');
-    archivo_c2=strcat('./Datos/', nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '_', num2str(posicion), '_c2.txt');
+    archivo_c1=strcat(aux_nombre_archivo, 'c1_', num2str(posicion), '.txt');
+    archivo_c2=strcat(aux_nombre_archivo, 'c2_', num2str(posicion), '.txt');
     fecha=clock';
     guardar_c1=fecha;
     guardar_c2=fecha;
