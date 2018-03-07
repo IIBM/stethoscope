@@ -59,7 +59,9 @@ global fid;
 fid=fopen('output.txt','wb');
 %global archivo_c1;
 %global archivo_c2;
+global beep
 
+beep = audioplayer(sin(1:.2:2000), 22050);
 
 set(handles.C1,'xlim',[0 X1],'xtick',0:50:X1,'xticklabel',0:0.2:4)
 hold(handles.C1,'on');
@@ -279,8 +281,11 @@ function Stop_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global s;
 global leer_muestras;
+global beep
+
 leer_muestras=0;
 fwrite(s,'2');
+play(beep);
 pause(1)
 
 
