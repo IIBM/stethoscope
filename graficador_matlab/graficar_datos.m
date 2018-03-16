@@ -38,8 +38,8 @@ archivo_vecto=strcat(directorio_graficos, '/vecto',num2str(pos,'%02d'));
 
 %X1=1;
 %X2=760;
-X1=1000;
-X2=2000;
+X1=1500;
+X2=2500;
 
 % --- Para el filtro adaptado de linea de base
 fc = 0.5; %Frecuencia de corte del filtro

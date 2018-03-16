@@ -61,12 +61,7 @@ fid=fopen('output.txt','wb');
 %global archivo_c2;
 global beep
 
-beep = audioplayer(sin(1:.2:2000), 22050);
-
-set(handles.C1,'xlim',[0 X1],'xtick',0:50:X1,'xticklabel',0:0.2:4)
-hold(handles.C1,'on');
-set(handles.C2,'xlim',[0 X1],'xtick',0:50:X1,'xticklabel',0:0.2:4)
-hold(handles.C2,'on');
+beep = audioplayer(sin(1:.15:2000), 22050);
 
 % UIWAIT makes ecg wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
@@ -281,11 +276,9 @@ function Stop_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global s;
 global leer_muestras;
-global beep
 
 leer_muestras=0;
 fwrite(s,'2');
-play(beep);
 pause(1)
 
 
@@ -320,18 +313,23 @@ global archivo_c2;
 global guardar_c1;
 global guardar_c2;
 global graficar;
-%global muestras_guardar;
+global beep
+global nombre_paciente
+global directorio
 
 posicion=get(handles.posicion,'String');
 posicion=strrep(posicion,' ','-'); %Reemplazo los espacios por "-"
 
-nombre_paciente=get(handles.nombre_paciente,'String');
-nombre_paciente=strrep(nombre_paciente,' ','-'); %Reemplazo los espacios por "-"
+% Si no existe el directorio lo creo
+if(~exist(directorio, 'dir'))
+     mkdir(directorio)
+end
 
-aux_nombre_archivo=strcat('./Datos/', nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '_');
+aux_nombre_archivo=strcat(directorio, nombre_paciente, '_', datestr(now,'yyyy-mm-dd_HH-MM-SS'), '_');
 
 if (strcmp(lower((get(handles.Save,'String'))),'guardar'))
     save=1;
+    play(beep);
     set(handles.Save,'String','Parar')
     archivo_c1=strcat(aux_nombre_archivo, 'c1_', num2str(posicion), '.txt');
     archivo_c2=strcat(aux_nombre_archivo, 'c2_', num2str(posicion), '.txt');
@@ -340,6 +338,7 @@ if (strcmp(lower((get(handles.Save,'String'))),'guardar'))
     guardar_c2=fecha;
 else
     save=0;
+    play(beep);
     fecha_guardada=0;
     dlmwrite(archivo_c1, guardar_c1);
     dlmwrite(archivo_c2, guardar_c2);
@@ -452,6 +451,7 @@ function nombre_paciente_CreateFcn(hObject, eventdata, handles)
 %set(hObject,'String',nombre);
 
 
+
 function posicion_Callback(hObject, eventdata, handles)
 % hObject    handle to posicion (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -489,6 +489,21 @@ function nombre_paciente_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of nombre_paciente as text
 %        str2double(get(hObject,'String')) returns contents of nombre_paciente as a double
+global nombre_paciente
+global directorio
+
+nombre_paciente=get(hObject,'String');
+nombre_paciente=strrep(nombre_paciente,' ','-'); %Reemplazo los espacios por "-"
+
+% Armo el nombre del directorio, y si no existe lo creo
+directorio=strcat('./Datos/',nombre_paciente,'/');
+if(~exist(directorio, 'dir'))
+%     mkdir(directorio)
+    set(handles.aviso_registros, 'String', '');
+else
+    set(handles.aviso_registros, 'String', 'Tiene registros');
+end
+
 
 
 % --- Executes during object creation, after setting all properties.
