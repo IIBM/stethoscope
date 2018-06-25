@@ -7,23 +7,25 @@ datos=dlmread ('../Datos/Martín-Mello-Teggia/filt/Martín-Mello-Teggia_03_filt.
 
 tm=(1:length(datos))';
 fs=250;
-%ganancia=1;
-ganancia=1/(2.42/3/((2^23)-1));
-%ganancia=1/(2.42/3/((2^23)-1))*1e3;
+%ganancia=1; %A/D units per mV
+ganancia=1/(2.42/3/((2^23)-1)); %A/D units per mV
+%ganancia=1e-3/(2.42/3/((2^23)-1)); %A/D units per mV
+
 canal1=datos(:,1)*(2.42/3/((2^23)-1));
 canal2=datos(:,2)*(2.42/3/((2^23)-1));
 
 umbral=[];
-%umbral=2;
+%umbral=1.1;
 
 %wrsamp(tm,datos,'prueba',fs,ganancia) %Writes data into a WFDB compatible *.dat and *.hea files.
-wrsamp(tm,datos,'prueba',fs) %Writes data into a WFDB compatible *.dat and *.hea files.
+%wrsamp(tm,datos,'prueba',fs) %Writes data into a WFDB compatible *.dat and *.hea files.
 
 %canal=2;
 for canal=1:2
-    wqrs ('prueba',[],150,canal,umbral,true)%Creates a WQRS annotation file  at the current MATLAB directory. (recordName,N,N0,signal,threshold,findJ,powerLineFrequency,resample)
-    ann(canal,:)=rdann('prueba','wqrs',canal);%Reads annotation files for WFDB records
-    [ecg_aux,fs_aux,tm_aux]=rdsamp ('prueba',canal); %Reads signal files for WFDB records
+    wrsamp(tm,datos(:,canal),'prueba',fs,ganancia) %Writes data into a WFDB compatible *.dat and *.hea files.
+    wqrs ('prueba',[],150,[],umbral,true)%Creates a WQRS annotation file  at the current MATLAB directory. (recordName,N,N0,signal,threshold,findJ,powerLineFrequency,resample)
+    ann(canal,:)=rdann('prueba','wqrs');%Reads annotation files for WFDB records
+    [ecg_aux,fs_aux,tm_aux]=rdsamp ('prueba'); %Reads signal files for WFDB records
     ecg(canal,:)=ecg_aux; %Reads signal files for WFDB records
 
     ecgpuwave ('prueba','ondas', [], 150, 'wqrs');

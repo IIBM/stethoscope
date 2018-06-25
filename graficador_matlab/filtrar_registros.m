@@ -31,6 +31,7 @@ pos=regexp(archivo_canal_1, '[_.]', 'split'){end-1}; %Encuentra la posicion dond
 
 % --- Genero los nombres de los archivos 
 nombre_archivo=strcat(directorio_datos,'/',paciente,'_',num2str(str2num(pos),'%02d'),'_filt.txt');
+figura=strcat('Figura',num2str(str2num(pos),'%02d'));
 
 
 % --- Para el filtro adaptado de linea de base
@@ -49,8 +50,8 @@ alfa = alfa12(2);
 c1=1000*c1;
 c2=1000*c2;
 
-c1_50Hz=moving_average_50hz(c1, 250);
-c2_50Hz=moving_average_50hz(c2, 250);
+c1_50Hz=moving_average_50hz(c1_dig, 250);
+c2_50Hz=moving_average_50hz(c2_dig, 250);
 
 c1hp=hp_adaptado(c1_50Hz, alfa);
 c2hp=hp_adaptado(c2_50Hz, alfa);
@@ -62,3 +63,8 @@ registro=[c1hp(100:end); c2hp(100:end)]'; %Le saco las primeras 100 muestras por
 %registro=c1hp';
 
 dlmwrite(nombre_archivo,registro);
+figure
+hold on
+plot(registro(:,1)(50:end))
+plot(registro(:,2)(50:end))
+print(figura,'-dpdf')
