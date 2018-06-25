@@ -44,9 +44,10 @@ alfa12 = 1 - beta12;
 alfa = alfa12(2);
 
 % --- Las paso a los valores digitales nuevamente
-c1=c1/(2.42/3/((2^23)-1));
-c2=c2/(2.42/3/((2^23)-1));
-
+%c1=c1/(2.42/3/((2^23)-1));
+%c2=c2/(2.42/3/((2^23)-1));
+c1=1000*c1;
+c2=1000*c2;
 
 c1_50Hz=moving_average_50hz(c1, 250);
 c2_50Hz=moving_average_50hz(c2, 250);
@@ -54,6 +55,10 @@ c2_50Hz=moving_average_50hz(c2, 250);
 c1hp=hp_adaptado(c1_50Hz, alfa);
 c2hp=hp_adaptado(c2_50Hz, alfa);
 
-registro=[c1hp; c2hp]';
+%registro=[c1hp; c2hp]';
+%registro=[[c1hp zeros(1,100)]; [c2hp zeros(1,100)]]';
+registro=[c1hp(100:end); c2hp(100:end)]'; %Le saco las primeras 100 muestras porque el filtro las deforma
+%registro=[c1'; c2']';
+%registro=c1hp';
 
 dlmwrite(nombre_archivo,registro);

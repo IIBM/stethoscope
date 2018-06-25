@@ -39,8 +39,8 @@ archivo_vecto=strcat(directorio_graficos, '/vecto',num2str(str2num(pos),'%02d'))
 
 %X1=1;
 %X2=760;
-X1=750;
-X2=1750;
+X1=100;
+X2=1100;
 %X1=1;
 %X2=1001;
 

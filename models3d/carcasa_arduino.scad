@@ -40,8 +40,15 @@ module tapa(){
             }           
         }
         //Agujero para el USB
-        translate([ancho_pared+8, placa_y-2, 16])
-            cube([ancho_usb, alto_usb, ancho_pared+4]);
+        translate([ancho_pared+8, placa_y-2, 10])
+            #cube([ancho_usb, alto_usb, ancho_pared+10]);
+        
+        //Agujero para que se vean los leds del arduino
+        translate([ancho_pared+8-0.5, 30, (alto_tapa*2)-4.7])
+            cube([(ancho_usb/4)*3, ancho_usb/2, ancho_pared+2]);
+        //Agujero para que se vean los leds del arduino
+        translate([ancho_pared+8+(ancho_usb/4)*3-0.5, 30, (alto_tapa*2)-5.2])
+            #cube([ancho_usb/4, ancho_usb/2, ancho_pared+2]);
 
         //Texto
         translate([(placa_x+ancho_pared*2)/2, (placa_y+ancho_pared*2)/2, (placa_z+ancho_tapa*2)-1])
@@ -50,34 +57,34 @@ module tapa(){
     }
 }
 
-!tapa();
+tapa();
 
-module base(){
-    difference(){
-        union(){
-            difference(){
-                cube([placa_x+ancho_pared*2, placa_y+ancho_pared*2, placa_z+ancho_tapa*2]);
-                
-                translate([ancho_pared, ancho_pared, ancho_tapa])
-                    cube([placa_x, placa_y, placa_z]);
-                //Le saco la mitad de arriba
-                translate([0, 0, (placa_z+ancho_tapa*2)/2])
-                    cube([placa_x+ancho_pared*2, placa_y+ancho_pared*2, (placa_z+ancho_tapa*2)/2]);
-                //Aleta para enganchar
-                translate([ancho_pared-1, ancho_pared-1, (placa_z+ancho_tapa*2)/2-5]){
-                    difference(){
-                        cube([placa_x+2.25, placa_y+2.25, 5]);
-                        translate([1, 1, 0])
-                            cube([placa_x, placa_y, 5]);
-                    }
-                }
-            }
-        }
-        //Agujero para el prensacables
-        translate([(placa_x+ancho_pared*2)/2, ancho_pared+2, (placa_z+ancho_tapa*2)/2])
-            rotate([90, 0, 0])
-                cylinder(r=radio_prensacable, h=ancho_pared+4, $fn=50); 
-    }
-}
-
-base();
+//module base(){
+//    difference(){
+//        union(){
+//            difference(){
+//                cube([placa_x+ancho_pared*2, placa_y+ancho_pared*2, placa_z+ancho_tapa*2]);
+//                
+//                translate([ancho_pared, ancho_pared, ancho_tapa])
+//                    cube([placa_x, placa_y, placa_z]);
+//                //Le saco la mitad de arriba
+//                translate([0, 0, (placa_z+ancho_tapa*2)/2])
+//                    cube([placa_x+ancho_pared*2, placa_y+ancho_pared*2, (placa_z+ancho_tapa*2)/2]);
+//                //Aleta para enganchar
+//                translate([ancho_pared-1, ancho_pared-1, (placa_z+ancho_tapa*2)/2-5]){
+//                    difference(){
+//                        cube([placa_x+2.25, placa_y+2.25, 5]);
+//                        translate([1, 1, 0])
+//                            cube([placa_x, placa_y, 5]);
+//                    }
+//                }
+//            }
+//        }
+//        //Agujero para el prensacables
+//        translate([(placa_x+ancho_pared*2)/2, ancho_pared+2, (placa_z+ancho_tapa*2)/2])
+//            rotate([90, 0, 0])
+//                cylinder(r=radio_prensacable, h=ancho_pared+4, $fn=50); 
+//    }
+//}
+//
+//base();

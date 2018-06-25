@@ -64,7 +64,8 @@ do
     echo "Graficando posicion ${posicion%.*}."
     
     #Llama al script de octave que realiza los gráficos
-    ./graficar_datos.m $archivo_c1 $archivo_c2 $directorio_graficos
+    ./prueba_graficar_datos.m $archivo_c1 $archivo_c2 $directorio_graficos
+    #./graficar_datos.m $archivo_c1 $archivo_c2 $directorio_graficos
 done
 
 #Genero un pdf con todos los vectos, y otro con todos los trazados
