@@ -39,21 +39,39 @@ search_radius = int(fields['fs'] * 60 / config.hr_max)
 corrected_peak_inds = processing.correct_peaks(sig[:, 0], peak_inds=qrs_inds, search_radius=search_radius, smooth_window_size=150)
 
 #wfdb.plot_items(signal=n_sig, ann_samp=[qrs_inds])
-wfdb.plot_items(signal=sig, ann_samp=[qrs_inds])
-wfdb.plot_items(signal=sig, ann_samp=[corrected_peak_inds])
+#wfdb.plot_items(signal=sig, ann_samp=[qrs_inds])
+#wfdb.plot_items(signal=sig, ann_samp=[corrected_peak_inds])
 
 ##Separo los latidos
 delay = round(0.1/(1/Fs))
 M = corrected_peak_inds.size
 RR = np.diff(corrected_peak_inds) #Vector de intervalos RR
 min_RR=np.min(RR) #Latido más corto
-matriz_latidos_c1 = np.zeros((M,min_RR)) #Matriz para guardar los latidos por filas
-matriz_latidos_c2= np.zeros((M,min_RR)) #Matriz para guardar los latidos por filas
+matriz_latidos_c1 = np.zeros((M,min_RR))*np.nan #Matriz para guardar los latidos por filas
+matriz_latidos_c2 = np.zeros((M,min_RR))*np.nan #Matriz para guardar los latidos por filas
 
 for m in range(0,M):
-    matriz_latidos_c1[m]=ecg.p_signal[:,0][corrected_peak_inds[0]-delay:corrected_peak_inds[0]+min_RR-delay]
-    matriz_latidos_c2[m]=ecg.p_signal[:,1][corrected_peak_inds[0]-delay:corrected_peak_inds[0]+min_RR-delay]
+    aux = ecg.p_signal[:,0][corrected_peak_inds[m]-delay:corrected_peak_inds[m]+min_RR-delay]
+    matriz_latidos_c1[m,:aux.size] = aux
+    aux = ecg.p_signal[:,1][corrected_peak_inds[m]-delay:corrected_peak_inds[m]+min_RR-delay]
+    matriz_latidos_c2[m,:aux.size] = aux
+
+#Completo los latidos que quedaron cortados con el promedio de los anteriores en ese sector
+pos_datos_faltantes=np.argwhere(np.isnan(matriz_latidos_c1))
+agregado=np.mean(matriz_latidos_c1[0:M-2,-pos_datos_faltantes.shape[0]:], axis=0)
+matriz_latidos_c1[M-1,-pos_datos_faltantes.shape[0]:]=agregado
+
+agregado=np.mean(matriz_latidos_c2[0:M-2,-pos_datos_faltantes.shape[0]:], axis=0)
+matriz_latidos_c2[M-1,-pos_datos_faltantes.shape[0]:]=agregado
+
 
 latido_promedio_c1=np.mean(matriz_latidos_c1, axis=0)
 latido_promedio_c2=np.mean(matriz_latidos_c2, axis=0)
+
+#Grafico el vecto
+plt.plot(latido_promedio_c1,latido_promedio_c2)
 #wfdb.plot_wfdb(registro)
+
+plt.plot(matriz_latidos_c1.T,'--')
+plt.plot(latido_promedio_c1,'k')
+plt.show()
