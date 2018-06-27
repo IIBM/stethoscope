@@ -12,6 +12,8 @@ import wfdb
 from wfdb import processing
 
 registro = np.genfromtxt(sys.argv[1], delimiter=',') # Cargo el archivo con los registros de una posición
+#registro = np.genfromtxt(sys.argv[1], delimiter=',',skip_header=20) # Para algunos registros hay que borrar unos datos más
+registro=registro*1000
 canal = int(sys.argv[2]) # Cargo el canal que voy a detectar
 
 #registro = np.genfromtxt('../Datos/Martín-Mello-Teggia/filt/Martín-Mello-Teggia_01_filt.txt', delimiter=',') # Cargo el archivo con los registros de una posición
@@ -31,7 +33,7 @@ sig, fields = wfdb.rdsamp('prueba', channels=[canal])
 
 n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
 
-qrs_inds = processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)
+qrs_inds = processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config)
 #qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)
 
 #Corrijo los qrs detectados para que coincidan con los picos
@@ -43,7 +45,7 @@ corrected_peak_inds = processing.correct_peaks(sig[:, 0], peak_inds=qrs_inds, se
 #wfdb.plot_items(signal=sig, ann_samp=[corrected_peak_inds])
 
 ##Separo los latidos
-delay = round(0.1/(1/Fs))
+delay = round(0.3/(1/Fs))
 M = corrected_peak_inds.size
 RR = np.diff(corrected_peak_inds) #Vector de intervalos RR
 min_RR=np.min(RR) #Latido más corto
@@ -64,14 +66,41 @@ matriz_latidos_c1[M-1,-pos_datos_faltantes.shape[0]:]=agregado
 agregado=np.mean(matriz_latidos_c2[0:M-2,-pos_datos_faltantes.shape[0]:], axis=0)
 matriz_latidos_c2[M-1,-pos_datos_faltantes.shape[0]:]=agregado
 
+#Corrijo la escala
+matriz_latidos_c1=matriz_latidos_c1/1000
+matriz_latidos_c2=matriz_latidos_c2/1000
 
 latido_promedio_c1=np.mean(matriz_latidos_c1, axis=0)
 latido_promedio_c2=np.mean(matriz_latidos_c2, axis=0)
 
-#Grafico el vecto
-plt.plot(latido_promedio_c1,latido_promedio_c2)
-#wfdb.plot_wfdb(registro)
+#Límite para los ejes
+lim=np.max([np.max(np.abs(latido_promedio_c1)),np.max(np.abs(latido_promedio_c2))])
+lim=lim*1.1;
 
+#Grafico el vecto
+c1d=np.diff(latido_promedio_c1)
+c1d=np.append(c1d,latido_promedio_c1[-1]-latido_promedio_c1[0])
+#c1d=latido_promedio_c1[1:]-latido_promedio_c1[:-1]
+c2d=np.diff(latido_promedio_c2)
+c2d=np.append(c2d,latido_promedio_c2[-1]-latido_promedio_c2[0])
+#c2d=latido_promedio_c2[1:]-latido_promedio_c2[:-1]
+
+plt.figure()
+#plt.plot(latido_promedio_c1,latido_promedio_c2)
+plt.quiver(latido_promedio_c1,latido_promedio_c2, c1d, c2d, scale_units='xy', angles='xy', scale=1)
+plt.xlim(-lim, lim)
+plt.ylim(lim, -lim)
+plt.grid(True)
+#wfdb.plot_wfdb(registro)
+#plt.show()
+
+plt.figure()
 plt.plot(matriz_latidos_c1.T,'--')
 plt.plot(latido_promedio_c1,'k')
+#plt.show()
+
+plt.figure()
+plt.plot(matriz_latidos_c2.T,'--')
+plt.plot(latido_promedio_c2,'k')
 plt.show()
+
