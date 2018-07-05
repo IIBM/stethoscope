@@ -1,34 +1,9 @@
-#! /usr/bin/python3
-
-import sys, os
-
-from IPython.display import display
-import matplotlib.pyplot as plt
-#matplotlib inline
-import numpy as np
-import shutil
-
-import wfdb
-from wfdb import processing
-
-from sklearn.decomposition import PCA
-from sklearn.cluster import KMeans
-
-#registro = np.genfromtxt(sys.argv[1], delimiter=',') # Cargo el archivo con los registros de una posición
-##registro = np.genfromtxt(sys.argv[1], delimiter=',',skip_header=20) # Para algunos registros hay que borrar unos datos más
-#registro=registro*1000
-#canal = int(sys.argv[2]) # Cargo el canal que voy a detectar
-
-#registro = np.genfromtxt('../Datos/Martín-Mello-Teggia/filt/Martín-Mello-Teggia_01_filt.txt', delimiter=',') # Cargo el archivo con los registros de una posición
-#canal = 0 # Cargo el canal que voy a detectar
-
 def detectar_qrs(registro, canal):
     #ganancia=(2.42/3/((2^23)-1))
     Fs = 250 #Frecuencia de muestreo
     wfdb.wrsamp('prueba', fs = Fs, units = ['V','V'], sig_name = ['C1', 'C2'], p_signal=registro, fmt=['16', '16']) #
 
     ecg = wfdb.rdrecord('prueba')
-    #wfdb.plot_wfdb(ecg)
 
     #config=wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=2, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
     config = wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=0.13, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
@@ -43,59 +18,47 @@ def detectar_qrs(registro, canal):
     #Corrijo los qrs detectados para que coincidan con los picos
     search_radius = int(fields['fs'] * 60 / config.hr_max)
     corrected_peak_inds = processing.correct_peaks(sig[:, 0], peak_inds=qrs_inds, search_radius=search_radius, smooth_window_size=150)
-
-    print('hola')
-
+    
     return ecg, corrected_peak_inds
 
 
 def separar_latidos(ecg, qrs_inds):
     ##Separa los latidos y los guarda por filas en una matriz.
     #ecg = wfdb.rdrecord('record')
-    delay = round(0.1/(1/Fs))
+    Fs = 250 #Frecuencia de muestreo
+    #delay = round(0.1/(1/Fs))
+    delay = 1
     M = qrs_inds.size
     RR = np.diff(qrs_inds) #Vector de intervalos RR
     min_RR=np.min(RR) #Latido más corto
     matriz_latidos = np.zeros((M,min_RR))*np.nan #Matriz para guardar los latidos por filas
-    #matriz_latidos_c1 = np.zeros((M,min_RR))*np.nan #Matriz para guardar los latidos por filas
-    #matriz_latidos_c2 = np.zeros((M,min_RR))*np.nan #Matriz para guardar los latidos por filas
 
     for m in range(0,M):
         # Uso un aux porque necesito saber el largo de los latidos para que si uno
         # queda más corto me deje guardarlo en la matriz. 
         aux = ecg[qrs_inds[m]-delay:qrs_inds[m]+min_RR-delay]
-        matriz_latidos_c1[m,:aux.size] = aux
-        #aux = ecg.p_signal[:,0][qrs_inds[m]-delay:qrs_inds[m]+min_RR-delay]
-        #matriz_latidos_c1[m,:aux.size] = aux
-        #aux = ecg.p_signal[:,1][qrs_inds[m]-delay:qrs_inds[m]+min_RR-delay]
-        #matriz_latidos_c2[m,:aux.size] = aux
-
-    #Corrijo la escala
-    #matriz_latidos_c1=matriz_latidos_c1/1000
-    #matriz_latidos_c2=matriz_latidos_c2/1000
+        matriz_latidos[m,:aux.size] = aux
 
     ##Completo los latidos que quedaron cortados con el promedio de los anteriores en ese sector
     pos_datos_faltantes=np.argwhere(np.isnan(matriz_latidos))
-    #Canal1
+    
     agregado=np.mean(matriz_latidos[0:M-2,-pos_datos_faltantes.shape[0]:], axis=0)
+    
     a=matriz_latidos[0:M-2,-pos_datos_faltantes.shape[0]:] #Matriz auxiliar para calcular la potencia
     potencia_agregado=np.mean(np.sqrt(np.sum(np.square(a),axis=1)/a.shape[1])) #Calculo el promedio de la potencia
     agregado2=agregado*potencia_agregado
+    
     matriz_latidos[M-1,-pos_datos_faltantes.shape[0]:]=agregado
-    #Canal2
-    #agregado=np.mean(matriz_latidos_c2[0:M-2,-pos_datos_faltantes.shape[0]:], axis=0)
-    #matriz_latidos_c2[M-1,-pos_datos_faltantes.shape[0]:]=agregado
 
     return matriz_latidos
 
-#latido_promedio_c1=np.mean(matriz_latidos_c1, axis=0)
-#latido_promedio_c2=np.mean(matriz_latidos_c2, axis=0)
 
 #Límite para los ejes
 #lim=np.max([np.max(np.abs(latido_promedio_c1)),np.max(np.abs(latido_promedio_c2))])
 #lim=lim*1.1;
 
 
+#wfdb.plot_wfdb(ecg)
 #wfdb.plot_items(signal=n_sig, ann_samp=[qrs_inds])
 #wfdb.plot_items(signal=sig, ann_samp=[qrs_inds])
 #
@@ -119,7 +82,7 @@ def separar_latidos(ecg, qrs_inds):
 #plt.figure()
 #plt.plot(matriz_latidos_c1.T,'--')
 #plt.plot(latido_promedio_c1,'k')
-#plt.show()
+##plt.show()
 #
 #plt.figure()
 #plt.plot(matriz_latidos_c2.T,'--')

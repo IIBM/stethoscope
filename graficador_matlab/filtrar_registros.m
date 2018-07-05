@@ -30,6 +30,7 @@ pos=regexp(archivo_canal_1, '[_.]', 'split'){end-1}; %Encuentra la posicion dond
                                                      %en el nombre del archivo
 
 % --- Genero los nombres de los archivos 
+%nombre_archivo=strcat('Datos_filtrados/',paciente,'/',paciente,'_',num2str(str2num(pos),'%02d'),'_filt.txt')
 nombre_archivo=strcat(directorio_datos,'/',paciente,'_',num2str(str2num(pos),'%02d'),'_filt.txt');
 figura=strcat('Figura',num2str(str2num(pos),'%02d'));
 

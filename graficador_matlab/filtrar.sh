@@ -48,7 +48,8 @@ then
     fi
 fi
 
-directorio_datos="${directorio}/filt"
+directorio_datos="Datos_filtrados/${directorio##*/}"
+#directorio_datos="${directorio}/filt"
 #directorio_datos="${directorio##*/}/filt"
 mkdir $directorio_datos
 
