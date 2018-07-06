@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import sys, os
+import glob
 
 import importlib
 
@@ -42,15 +43,49 @@ canal = int(sys.argv[2]) # Cargo el canal que voy a detectar
 #registro = np.genfromtxt('../Datos/Martín-Mello-Teggia/filt/Martín-Mello-Teggia_01_filt.txt', delimiter=',') # Cargo el archivo con los registros de una posición
 #canal = 0 # Cargo el canal que voy a detectar
 
-ecg, qrs_inds = detectar_qrs(registro, canal)
+class Paciente(object):
+    def __init__(self, nombre=None, matriz_latidos_c1=None, matriz_latidos_c2=None, pos_r=None)
+        self.nombre=nombre
+        self.matriz_latidos_c1=matriz_latidos_c1
+        self.matriz_latidos_c2=matriz_latidos_c2
+        self.pos_r=pos_r
 
-matriz_latidos_c1 = separar_latidos(ecg.p_signal[:,0], qrs_inds)
-matriz_latidos_c2 = separar_latidos(ecg.p_signal[:,1], qrs_inds)
+lista_pacientes=[]
 
-#Corrijo la escala
-matriz_latidos_c1=matriz_latidos_c1/1000
-matriz_latidos_c2=matriz_latidos_c2/1000
+#for nombre in glob.glob(os.path.join(directorio_datos+'**/*01*'), recursive=True):
+    #registro = np.genfromtxt(nombre, delimiter=',') # Cargo el archivo con los registros de una posición
+    #registro = np.genfromtxt(sys.argv[1], delimiter=',',skip_header=20) # Para algunos registros hay que borrar más datos
+    #registro=registro*1000
+    #canal = # Cargo el canal que voy a detectar desde el archivo de canales
+    #sacar el nombre del paciente del nombre del archivo
+    
+    ecg, qrs_inds = detectar_qrs(registro, canal)
+
+    matriz_latidos_c1 = separar_latidos(ecg.p_signal[:,0], qrs_inds)
+    matriz_latidos_c2 = separar_latidos(ecg.p_signal[:,1], qrs_inds)
+
+    #Corrijo la escala
+    matriz_latidos_c1=matriz_latidos_c1/1000
+    matriz_latidos_c2=matriz_latidos_c2/1000
+
+    #calculo pos_r
+
+    lista_pacientes.append(Paciente(nombre, matriz_latidos_c1, matriz_latidos_c2, pos_r)
+
 
 #Calculo el latido promedio en cada canal
 latido_promedio_c1=np.mean(matriz_latidos_c1, axis=0)
 latido_promedio_c2=np.mean(matriz_latidos_c2, axis=0)
+
+
+###PCA
+#http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
+#http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
+
+#pca = PCA(n_components=2)
+#
+#c1_pca=pca.fit_transform(matriz_latidos_c1)
+#c2_pca=pca.fit_transform(matriz_latidos_c2)
+#
+#kmeans_c1 = KMeans(n_clusters=3, random_state=0).fit(c1_pca)
+#kmeans_c2 = KMeans(n_clusters=3, random_state=0).fit(c2_pca)
