@@ -44,7 +44,8 @@ def separar_latidos(ecg, qrs_inds):
     M = qrs_inds.size
     RR = np.diff(qrs_inds) #Vector de intervalos RR
     min_RR=np.min(RR) #Latido más corto
-    matriz_latidos = np.zeros((M,min_RR-(delay*2)))*np.nan #Matriz para guardar los latidos por filas
+    matriz_latidos = np.zeros((M,((min_RR//2)-delay)*2))*np.nan #Matriz para guardar los latidos por filas.
+                                                                #Divido y multiplico x2 min_RR por si es impar
 
     for m in range(0,M):
         # Uso un aux porque necesito saber el largo de los latidos para que si uno
@@ -52,11 +53,13 @@ def separar_latidos(ecg, qrs_inds):
         aux = ecg[np.max([0, qrs_inds[m]-((min_RR//2)-delay)]):qrs_inds[m]+(min_RR//2)-delay]
         pos_inicial = np.int(np.abs(np.min(np.array([0, qrs_inds[m]-(np.floor(min_RR/2)-delay)]))))
         matriz_latidos[m,pos_inicial:aux.size+pos_inicial] = aux
+        #print(matriz_latidos[m])
 
     ##Completo los latidos que quedaron cortados con el promedio de los anteriores en ese sector
     pos_datos_faltantes=np.where(np.isnan(matriz_latidos))
     col_mean = np.nanmean(matriz_latidos, axis=0)
    
+    pos_r=min_RR//2-delay
     #agregado=np.mean(matriz_latidos[0:M-2,-pos_datos_faltantes.shape[0]:], axis=0)
     
     #a=matriz_latidos[0:M-2,-pos_datos_faltantes.shape[0]:] #Matriz auxiliar para calcular la potencia
@@ -65,7 +68,7 @@ def separar_latidos(ecg, qrs_inds):
     
     matriz_latidos[pos_datos_faltantes]=np.take(col_mean, pos_datos_faltantes[1])
 
-    return matriz_latidos
+    return matriz_latidos, pos_r
 
 
 #Límite para los ejes
