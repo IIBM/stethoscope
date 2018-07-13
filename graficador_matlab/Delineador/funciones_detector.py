@@ -21,7 +21,7 @@ def detectar_qrs(registro, canal):
     config=wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=2, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
     #config = wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=0.13, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
 
-    sig, fields = wfdb.rdsamp('prueba', channels=[canal], sampfrom=50)
+    sig, fields = wfdb.rdsamp('prueba', channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
 
     n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
 
@@ -31,6 +31,7 @@ def detectar_qrs(registro, canal):
     #Corrijo los qrs detectados para que coincidan con los picos
     search_radius = int(fields['fs'] * 60 / config.hr_max)
     corrected_peak_inds = processing.correct_peaks(sig[:, 0], peak_inds=qrs_inds, search_radius=search_radius, smooth_window_size=150)
+    corrected_peak_inds= corrected_peak_inds+50 #Corrijo los índices porque no leo las primeras 50 muestras (*)
     
     return ecg, corrected_peak_inds
 
@@ -46,20 +47,24 @@ def separar_latidos(ecg, qrs_inds):
     min_RR=np.min(RR) #Latido más corto
     matriz_latidos = np.zeros((M,((min_RR//2)-delay)*2))*np.nan #Matriz para guardar los latidos por filas.
                                                                 #Divido y multiplico x2 min_RR por si es impar
-
+    cortes=[]
+    
     for m in range(0,M):
         # Uso un aux porque necesito saber el largo de los latidos para que si uno
         # queda más corto me deje guardarlo en la matriz. 
-        aux = ecg[np.max([0, qrs_inds[m]-((min_RR//2)-delay)]):qrs_inds[m]+(min_RR//2)-delay]
+        a = np.max([0, qrs_inds[m]-((min_RR//2)-delay)])
+        b = qrs_inds[m]+(min_RR//2)-delay
+        #cortes.append(a)
+        #cortes.append(b)
+        aux = ecg[a:b]
         pos_inicial = np.int(np.abs(np.min(np.array([0, qrs_inds[m]-(np.floor(min_RR/2)-delay)]))))
         matriz_latidos[m,pos_inicial:aux.size+pos_inicial] = aux
-        #print(matriz_latidos[m])
 
     ##Completo los latidos que quedaron cortados con el promedio de los anteriores en ese sector
     pos_datos_faltantes=np.where(np.isnan(matriz_latidos))
     col_mean = np.nanmean(matriz_latidos, axis=0)
    
-    pos_r=min_RR//2-delay
+    #pos_r=min_RR//2-delay
     #agregado=np.mean(matriz_latidos[0:M-2,-pos_datos_faltantes.shape[0]:], axis=0)
     
     #a=matriz_latidos[0:M-2,-pos_datos_faltantes.shape[0]:] #Matriz auxiliar para calcular la potencia
@@ -68,7 +73,7 @@ def separar_latidos(ecg, qrs_inds):
     
     matriz_latidos[pos_datos_faltantes]=np.take(col_mean, pos_datos_faltantes[1])
 
-    return matriz_latidos, pos_r
+    return matriz_latidos, min_RR# pos_r
 
 
 #Límite para los ejes

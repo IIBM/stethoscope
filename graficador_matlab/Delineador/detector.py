@@ -42,11 +42,11 @@ directorio_datos = '../Datos_filtrados/'
 #canal = 0 # Cargo el canal que voy a detectar
 
 class Paciente(object):
-    def __init__(self, nombre=None, matriz_latidos_c1=None, matriz_latidos_c2=None, pos_r=None):
+    def __init__(self, nombre=None, matriz_latidos_c1=None, matriz_latidos_c2=None, largo_latidos=None):
         self.nombre=nombre
         self.matriz_latidos_c1=matriz_latidos_c1
         self.matriz_latidos_c2=matriz_latidos_c2
-        self.pos_r=pos_r
+        self.largo_latidos=largo_latidos
 
 lista_pacientes=[]
 
@@ -60,19 +60,25 @@ for nombre in glob.glob(os.path.join(directorio_datos+'**/*01*'), recursive=True
     
     ecg, qrs_inds = detectar_qrs(registro, canal)
 
-    matriz_latidos_c1, pos_r = separar_latidos(ecg.p_signal[:,0], qrs_inds)
-    matriz_latidos_c2, pos_r = separar_latidos(ecg.p_signal[:,1], qrs_inds)
+    matriz_latidos_c1, largo_latidos = separar_latidos(ecg.p_signal[:,0], qrs_inds)
+    matriz_latidos_c2, largo_latidos = separar_latidos(ecg.p_signal[:,1], qrs_inds)
 
     #Corrijo la escala
     matriz_latidos_c1=matriz_latidos_c1/1000
     matriz_latidos_c2=matriz_latidos_c2/1000
     
     nombre='nombre'
-    pos_r=matriz_latidos_c1.shape[1]//2#calculo pos_r
+    #pos_r=matriz_latidos_c1.shape[1]//2#calculo pos_r
 
-    lista_pacientes.append(Paciente(nombre, matriz_latidos_c1, matriz_latidos_c2, pos_r))
+    lista_pacientes.append(Paciente(nombre, matriz_latidos_c1, matriz_latidos_c2, largo_latidos))
 
+latido_max=max(paciente.largo_latidos for paciente in lista_pacientes) #Latido más largo entre todos los pacientes
+cant_total_latidos=sum(paciente.matriz_latidos_c1.shape[0] for paciente in lista_pacientes)
 
+todos_c1=todos_c2=np.zeros((cant_total_latidos,latido_max))*np.nan
+
+for paciente in lista_pacientes
+    todos_c1.append
 #Calculo el latido promedio en cada canal
 #latido_promedio_c1=np.mean(matriz_latidos_c1, axis=0)
 #latido_promedio_c2=np.mean(matriz_latidos_c2, axis=0)
