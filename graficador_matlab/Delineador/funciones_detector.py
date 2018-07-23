@@ -72,6 +72,7 @@ def separar_latidos(ecg, qrs_inds):
     #agregado2=agregado*potencia_agregado
     
     matriz_latidos[pos_datos_faltantes]=np.take(col_mean, pos_datos_faltantes[1])
+    min_RR=matriz_latidos.shape[1]
 
     return matriz_latidos, min_RR# pos_r
 
@@ -92,15 +93,18 @@ def separar_latidos(ecg, qrs_inds):
 #c2d=np.diff(latido_promedio_c2)
 #c2d=np.append(c2d,latido_promedio_c2[-1]-latido_promedio_c2[0])
 ##c2d=latido_promedio_c2[1:]-latido_promedio_c2[:-1]
-#
+##
 #plt.figure()
+#plt.title('Vecto')
+#plt.xlabel('Tensión [V]')
+#plt.ylabel('Tensión [V]')
 ##plt.plot(latido_promedio_c1,latido_promedio_c2)
 #plt.quiver(latido_promedio_c1,latido_promedio_c2, c1d, c2d, scale_units='xy', angles='xy', scale=1)
 #plt.xlim(-lim, lim)
 #plt.ylim(lim, -lim)
 #plt.grid(True)
-##wfdb.plot_wfdb(registro)
-##plt.show()
+#wfdb.plot_wfdb(registro)
+#plt.show()
 #
 #plt.figure()
 #plt.plot(matriz_latidos_c1.T,'--')
@@ -110,6 +114,29 @@ def separar_latidos(ecg, qrs_inds):
 #plt.figure()
 #plt.plot(matriz_latidos_c2.T,'--')
 #plt.plot(latido_promedio_c2,'k')
+#plt.show()
+
+#plt.figure()
+#plt.plot(lista_pacientes[0].matriz_latidos_c1.T,'--')
+#plt.plot(latido_promedio_c1,'k')
+#plt.title('Canal 1')
+#plt.xlabel('Muestras')
+#plt.ylabel('Tensión [V]')
+#plt.ylim(-lim, lim)
+#plt.grid(True)
+##ax.set(ylim=[-lim, lim], xlabel='Muestras', ylabel='Tensión[V]', title='Canal1')
+##plt.axvline(x=matriz_latidos_c2.shape[1]//2, color='r')
+#
+#plt.figure()
+#plt.plot(lista_pacientes[0].matriz_latidos_c2.T,'--')
+#plt.plot(latido_promedio_c2,'k')
+#plt.title('Canal 2')
+#plt.xlabel('Muestras')
+#plt.ylabel('Tensión [V]')
+#plt.ylim(-lim, lim)
+#plt.grid(True)
+##ax.set(ylim=[-lim, lim], xlabel='Muestras', ylabel='Tensión[V]', title='Canal1')
+##plt.axvline(x=matriz_latidos_c2.shape[1]//2, color='r')
 #plt.show()
 
 
