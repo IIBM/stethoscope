@@ -7,6 +7,7 @@ import importlib
 
 from IPython.display import display
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 #matplotlib inline
 import numpy as np
 import shutil
@@ -50,13 +51,12 @@ class Paciente(object):
 
 lista_pacientes=[]
 
-for nombre in glob.glob(os.path.join(directorio_datos+'**/*06*'), recursive=True):
-    print(nombre)
-    registro = np.genfromtxt(nombre, delimiter=',') # Cargo el archivo con los registros de una posición
+for archivo in glob.glob(os.path.join(directorio_datos+'**/*06*'), recursive=True):
+    print(archivo)
+    registro = np.genfromtxt(archivo, delimiter=',') # Cargo el archivo con los registros de una posición
     #registro = np.genfromtxt(sys.argv[1], delimiter=',',skip_header=20) # Para algunos registros hay que borrar más datos
     registro=registro*1000
     canal = 0 # Cargo el canal que voy a detectar desde el archivo de canales
-    #sacar el nombre del paciente del nombre del archivo
     
     ecg, qrs_inds = detectar_qrs(registro, canal)
 
@@ -67,7 +67,8 @@ for nombre in glob.glob(os.path.join(directorio_datos+'**/*06*'), recursive=True
     matriz_latidos_c1=matriz_latidos_c1/1000
     matriz_latidos_c2=matriz_latidos_c2/1000
     
-    nombre='nombre'
+    nombre=archivo.split("/")[2]
+    nombre=nombre.replace("-"," ")
     #pos_r=matriz_latidos_c1.shape[1]//2#calculo pos_r
 
     lista_pacientes.append(Paciente(nombre, matriz_latidos_c1, matriz_latidos_c2, largo_latidos))
@@ -106,6 +107,26 @@ pca = PCA(n_components=2)
 pca_c1=pca.fit_transform(latidos_c1)
 pca_c2=pca.fit_transform(latidos_c2)
 
+cant_latidos=[len(paciente.matriz_latidos_c1) for paciente in lista_pacientes]
+rango_colores=np.cumsum(cant_latidos)
+
+#Divido el arreglo en arreglos por cada paciente para graficar
+pca_c1_por_paciente=np.split(pca_c1, rango_colores[0:-1])
+pca_c2_por_paciente=np.split(pca_c2, rango_colores[0:-1])
+
+#plot es más eficiente que scatter para muchos datos
+#https://jakevdp.github.io/PythonDataScienceHandbook/04.02-simple-scatter-plots.html#plot-Versus-scatter:-A-Note-on-Efficiency
+colors = iter(cm.rainbow(np.linspace(0, 1, len(pca_c1_por_paciente))))
+plt.figure()
+for i, paciente in enumerate(pca_c1_por_paciente):
+    plt.plot(paciente[:,0], paciente[:,1], 'o', color=next(colors), label=lista_pacientes[i].nombre)
+plt.legend()
+
+plt.figure()
+colors = iter(cm.rainbow(np.linspace(0, 1, len(pca_c1_por_paciente))))
+for i, paciente in enumerate(pca_c2_por_paciente):
+    plt.plot(paciente[:,0], paciente[:,1], 'o', color=next(colors), label=lista_pacientes[i].nombre)
+plt.legend()
 
 #
 #kmeans_c1 = KMeans(n_clusters=3, random_state=0).fit(c1_pca)

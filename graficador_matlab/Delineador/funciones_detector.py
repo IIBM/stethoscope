@@ -140,18 +140,7 @@ def separar_latidos(ecg, qrs_inds):
 #plt.show()
 
 
-###PCA
-#http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
-#http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
 
-#pca = PCA(n_components=2)
-#
-#c1_pca=pca.fit_transform(matriz_latidos_c1)
-#c2_pca=pca.fit_transform(matriz_latidos_c2)
-#
-#kmeans_c1 = KMeans(n_clusters=3, random_state=0).fit(c1_pca)
-#kmeans_c2 = KMeans(n_clusters=3, random_state=0).fit(c2_pca)
-#
 #plt.figure()
 #plt.scatter(c1_pca[:,0],c1_pca[:,1])
 #plt.scatter(kmeans_c1.cluster_centers_[:,0],kmeans_c1.cluster_centers_[:,1], c='r')
