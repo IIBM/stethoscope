@@ -26,8 +26,21 @@ def detectar_qrs(registro, canal):
     n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
 
     qrs_inds = processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config)
-    #qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)
+    
+    if qrs_inds.size==0:
+        if canal==0:
+            canal=1
+        else:
+            canal=0
+        sig, fields = wfdb.rdsamp('prueba', channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
+        n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
+        qrs_inds = processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config)
 
+        if qrs_inds.size==0:
+            return ecg, qrs_inds
+
+    #qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)
+    print(canal)
     #Corrijo los qrs detectados para que coincidan con los picos
     search_radius = int(fields['fs'] * 60 / config.hr_max)
     corrected_peak_inds = processing.correct_peaks(sig[:, 0], peak_inds=qrs_inds, search_radius=search_radius, smooth_window_size=150)

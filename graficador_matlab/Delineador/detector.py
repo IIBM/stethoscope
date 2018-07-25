@@ -8,7 +8,7 @@ import importlib
 from IPython.display import display
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-#matplotlib inline
+from itertools import cycle
 import numpy as np
 import shutil
 
@@ -51,27 +51,30 @@ class Paciente(object):
 
 lista_pacientes=[]
 
-for archivo in glob.glob(os.path.join(directorio_datos+'**/*06*'), recursive=True):
-    print(archivo)
+for archivo in glob.glob(os.path.join(directorio_datos+'**/*03*'), recursive=True):
+    print("\n"+archivo)
     registro = np.genfromtxt(archivo, delimiter=',') # Cargo el archivo con los registros de una posición
     #registro = np.genfromtxt(sys.argv[1], delimiter=',',skip_header=20) # Para algunos registros hay que borrar más datos
     registro=registro*1000
     canal = 0 # Cargo el canal que voy a detectar desde el archivo de canales
     
     ecg, qrs_inds = detectar_qrs(registro, canal)
-
-    matriz_latidos_c1, largo_latidos = separar_latidos(ecg.p_signal[:,0], qrs_inds)
-    matriz_latidos_c2, largo_latidos = separar_latidos(ecg.p_signal[:,1], qrs_inds)
-
-    #Corrijo la escala
-    matriz_latidos_c1=matriz_latidos_c1/1000
-    matriz_latidos_c2=matriz_latidos_c2/1000
     
-    nombre=archivo.split("/")[2]
-    nombre=nombre.replace("-"," ")
-    #pos_r=matriz_latidos_c1.shape[1]//2#calculo pos_r
+    if qrs_inds.size!=0:
+        matriz_latidos_c1, largo_latidos = separar_latidos(ecg.p_signal[:,0], qrs_inds)
+        matriz_latidos_c2, largo_latidos = separar_latidos(ecg.p_signal[:,1], qrs_inds)
 
-    lista_pacientes.append(Paciente(nombre, matriz_latidos_c1, matriz_latidos_c2, largo_latidos))
+        #Corrijo la escala
+        matriz_latidos_c1=matriz_latidos_c1/1000
+        matriz_latidos_c2=matriz_latidos_c2/1000
+        
+        nombre=archivo.split("/")[2]
+        nombre=nombre.replace("-"," ")
+        #pos_r=matriz_latidos_c1.shape[1]//2#calculo pos_r
+
+        lista_pacientes.append(Paciente(nombre, matriz_latidos_c1, matriz_latidos_c2, largo_latidos))
+    else:
+        print("No se detectaron ondas R")
 
 #Calculo el latido promedio en cada canal
 #latido_promedio_c1=np.mean(matriz_latidos_c1, axis=0)
@@ -116,18 +119,22 @@ pca_c2_por_paciente=np.split(pca_c2, rango_colores[0:-1])
 
 #plot es más eficiente que scatter para muchos datos
 #https://jakevdp.github.io/PythonDataScienceHandbook/04.02-simple-scatter-plots.html#plot-Versus-scatter:-A-Note-on-Efficiency
+marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
+ciclo_marcadores = cycle(marcadores)
 colors = iter(cm.rainbow(np.linspace(0, 1, len(pca_c1_por_paciente))))
 plt.figure()
 for i, paciente in enumerate(pca_c1_por_paciente):
-    plt.plot(paciente[:,0], paciente[:,1], 'o', color=next(colors), label=lista_pacientes[i].nombre)
+    plt.plot(paciente[:,0], paciente[:,1], marker=next(ciclo_marcadores), linestyle="None", color=next(colors), label=lista_pacientes[i].nombre)
 plt.legend()
 
+ciclo_marcadores = cycle(marcadores)
 plt.figure()
 colors = iter(cm.rainbow(np.linspace(0, 1, len(pca_c1_por_paciente))))
 for i, paciente in enumerate(pca_c2_por_paciente):
-    plt.plot(paciente[:,0], paciente[:,1], 'o', color=next(colors), label=lista_pacientes[i].nombre)
+    plt.plot(paciente[:,0], paciente[:,1], marker=next(ciclo_marcadores), linestyle="None", color=next(colors), label=lista_pacientes[i].nombre)
 plt.legend()
 
+plt.show()
 #
 #kmeans_c1 = KMeans(n_clusters=3, random_state=0).fit(c1_pca)
 #kmeans_c2 = KMeans(n_clusters=3, random_state=0).fit(c2_pca)
