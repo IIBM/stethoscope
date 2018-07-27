@@ -108,9 +108,9 @@ def separar_latidos(ecg, qrs_inds):
 ##c2d=latido_promedio_c2[1:]-latido_promedio_c2[:-1]
 ##
 #plt.figure()
-#plt.title('Vecto')
-#plt.xlabel('Tensión [V]')
-#plt.ylabel('Tensión [V]')
+plt.title('Vecto')
+plt.xlabel('Tensión [V]')
+plt.ylabel('Tensión [V]')
 ##plt.plot(latido_promedio_c1,latido_promedio_c2)
 #plt.quiver(latido_promedio_c1,latido_promedio_c2, c1d, c2d, scale_units='xy', angles='xy', scale=1)
 #plt.xlim(-lim, lim)
