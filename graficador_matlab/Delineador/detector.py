@@ -23,7 +23,8 @@ import funciones_detector
 importlib.reload(funciones_detector) #Recargo el módulo para que si cambio algo se actualice
 from funciones_detector import detectar_qrs, separar_latidos
 
-directorio_datos = '../Datos_filtrados/'
+directorio_origen_datos = '../Datos_filtrados/'
+directorio_registros_procesados = './Registros/'
 
 #yourpath = 'path'
 #for root, dirs, files in os.walk(yourpath, topdown=False):
@@ -32,16 +33,8 @@ directorio_datos = '../Datos_filtrados/'
 #    for name in dirs: #Lista los directorios dentro de root
 #        print(os.path.join(root, name))
 
-#for nombre in glob.glob(os.path.join(directorio_datos+'**/*01*'), recursive=True):
-#    print (nombre)
-
-#registro = np.genfromtxt(sys.argv[1], delimiter=',') # Cargo el archivo con los registros de una posición
 #registro = np.genfromtxt(sys.argv[1], delimiter=',',skip_header=20) # Para algunos registros hay que borrar unos datos más
-#registro=registro*1000
 #canal = int(sys.argv[2]) # Cargo el canal que voy a detectar
-
-#registro = np.genfromtxt('../Datos/Martín-Mello-Teggia/filt/Martín-Mello-Teggia_01_filt.txt', delimiter=',') # Cargo el archivo con los registros de una posición
-#canal = 0 # Cargo el canal que voy a detectar
 
 class Paciente(object):
     def __init__(self, nombre=None, matriz_latidos_c1=None, matriz_latidos_c2=None, largo_latidos=None):
@@ -52,15 +45,23 @@ class Paciente(object):
 
 lista_pacientes=[]
 
-for archivo in glob.glob(os.path.join(directorio_datos+'**/*02*'), recursive=True):
+for archivo in glob.glob(os.path.join(directorio_origen_datos+'*/*03*.txt'), recursive=True):
     print("\n"+archivo)
     registro = np.genfromtxt(archivo, delimiter=',') # Cargo el archivo con los registros de una posición
     #registro = np.genfromtxt(sys.argv[1], delimiter=',',skip_header=20) # Para algunos registros hay que borrar más datos
     registro=registro*1000
     canal = 0 # Cargo el canal que voy a detectar desde el archivo de canales
     
-    ecg, qrs_inds = detectar_qrs(registro, canal)
+    nombre=archivo.split("/")[2] # Saco el nombre del paciente del nombre de archivo
+    posicion=archivo.split("/")[-1].split("_")[1] #Saco el la posición de la medición del nombre de archivo
+   
+    archivo_wfdb= nombre + "_" + posicion #El nombre del archivo para guardar las anotaciones
     
+    ecg, qrs_inds = detectar_qrs(registro, canal, archivo_wfdb, directorio_registros_procesados)
+    
+    if qrs_inds.size!=0:
+        wfdb.wrann(archivo_wfdb, 'ann', qrs_inds, symbol=['N']*len(qrs_inds), write_dir=directorio_registros_procesados)
+
     if qrs_inds.size!=0:
         matriz_latidos_c1, largo_latidos = separar_latidos(ecg.p_signal[:,0], qrs_inds)
         matriz_latidos_c2, largo_latidos = separar_latidos(ecg.p_signal[:,1], qrs_inds)
@@ -69,7 +70,6 @@ for archivo in glob.glob(os.path.join(directorio_datos+'**/*02*'), recursive=Tru
         matriz_latidos_c1=matriz_latidos_c1/1000
         matriz_latidos_c2=matriz_latidos_c2/1000
         
-        nombre=archivo.split("/")[2]
         nombre=nombre.replace("-"," ")
         #pos_r=matriz_latidos_c1.shape[1]//2#calculo pos_r
 
@@ -136,25 +136,25 @@ latido_max=max(paciente.largo_latidos for paciente in lista_pacientes) #Latido m
 #plt.show()
 
 
-##Para hacer PCA de todos los latidos
-cant_total_latidos=sum(paciente.matriz_latidos_c1.shape[0] for paciente in lista_pacientes)
-
-#Hago una lista con las matrices para alinearlas juntas
-matrices_c1=[paciente.matriz_latidos_c1 for paciente in lista_pacientes]
-matrices_c2=[paciente.matriz_latidos_c2 for paciente in lista_pacientes]
-
-#Recorto las matrices a la cantidad menor de columnas
-for i, mat in enumerate(matrices_c1):
-    dif=(mat.shape[1]-latido_min)//2
-    matrices_c1[i]=mat[:,dif:(mat.shape[1]-dif)]
-    
-for i, mat in enumerate(matrices_c2):
-    dif=(mat.shape[1]-latido_min)//2
-    matrices_c2[i]=mat[:,dif:(mat.shape[1]-dif)]
-
-#Hago una matriz por canal con los latidos de todos los pacientes
-latidos_c1=np.concatenate(matrices_c1, axis=0)
-latidos_c2=np.concatenate(matrices_c2, axis=0)
+###Para hacer PCA de todos los latidos
+#cant_total_latidos=sum(paciente.matriz_latidos_c1.shape[0] for paciente in lista_pacientes)
+#
+##Hago una lista con las matrices para alinearlas juntas
+#matrices_c1=[paciente.matriz_latidos_c1 for paciente in lista_pacientes]
+#matrices_c2=[paciente.matriz_latidos_c2 for paciente in lista_pacientes]
+#
+##Recorto las matrices a la cantidad menor de columnas
+#for i, mat in enumerate(matrices_c1):
+#    dif=(mat.shape[1]-latido_min)//2
+#    matrices_c1[i]=mat[:,dif:(mat.shape[1]-dif)]
+#    
+#for i, mat in enumerate(matrices_c2):
+#    dif=(mat.shape[1]-latido_min)//2
+#    matrices_c2[i]=mat[:,dif:(mat.shape[1]-dif)]
+#
+##Hago una matriz por canal con los latidos de todos los pacientes
+#latidos_c1=np.concatenate(matrices_c1, axis=0)
+#latidos_c2=np.concatenate(matrices_c2, axis=0)
 
 ###PCA
 #http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
@@ -162,75 +162,76 @@ latidos_c2=np.concatenate(matrices_c2, axis=0)
 #http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
 #http://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
 
-pca = PCA(n_components=2)
-scaler = StandardScaler()
-
-pca_c1=pca.fit_transform(scaler.fit_transform(latidos_c1))
-pca_c2=pca.fit_transform(scaler.fit_transform(latidos_c2))
-
-cant_latidos=[len(paciente.matriz_latidos_c1) for paciente in lista_pacientes]
-rango_colores=np.cumsum(cant_latidos)
-
-#Divido el arreglo en arreglos por cada paciente para graficar
-pca_c1_por_paciente=np.split(pca_c1, rango_colores[0:-1])
-pca_c2_por_paciente=np.split(pca_c2, rango_colores[0:-1])
-
-colores=[]
-for paciente in lista_pacientes:
-     try:
-         float(paciente.nombre)
-         colores.append('r')
-     except ValueError:
-         colores.append('k')
-
-##plot es más eficiente que scatter para muchos datos
-##https://jakevdp.github.io/PythonDataScienceHandbook/04.02-simple-scatter-plots.html#plot-Versus-scatter:-A-Note-on-Efficiency
-marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
-ciclo_marcadores = cycle(marcadores)
-#colors = iter(cm.rainbow(np.linspace(0, 1, len(pca_c1_por_paciente))))
-plt.figure()
-plt.title('PCA_c1 componente 1 vs componente 2')
-plt.xlabel('Componente 1')
-plt.ylabel('Componente 2')
-for i, paciente in enumerate(pca_c1_por_paciente):
-    plt.plot(paciente[:,0], paciente[:,1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
-plt.legend()
-
-ciclo_marcadores = cycle(marcadores)
-plt.figure()
-plt.title('PCA_c2 componente 1 vs componente 2')
-plt.xlabel('Componente 1')
-plt.ylabel('Componente 2')
-#colors = iter(cm.rainbow(np.linspace(0, 1, len(pca_c1_por_paciente))))
-for i, paciente in enumerate(pca_c2_por_paciente):
-    plt.plot(paciente[:,0], paciente[:,1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
-plt.legend()
-
+#pca = PCA(n_components=2)
+#scaler = StandardScaler()
+#
+#pca_c1=pca.fit_transform(scaler.fit_transform(latidos_c1))
+#pca_c2=pca.fit_transform(scaler.fit_transform(latidos_c2))
+#
+#cant_latidos=[len(paciente.matriz_latidos_c1) for paciente in lista_pacientes]
+#rango_colores=np.cumsum(cant_latidos)
+#
+##Divido el arreglo en arreglos por cada paciente para graficar
+#pca_c1_por_paciente=np.split(pca_c1, rango_colores[0:-1])
+#pca_c2_por_paciente=np.split(pca_c2, rango_colores[0:-1])
+#
+#colores=[]
+#for paciente in lista_pacientes:
+#     try:
+#         float(paciente.nombre)
+#         colores.append('r')
+#     except ValueError:
+#         colores.append('k')
+#
+###plot es más eficiente que scatter para muchos datos
+###https://jakevdp.github.io/PythonDataScienceHandbook/04.02-simple-scatter-plots.html#plot-Versus-scatter:-A-Note-on-Efficiency
+#marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
+#ciclo_marcadores = cycle(marcadores)
+##colors = iter(cm.rainbow(np.linspace(0, 1, len(pca_c1_por_paciente))))
+#plt.figure()
+#plt.title('PCA_c1 componente 1 vs componente 2')
+#plt.xlabel('Componente 1')
+#plt.ylabel('Componente 2')
+#for i, paciente in enumerate(pca_c1_por_paciente):
+#    plt.plot(paciente[:,0], paciente[:,1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+#    #plt.plot(paciente[:,0], paciente[:,1], marker="o", linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+##plt.legend()
 #plt.show()
 
-## PCA_c1 vs PCA_c2 componente 1
-marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
-ciclo_marcadores = cycle(marcadores)
-plt.figure()
-plt.title('PCA_c1 vs PCA_c2 componente 1')
-plt.xlabel('PCA_c1')
-plt.ylabel('PCA_c2')
-for i, paciente in enumerate(pca_c1_por_paciente):
-    plt.plot(pca_c1_por_paciente[i][:,0], pca_c2_por_paciente[i][:,0], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
-plt.legend()
+#ciclo_marcadores = cycle(marcadores)
+#plt.figure()
+#plt.title('PCA_c2 componente 1 vs componente 2')
+#plt.xlabel('Componente 1')
+#plt.ylabel('Componente 2')
+##colors = iter(cm.rainbow(np.linspace(0, 1, len(pca_c1_por_paciente))))
+#for i, paciente in enumerate(pca_c2_por_paciente):
+#    plt.plot(paciente[:,0], paciente[:,1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+#plt.legend()
+#
+#
+### PCA_c1 vs PCA_c2 componente 1
+#marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
+#ciclo_marcadores = cycle(marcadores)
+#plt.figure()
+#plt.title('PCA_c1 vs PCA_c2 componente 1')
+#plt.xlabel('PCA_c1')
+#plt.ylabel('PCA_c2')
+#for i, paciente in enumerate(pca_c1_por_paciente):
+#    plt.plot(pca_c1_por_paciente[i][:,0], pca_c2_por_paciente[i][:,0], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+#plt.legend()
+##plt.show()
+#
+### PCA_c1 vs PCA_c2 componente 2
+#marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
+#ciclo_marcadores = cycle(marcadores)
+#plt.figure()
+#plt.title('PCA_c1 vs PCA_c2 componente 2')
+#plt.xlabel('PCA_c1')
+#plt.ylabel('PCA_c2')
+#for i, paciente in enumerate(pca_c1_por_paciente):
+#    plt.plot(pca_c1_por_paciente[i][:,1], pca_c2_por_paciente[i][:,1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+#plt.legend()
 #plt.show()
-
-## PCA_c1 vs PCA_c2 componente 2
-marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
-ciclo_marcadores = cycle(marcadores)
-plt.figure()
-plt.title('PCA_c1 vs PCA_c2 componente 2')
-plt.xlabel('PCA_c1')
-plt.ylabel('PCA_c2')
-for i, paciente in enumerate(pca_c1_por_paciente):
-    plt.plot(pca_c1_por_paciente[i][:,1], pca_c2_por_paciente[i][:,1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
-plt.legend()
-plt.show()
 
 #
 #kmeans_c1 = KMeans(n_clusters=3, random_state=0).fit(c1_pca)

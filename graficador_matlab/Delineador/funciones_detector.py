@@ -11,17 +11,17 @@ import shutil
 import wfdb
 from wfdb import processing
 
-def detectar_qrs(registro, canal):
+def detectar_qrs(registro, canal, archivo_wfdb, directorio_registros_procesados):
     #ganancia=(2.42/3/((2^23)-1))
     Fs = 250 #Frecuencia de muestreo
-    wfdb.wrsamp('prueba', fs = Fs, units = ['V','V'], sig_name = ['C1', 'C2'], p_signal=registro, fmt=['16', '16']) #
+    wfdb.wrsamp(archivo_wfdb, fs = Fs, units = ['V','V'], sig_name = ['C1', 'C2'], p_signal=registro, fmt=['16', '16'], write_dir=directorio_registros_procesados) #
 
-    ecg = wfdb.rdrecord('prueba')
+    ecg = wfdb.rdrecord(directorio_registros_procesados+archivo_wfdb)
 
     config=wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=2, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
     #config = wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=0.13, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
 
-    sig, fields = wfdb.rdsamp('prueba', channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
+    sig, fields = wfdb.rdsamp(directorio_registros_procesados+archivo_wfdb, channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
 
     n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
 
@@ -32,7 +32,7 @@ def detectar_qrs(registro, canal):
             canal=1
         else:
             canal=0
-        sig, fields = wfdb.rdsamp('prueba', channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
+        sig, fields = wfdb.rdsamp(directorio_registros_procesados+archivo_wfdb, channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
         n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
         qrs_inds = processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config)
 
@@ -90,6 +90,21 @@ def separar_latidos(ecg, qrs_inds):
     return matriz_latidos, min_RR# pos_r
 
 
+def graficar_todos_los_registros(directorio_registros_procesados):
+    
+    #Grafica los registros con anotaciones de un directorio
+    registros_wfdb = [arch for arch in os.listdir(directorio_registros_procesados)]
+    registros_wfdb = [aux.split('.ann')[0] for aux in registros_wfdb if aux.endswith('.ann')]
+    registros_wfdb.sort()
+
+    for arch in registros_wfdb:
+        registro = wfdb.rdrecord(os.path.join(directorio_registros_procesados, arch))
+        anotaciones = wfdb.rdann(os.path.join(directorio_registros_procesados, arch), 'ann')
+
+        wfdb.plot_wfdb(registro, annotation=anotaciones, title='Registro - %s' % registro.record_name)
+        input('Press enter to continue...')
+
+
 #Límite para los ejes
 #lim=np.max([np.max(np.abs(latido_promedio_c1)),np.max(np.abs(latido_promedio_c2))])
 #lim=lim*1.1;
@@ -108,9 +123,9 @@ def separar_latidos(ecg, qrs_inds):
 ##c2d=latido_promedio_c2[1:]-latido_promedio_c2[:-1]
 ##
 #plt.figure()
-plt.title('Vecto')
-plt.xlabel('Tensión [V]')
-plt.ylabel('Tensión [V]')
+#plt.title('Vecto')
+#plt.xlabel('Tensión [V]')
+#plt.ylabel('Tensión [V]')
 ##plt.plot(latido_promedio_c1,latido_promedio_c2)
 #plt.quiver(latido_promedio_c1,latido_promedio_c2, c1d, c2d, scale_units='xy', angles='xy', scale=1)
 #plt.xlim(-lim, lim)
