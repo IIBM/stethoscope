@@ -50,18 +50,14 @@ for archivo in glob.glob(os.path.join(directorio_origen_datos+'*/*03*.txt'), rec
     registro = np.genfromtxt(archivo, delimiter=',') # Cargo el archivo con los registros de una posición
     #registro = np.genfromtxt(sys.argv[1], delimiter=',',skip_header=20) # Para algunos registros hay que borrar más datos
     registro=registro*1000
-    canal = 0 # Cargo el canal que voy a detectar desde el archivo de canales
     
     nombre=archivo.split("/")[2] # Saco el nombre del paciente del nombre de archivo
     posicion=archivo.split("/")[-1].split("_")[1] #Saco el la posición de la medición del nombre de archivo
    
     archivo_wfdb= nombre + "_" + posicion #El nombre del archivo para guardar las anotaciones
     
-    ecg, qrs_inds = detectar_qrs(registro, canal, archivo_wfdb, directorio_registros_procesados)
+    ecg, qrs_inds = detectar_qrs(registro, archivo_wfdb, directorio_registros_procesados)
     
-    if qrs_inds.size!=0:
-        wfdb.wrann(archivo_wfdb, 'ann', qrs_inds, symbol=['N']*len(qrs_inds), write_dir=directorio_registros_procesados)
-
     if qrs_inds.size!=0:
         matriz_latidos_c1, largo_latidos = separar_latidos(ecg.p_signal[:,0], qrs_inds)
         matriz_latidos_c2, largo_latidos = separar_latidos(ecg.p_signal[:,1], qrs_inds)

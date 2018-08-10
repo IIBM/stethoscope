@@ -11,9 +11,11 @@ import shutil
 import wfdb
 from wfdb import processing
 
-def detectar_qrs(registro, canal, archivo_wfdb, directorio_registros_procesados):
+def detectar_qrs(registro, archivo_wfdb, directorio_registros_procesados):
     #ganancia=(2.42/3/((2^23)-1))
     Fs = 250 #Frecuencia de muestreo
+    canal=0
+
     wfdb.wrsamp(archivo_wfdb, fs = Fs, units = ['V','V'], sig_name = ['C1', 'C2'], p_signal=registro, fmt=['16', '16'], write_dir=directorio_registros_procesados) #
 
     ecg = wfdb.rdrecord(directorio_registros_procesados+archivo_wfdb)
@@ -45,6 +47,9 @@ def detectar_qrs(registro, canal, archivo_wfdb, directorio_registros_procesados)
     search_radius = int(fields['fs'] * 60 / config.hr_max)
     corrected_peak_inds = processing.correct_peaks(sig[:, 0], peak_inds=qrs_inds, search_radius=search_radius, smooth_window_size=150)
     corrected_peak_inds= corrected_peak_inds+50 #Corrijo los índices porque no leo las primeras 50 muestras (*)
+    
+    #Si encontró picos los guardo en el archivo de anotaciones .ann
+    wfdb.wrann(archivo_wfdb, 'ann', corrected_peak_inds, symbol=['N']*len(qrs_inds), chan=np.array([canal]*len(qrs_inds)), write_dir=directorio_registros_procesados)
     
     return ecg, corrected_peak_inds
 
