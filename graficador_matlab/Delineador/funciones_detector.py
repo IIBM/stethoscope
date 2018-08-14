@@ -11,11 +11,19 @@ import shutil
 import wfdb
 from wfdb import processing
 
-def detectar_qrs(registro, archivo_wfdb, directorio_registros_procesados):
+def detectar_qrs(archivo, directorio_registros_procesados):
     #ganancia=(2.42/3/((2^23)-1))
     Fs = 250 #Frecuencia de muestreo
-    canal=0
 
+    registro = np.genfromtxt(archivo, delimiter=',') # Cargo el archivo con los registros de una posición
+    #registro = np.genfromtxt(sys.argv[1], delimiter=',',skip_header=20) # Para algunos registros hay que borrar más datos
+    registro=registro*1000
+    
+    nombre=archivo.split("/")[2] # Saco el nombre del paciente del nombre de archivo
+    posicion=archivo.split("/")[-1].split("_")[1] #Saco el la posición de la medición del nombre de archivo
+   
+    archivo_wfdb= nombre + "_" + posicion #El nombre del archivo para guardar las anotaciones
+    
     wfdb.wrsamp(archivo_wfdb, fs = Fs, units = ['V','V'], sig_name = ['C1', 'C2'], p_signal=registro, fmt=['16', '16'], write_dir=directorio_registros_procesados) #
 
     ecg = wfdb.rdrecord(directorio_registros_procesados+archivo_wfdb)
@@ -29,6 +37,7 @@ def detectar_qrs(registro, archivo_wfdb, directorio_registros_procesados):
 
     qrs_inds = processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config)
     
+    canal=0
     if qrs_inds.size==0:
         if canal==0:
             canal=1
@@ -39,7 +48,7 @@ def detectar_qrs(registro, archivo_wfdb, directorio_registros_procesados):
         qrs_inds = processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config)
 
         if qrs_inds.size==0:
-            return ecg, qrs_inds
+            return ecg, qrs_inds, nombre
 
     #qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)
     print(canal)
@@ -51,7 +60,7 @@ def detectar_qrs(registro, archivo_wfdb, directorio_registros_procesados):
     #Si encontró picos los guardo en el archivo de anotaciones .ann
     wfdb.wrann(archivo_wfdb, 'ann', corrected_peak_inds, symbol=['N']*len(qrs_inds), chan=np.array([canal]*len(qrs_inds)), write_dir=directorio_registros_procesados)
     
-    return ecg, corrected_peak_inds
+    return ecg, corrected_peak_inds, nombre
 
 
 def separar_latidos(ecg, qrs_inds):
