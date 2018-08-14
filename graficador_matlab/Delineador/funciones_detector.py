@@ -114,6 +114,13 @@ def graficar_todos_los_registros(directorio_registros_procesados):
         wfdb.plot_wfdb(registro, annotation=anotaciones, title='Registro - %s' % registro.record_name)
         input('Press enter to continue...')
 
+def guardar_no_detectado(nombre_archivo, registro_no_detectado):
+    """
+    Guarda en 'nombre_archivo' la ruta del 'registro_no_detectado' en el que no se detectaron r para procesarlo después
+    """
+    archivo_no_detectados = open(nombre_archivo, "a")
+    archivo_no_detectados.write(registro_no_detectado+"\n")
+    archivo_no_detectados.close()
 
 #Límite para los ejes
 #lim=np.max([np.max(np.abs(latido_promedio_c1)),np.max(np.abs(latido_promedio_c2))])

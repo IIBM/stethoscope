@@ -21,7 +21,7 @@ from sklearn.cluster import KMeans
 
 import funciones_detector
 importlib.reload(funciones_detector) #Recargo el módulo para que si cambio algo se actualice
-from funciones_detector import detectar_qrs, separar_latidos
+from funciones_detector import detectar_qrs, separar_latidos, guardar_no_detectado
 
 directorio_origen_datos = '../Datos_filtrados/'
 directorio_registros_procesados = './Registros/'
@@ -64,6 +64,8 @@ for archivo in glob.glob(os.path.join(directorio_origen_datos+'*/*03*.txt'), rec
         lista_pacientes.append(Paciente(nombre, matriz_latidos_c1, matriz_latidos_c2, largo_latidos))
     else:
         print("No se detectaron ondas R")
+        guardar_no_detectado("no_detectados.txt", archivo)
+
 
 latido_min=min(paciente.largo_latidos for paciente in lista_pacientes) #Latido más corto entre todos los pacientes
 latido_max=max(paciente.largo_latidos for paciente in lista_pacientes) #Latido más largo entre todos los pacientes
