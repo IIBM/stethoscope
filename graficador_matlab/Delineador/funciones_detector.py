@@ -31,26 +31,22 @@ def detectar_qrs(archivo, directorio_registros_procesados):
     config=wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=2, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
     #config = wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=0.13, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
 
-    sig, fields = wfdb.rdsamp(directorio_registros_procesados+archivo_wfdb, channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
-
-    n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
-
-    qrs_inds = processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config)
-    
+    #Detecta las posiciones de las r
+    #Primero intenta en el canal 0, si no encuentra nada pasa al 1
     canal=0
-    if qrs_inds.size==0:
-        if canal==0:
-            canal=1
-        else:
-            canal=0
+    qrs_inds=[]
+    while len(qrs_inds)==0 and canal<2:
         sig, fields = wfdb.rdsamp(directorio_registros_procesados+archivo_wfdb, channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
         n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
+        #qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)
         qrs_inds = processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config)
+        
+        canal=canal+1
+    
+    #Si no se detectan r sale de la función
+    if qrs_inds.size==0:
+        return ecg, qrs_inds, nombre
 
-        if qrs_inds.size==0:
-            return ecg, qrs_inds, nombre
-
-    #qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)
     print(canal)
     #Corrijo los qrs detectados para que coincidan con los picos
     search_radius = int(fields['fs'] * 60 / config.hr_max)
