@@ -3,7 +3,7 @@
 #funcion para mostrar el uso del script
 function mostrar_uso {
     echo "USO:"
-    echo "    ./graficar.sh directorio"
+    echo "    ./graficar.sh -d directorio -i inicio -f fin"
     echo "      -h muestra la ayuda"
 }
 
@@ -17,36 +17,98 @@ function mostrar_ayuda {
 }
 
 #verifico que no tenga mas de un argumento, o ninguno
-if [ $# -gt 1 ]
+#if [ $# -gt 6 ]
+#then
+#    echo "Exceso de argumentos"
+#    echo $#
+#    mostrar_uso
+#    exit 1
+#elif [ $# -eq 0 ]
+#then
+#    echo "Faltan argumentos"
+#    mostrar_uso
+#    exit 1
+#fi
+
+OPTIONS=d:i:f:h
+LONGOPTS=dir:,inicio:,fin:,ayuda
+exp_numero='^[0-9]+([.][0-9]+)?$' #Expresión regular que coincide con números positivos con coma
+
+#PARSED=$(getopt --options $OPTIONS --name="$0" -- "$@")
+#! PARSED=$(getopt --options $OPTIONS --name="$0" -- "$@")
+OPTS=$(getopt --options $OPTIONS --longoptions $LONGOPTS --name "$0" -- "$@")
+#! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
+#if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+#    # e.g. return value is 1
+#    #  then getopt has complained about wrong arguments to stdout
+#    exit 2
+#fi
+
+echo $OPTS
+echo "$1"
+
+# read getopt’s output this way to handle the quoting right:
+eval set -- "$OPTS"
+while true ; do
+    case "$1" in
+        -d | --directorio )
+            if [[ -d "$2"  ]]
+            then
+                #leer nombres de archivo
+                directorio=$2
+                directorio=${directorio%/*} #Le saco la / del final
+            else
+                echo "Error de argumentos: verificar el campo de directorio"
+                mostrar_uso
+            fi
+            shift 2
+            ;;
+        -i | --inicio )
+            if [[ $2 =~ $exp_numero ]] 
+            then
+                inicio=$2
+            else
+                echo "Error de argumentos: el valor de inicio debe ser un número positivo"
+                mostrar_uso
+                break
+            fi
+            shift 2
+            ;;
+        -f | --fin )
+            if [[ $2 =~ $exp_numero ]] 
+            then
+                fin=$2
+            else
+                echo "Error de argumentos: el valor de fin debe ser un número positivo"
+                mostrar_uso
+                break
+            fi
+            shift 2
+            ;;
+        -h )
+            echo "entró a h"
+            mostrar_uso
+            break
+            ;;
+        -- )
+            shift
+            break
+            ;;
+        * )
+            echo "Internal error!"
+            exit 1
+    esac
+done
+
+#Veo que inicio no sea mayor a fin
+_output=$(echo "$inicio > $fin" | bc)
+if [ $_output == "1" ]
 then
-    echo "Exceso de argumentos"
-    mostrar_uso
-    exit 1
-elif [ $# -eq 0 ]
-then
-    echo "Faltan argumentos"
+    echo "inicio debe ser menor a fin"
     mostrar_uso
     exit 1
 fi
 
-#verifico que si tiene un argumento sea el valido
-if [ $# -eq 1 ]
-then
-    if [[ -d $1  ]]
-    then
-        #leer nombres de archivo
-        directorio=$1
-        directorio=${directorio%/*} #Le saco la / del final
-    elif [ $1 == "-h" ]
-    then
-        mostrar_ayuda
-        exit 0
-    else
-        echo "Argumento invalido"
-        mostrar_uso
-        exit 1
-    fi
-fi
 
 directorio_graficos="Img/${directorio##*/}"
 mkdir $directorio_graficos
@@ -64,8 +126,7 @@ do
     echo "Graficando posicion ${posicion%.*}."
     
     #Llama al script de octave que realiza los gráficos
-    ./prueba_graficar_datos.m $archivo_c1 $archivo_c2 $directorio_graficos
-    #./graficar_datos.m $archivo_c1 $archivo_c2 $directorio_graficos
+    ./graficar_datos.m $archivo_c1 $archivo_c2 $inicio $fin $directorio_graficos
 done
 
 #Genero un pdf con todos los vectos, y otro con todos los trazados

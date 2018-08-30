@@ -13,14 +13,15 @@
 %endfor
 %printf("\n")
 
-narginchk(3,3);
+narginchk(5,5);
 
 arg_list=argv();
 
-
 archivo_canal_1=arg_list{1};
 archivo_canal_2=arg_list{2};
-directorio_graficos=arg_list{3};
+inicio=str2num(arg_list{3});
+fin=str2num(arg_list{4});
+directorio_graficos=arg_list{5};
 
 c1=dlmread(archivo_canal_1,'',6,0); %Los primeros 6 datos son la fecha y hora del registro
 c2=dlmread(archivo_canal_2,'',6,0); %Los primeros 6 datos son la fecha y hora del registro
@@ -30,19 +31,16 @@ pos=regexp(archivo_canal_1, '[_.]', 'split'){end-1}; %Encuentra la posicion dond
 
 % --- Genero los nombres de los archivos y títulos
 titulo_trazado=cstrcat('Trazado ',num2str(pos));
+%archivo_trazado=strcat(directorio_graficos, '/trazado',pos);
 archivo_trazado=strcat(directorio_graficos, '/trazado',num2str(str2num(pos),'%02d'));
 %archivo_trazado=strcat('trazado',num2str(pos,'%02d'));
 
 titulo_vecto=cstrcat('Vecto ',num2str(pos));
+%archivo_vecto=strcat(directorio_graficos, '/vecto',pos);
 archivo_vecto=strcat(directorio_graficos, '/vecto',num2str(str2num(pos),'%02d'));
 %archivo_vecto=strcat('vecto',num2str(pos,'%02d'));
 
-%X1=1;
-%X2=760;
-X1=100;
-X2=1100;
-%X1=1;
-%X2=1001;
+SPS=250; %Muestras por segundo
 
 % --- Para el filtro adaptado de linea de base
 fc = 0.5; %Frecuencia de corte del filtro
@@ -64,15 +62,28 @@ c2hp=hp_adaptado(c2_50Hz, alfa);
 canal1=c1hp';
 canal2=c2hp';
 
+X1=floor(inicio*SPS)+100; %Sumo 100 para saltear el principio de la señal porque queda deformada por el filtro
+if fin>length(canal1)
+    X2=length(canal1);
+else
+    X2=floor(fin*SPS)+100;
+endif
+
+largo_grafico=5.08*((X2-X1)/250);
+
+label_x=0:0.2:(X2-X1)/250;
+
 L1=max(max(abs(canal1(X1:X2)), abs(canal2(X1:X2))));
 L1=L1*1.1;
 
 figure('visible','off')
+    set(gcf,'PaperPositionMode','auto','units','centimeters','position',[0,0,largo_grafico,20], 'papersize',[largo_grafico, 20])
     subplot(2,1,1)
     plot(canal1,'linewidth',1)
     ylim([-L1 L1])
     xlim([X1 X2])
-    set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
+    set(gca,'xtick',X1:50:X2,'xticklabel',label_x,'fontsize',6)
+    %set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
     xlabel('Tiempo [s]')
     ylabel('Amplitud [V]')
     grid on
@@ -83,7 +94,8 @@ figure('visible','off')
     plot(canal2,'linewidth',1)
     ylim([-L1 L1])
     xlim([X1 X2])
-    set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
+    set(gca,'xtick',X1:50:X2,'xticklabel',label_x,'fontsize',6)
+    %set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
     xlabel('Tiempo [s]')
     ylabel('Amplitud [V]')
     grid on
@@ -91,7 +103,13 @@ figure('visible','off')
     print(archivo_trazado,'-dpdf')
 
 figure('visible','off')
-    plot(canal1(X2-250:X2),canal2(X2-250:X2))
+    if((X2-X1)>SPS)
+        #Si hay más muestras que 1 segundo, grafica el vecto del último segundo
+        plot(canal1(X2-250:X2),canal2(X2-250:X2))
+    else
+        #Si no, grafica el vecto del rango que se pasó
+        plot(canal1(X1:X2),canal2(X1:X2))
+    endif
     xlim([-L1 L1])
     ylim([-L1 L1])
     set(gca,'Ydir','reverse')
