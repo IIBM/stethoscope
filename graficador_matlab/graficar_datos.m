@@ -19,8 +19,8 @@ arg_list=argv();
 
 archivo_canal_1=arg_list{1};
 archivo_canal_2=arg_list{2};
-inicio=str2num(arg_list{3});
-fin=str2num(arg_list{4});
+inicio=arg_list{3};
+fin=arg_list{4};
 directorio_graficos=arg_list{5};
 
 c1=dlmread(archivo_canal_1,'',6,0); %Los primeros 6 datos son la fecha y hora del registro
@@ -62,11 +62,11 @@ c2hp=hp_adaptado(c2_50Hz, alfa);
 canal1=c1hp';
 canal2=c2hp';
 
-X1=floor(inicio*SPS)+100; %Sumo 100 para saltear el principio de la señal porque queda deformada por el filtro
-if fin>length(canal1)
+X1=floor(str2num(inicio)*SPS)+100; %Sumo 100 para saltear el principio de la señal porque queda deformada por el filtro
+if ( (strcmp(fin, "fin")) || (str2num(fin)>length(canal1)) )
     X2=length(canal1);
 else
-    X2=floor(fin*SPS)+100;
+    X2=floor(str2num(fin)*SPS)+100;
 endif
 
 largo_grafico=5.08*((X2-X1)/250);

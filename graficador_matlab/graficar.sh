@@ -12,82 +12,86 @@ function mostrar_ayuda {
     echo "Realiza los gráficos de los trazados y vectocardiogramas a partir de los archivos guardados por la interfaz gráfica en un directorio."
     echo "Los gráficos se guardan en /Img/directorio."
     echo "El script graficar_datos.m debe estar en el mismo directorio que este."
+    echo "Las opciones son:"
+    echo ""
+    echo "-d <directorio> El directorio donde están los archivos"
+    echo "-i <inicio> Segundo de inicio"
+    echo "-f <fin> Segundo de finalización, o 'fin' para graficar hasta el final"
+    echo "-h Esta ayuda"
     echo ""
     mostrar_uso
 }
 
 #verifico que no tenga mas de un argumento, o ninguno
-#if [ $# -gt 6 ]
-#then
-#    echo "Exceso de argumentos"
-#    echo $#
-#    mostrar_uso
-#    exit 1
-#elif [ $# -eq 0 ]
-#then
-#    echo "Faltan argumentos"
-#    mostrar_uso
-#    exit 1
-#fi
+if [ $# -gt 6 ]
+then
+    echo "Exceso de argumentos"
+    echo $#
+    mostrar_uso
+    exit 1
+elif [ $# -eq 0 ]
+then
+    echo "Faltan argumentos"
+    mostrar_uso
+    exit 1
+fi
 
 OPTIONS=d:i:f:h
-LONGOPTS=dir:,inicio:,fin:,ayuda
+#LONGOPTS=dir:,inicio:,fin:,ayuda
 exp_numero='^[0-9]+([.][0-9]+)?$' #Expresión regular que coincide con números positivos con coma
 
-#PARSED=$(getopt --options $OPTIONS --name="$0" -- "$@")
-#! PARSED=$(getopt --options $OPTIONS --name="$0" -- "$@")
-OPTS=$(getopt --options $OPTIONS --longoptions $LONGOPTS --name "$0" -- "$@")
-#! PARSED=$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
-#if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
-#    # e.g. return value is 1
-#    #  then getopt has complained about wrong arguments to stdout
-#    exit 2
-#fi
-
-echo $OPTS
-echo "$1"
+! OPTS=$(getopt --options $OPTIONS --name "$0" -- "$@")
+#! OPTS =$(getopt --options=$OPTIONS --longoptions=$LONGOPTS --name "$0" -- "$@")
+if [[ ${PIPESTATUS[0]} -ne 0 ]]; then
+    # e.g. return value is 1
+    #  then getopt has complained about wrong arguments to stdout
+    exit 2
+fi
 
 # read getopt’s output this way to handle the quoting right:
 eval set -- "$OPTS"
 while true ; do
     case "$1" in
-        -d | --directorio )
+        -d )
+        #-d | --directorio )
             if [[ -d "$2"  ]]
             then
                 #leer nombres de archivo
-                directorio=$2
-                directorio=${directorio%/*} #Le saco la / del final
+                directorio=`dirname $2`/`basename $2`
             else
                 echo "Error de argumentos: verificar el campo de directorio"
                 mostrar_uso
+                exit 1
             fi
             shift 2
             ;;
-        -i | --inicio )
+        -i )
+        #-i | --inicio )
             if [[ $2 =~ $exp_numero ]] 
             then
                 inicio=$2
             else
                 echo "Error de argumentos: el valor de inicio debe ser un número positivo"
                 mostrar_uso
-                break
+                exit 1
             fi
             shift 2
             ;;
-        -f | --fin )
-            if [[ $2 =~ $exp_numero ]] 
+        -f )
+        #-f | --fin )
+            if [[ $2 =~ $exp_numero || $2 = "fin" ]] 
             then
                 fin=$2
             else
                 echo "Error de argumentos: el valor de fin debe ser un número positivo"
                 mostrar_uso
-                break
+                exit 1
             fi
             shift 2
             ;;
         -h )
-            echo "entró a h"
-            mostrar_uso
+            mostrar_ayuda
+            exit 0
             break
             ;;
         -- )
@@ -100,17 +104,18 @@ while true ; do
     esac
 done
 
-#Veo que inicio no sea mayor a fin
-_output=$(echo "$inicio > $fin" | bc)
-if [ $_output == "1" ]
+if [[ $fin != "fin" ]] #Si no es "fin" verifico que $inicio no sea mayor a $fin
 then
-    echo "inicio debe ser menor a fin"
-    mostrar_uso
-    exit 1
+    _output=$(echo "$inicio > $fin" | bc)
+    if [ $_output == "1" ]
+    then
+        echo "inicio debe ser menor a fin"
+        mostrar_uso
+        exit 1
+    fi
 fi
 
-
-directorio_graficos="Img/${directorio##*/}"
+directorio_graficos="Img/`basename $directorio`"
 mkdir $directorio_graficos
 
 for archivo in $(find $directorio -type f -name "*c1*")
@@ -118,8 +123,6 @@ for archivo in $(find $directorio -type f -name "*c1*")
 do
     archivo_c1=${archivo}
     archivo_c2=${archivo_c1/c1/c2} #Search and replace (http://wiki.bash-hackers.org/syntax/pe#search_and_replace)
-    #echo $archivo_c1
-    #echo $archivo_c2
     
     #Indica la posición que se está graficando
     posicion=${archivo##*_}
@@ -156,7 +159,7 @@ pdfcrop "aux_$archivo_trazados" $archivo_trazados
 echo "Eliminando archivos auxiliares."
 rm "aux_$archivo_vectos" 
 rm "aux_$archivo_trazados"
-#rm "trazado*.pdf"
-#rm "vecto*.pdf"
+#rm trazado*.pdf
+#rm vecto*.pdf
 
 echo "Listo!"
