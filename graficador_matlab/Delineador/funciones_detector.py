@@ -11,8 +11,10 @@ import shutil
 import wfdb
 from wfdb import processing
 
-def detectar_qrs(archivo, directorio_registros_procesados):
+def detectar_qrs(archivo, directorio_registros_procesados, umbral=None):
     #ganancia=(2.42/3/((2^23)-1))
+    if umbral == None:
+        umbral = 2
     Fs = 250 #Frecuencia de muestreo
 
     registro = np.genfromtxt(archivo, delimiter=',') # Cargo el archivo con los registros de una posición
@@ -28,21 +30,43 @@ def detectar_qrs(archivo, directorio_registros_procesados):
 
     ecg = wfdb.rdrecord(directorio_registros_procesados+archivo_wfdb)
 
-    config=wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=2, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
+    #config=wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=umbral, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
     #config = wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=0.13, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
 
     #Detecta las posiciones de las r
     #Primero intenta en el canal 0, si no encuentra nada pasa al 1
     canal=0
-    qrs_inds=[]
-    while len(qrs_inds)==0 and canal<2:
+    qrs_inds_aux=[]
+    sig_aux=[]
+    fields_aux=[]
+    #while len(qrs_inds)==0 and canal<2:
+    while canal<2:
         sig, fields = wfdb.rdsamp(directorio_registros_procesados+archivo_wfdb, channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
+        sig_aux.append(sig)
+        fields_aux.append(fields)
         n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
+ 
+        umbral=np.median(np.absolute(n_sig))/0.6745
+        config=wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=umbral, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
+        
         #qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)
-        qrs_inds = processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config)
+        qrs_inds_aux.append(processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config))
         
         canal=canal+1
     
+    # Tomo los qrs del canal donde haya detectado más
+    if len(qrs_inds_aux[0]) > len(qrs_inds_aux[1]):
+        qrs_inds = qrs_inds_aux[0]
+        sig=sig_aux[0]
+        fields=fields_aux[0]
+        canal=1
+        #sig, fields = wfdb.rdsamp(directorio_registros_procesados+archivo_wfdb, channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
+    else:
+        qrs_inds = qrs_inds_aux[1]
+        sig=sig_aux[1]
+        fields=fields_aux[1]
+        canal=2
+
     #Si no se detectan r sale de la función
     if qrs_inds.size==0:
         return ecg, qrs_inds, nombre
@@ -100,19 +124,55 @@ def separar_latidos(ecg, qrs_inds):
     return matriz_latidos, min_RR# pos_r
 
 
-def graficar_todos_los_registros(directorio_registros_procesados):
-    
-    #Grafica los registros con anotaciones de un directorio
+def analizar_registros_procesados(directorio_registros_procesados):
+    """
+    Grafica los registros con anotaciones de un directorio
+    Si la detección no resultó correcta, se guarda el nombre del archivo para procesarlo después
+    """
     registros_wfdb = [arch for arch in os.listdir(directorio_registros_procesados)]
     registros_wfdb = [aux.split('.ann')[0] for aux in registros_wfdb if aux.endswith('.ann')]
     registros_wfdb.sort()
 
     for arch in registros_wfdb:
-        registro = wfdb.rdrecord(os.path.join(directorio_registros_procesados, arch))
+        print("Analizando registro "+arch)
+        #registro = wfdb.rdrecord(os.path.join(directorio_registros_procesados, arch))
+        sig, fields = wfdb.rdsamp(os.path.join(directorio_registros_procesados, arch))
         anotaciones = wfdb.rdann(os.path.join(directorio_registros_procesados, arch), 'ann')
+        #wfdb.plot_wfdb(registro, annotation=anotaciones, title='Registro - %s' % registro.record_name)
 
-        wfdb.plot_wfdb(registro, annotation=anotaciones, title='Registro - %s' % registro.record_name)
-        input('Press enter to continue...')
+        #Grafico los 2 canales y los qrs detectados en el canal correspondiente
+        plt.figure()
+        plt.subplot(2, 1, 1)
+        plt.title('Registro '+arch)
+        plt.plot(sig[:,0])
+        plt.ylabel('C1')
+
+        plt.subplot(2, 1, 2)
+        plt.plot(sig[:,1])
+        plt.xlabel('Muestras')
+        plt.ylabel('C2')
+
+        plt.subplot(2, 1, anotaciones.chan[0])
+        plt.plot(anotaciones.sample, sig[anotaciones.sample,anotaciones.chan[0]-1], 'rx')
+
+        plt.ion()
+        plt.show()
+        input("Presione enter")
+
+        #bien_detectado=[]
+        #while bien_detectado != 's' and bien_detectado != 'n':
+        #    bien_detectado = str.lower(input("¿Registro " + arch + " bien detectado? [s/n]: "))
+
+        #if bien_detectado == 'n':
+        #    #Si no está bien detectado guarda el nombre del archivo original
+        #    directorio=arch.split('_')[0]
+        #    guardar_no_detectado("no_detectados.txt","../Datos_filtrados/"+directorio+"/"+arch+"_filt.txt")
+        #    os.remove(os.path.join(directorio_registros_procesados+arch+".ann"))
+        #elif bien_detectado == 's':
+        #    #Si está bien detectado mueve los archivos al directorio 'ok'
+        #    os.rename(directorio_registros_procesados+"/"+arch+".dat", directorio_registros_procesados+"/ok/"+arch+".dat")
+        #    os.rename(directorio_registros_procesados+"/"+arch+".hea", directorio_registros_procesados+"/ok/"+arch+".hea")
+        #    os.rename(directorio_registros_procesados+"/"+arch+".ann", directorio_registros_procesados+"/ok/"+arch+".ann")
 
 def guardar_no_detectado(nombre_archivo, registro_no_detectado):
     """
