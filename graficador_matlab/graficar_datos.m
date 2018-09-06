@@ -83,7 +83,6 @@ figure('visible','off')
     ylim([-L1 L1])
     xlim([X1 X2])
     set(gca,'xtick',X1:50:X2,'xticklabel',label_x,'fontsize',6)
-    %set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
     xlabel('Tiempo [s]')
     ylabel('Amplitud [V]')
     grid on
@@ -95,20 +94,29 @@ figure('visible','off')
     ylim([-L1 L1])
     xlim([X1 X2])
     set(gca,'xtick',X1:50:X2,'xticklabel',label_x,'fontsize',6)
-    %set(gca,'xtick',X1:50:X2,'xticklabel',0:0.2:4)
     xlabel('Tiempo [s]')
     ylabel('Amplitud [V]')
     grid on
     %title('Canal 2')
     print(archivo_trazado,'-dpdf')
 
+escala_flechas=0;
 figure('visible','off')
+    hold on
     if((X2-X1)>SPS)
-        #Si hay más muestras que 1 segundo, grafica el vecto del último segundo
-        plot(canal1(X2-250:X2),canal2(X2-250:X2))
+        %Si hay más muestras que 1 segundo, grafica el vecto del último segundo
+        c1dif=diff(canal1(X2-SPS:X2));
+        c2dif=diff(canal2(X2-SPS:X2));
+
+        quiver(canal1(X2-SPS:X2-1),canal2(X2-SPS:X2-1),c1dif,c2dif,escala_flechas,'linewidth',1)
+        %plot(canal1(X2-SPS:X2),canal2(X2-SPS:X2),'color','b','LineStyle',':','linewidth',1)
     else
-        #Si no, grafica el vecto del rango que se pasó
-        plot(canal1(X1:X2),canal2(X1:X2))
+        %Si no, grafica el vecto del rango que se pasó
+        c1dif=diff(canal1(X1:X2));
+        c2dif=diff(canal2(X1:X2));
+
+        quiver(canal1(X1:X2-1),canal2(X1:X2-1),c1dif,c2dif,escala_flechas,'linewidth',1)
+        %plot(canal1(X1:X2),canal2(X1:X2),'color','b','LineStyle',':','linewidth',1)
     endif
     xlim([-L1 L1])
     ylim([-L1 L1])
@@ -123,4 +131,6 @@ figure('visible','off')
     title(titulo_vecto)
     %title('Vectorcardiograma')
     print(archivo_vecto,'-dpdf')
-   
+
+
+ 
