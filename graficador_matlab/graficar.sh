@@ -159,7 +159,7 @@ pdfcrop "aux_$archivo_trazados" $archivo_trazados
 echo "Eliminando archivos auxiliares."
 rm "aux_$archivo_vectos" 
 rm "aux_$archivo_trazados"
-#rm trazado*.pdf
-#rm vecto*.pdf
+rm trazado[0-9][0-9]*.pdf
+rm vecto[0-9][0-9]*.pdf
 
 echo "Listo!"
