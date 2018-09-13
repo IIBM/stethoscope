@@ -26,36 +26,34 @@ from funciones_detector import detectar_qrs, separar_latidos, analizar_registros
 directorio_origen_datos = '../Datos_filtrados/'
 directorio_registros_procesados = './Registros/'
 
-#yourpath = 'path'
-#for root, dirs, files in os.walk(yourpath, topdown=False):
-#    for name in files: #Lista todos los archivos dentro de los directorios dentro de root
-#        print(os.path.join(root, name))
-#    for name in dirs: #Lista los directorios dentro de root
-#        print(os.path.join(root, name))
-
-#registro = np.genfromtxt(sys.argv[1], delimiter=',',skip_header=20) # Para algunos registros hay que borrar unos datos más
-#canal = int(sys.argv[2]) # Cargo el canal que voy a detectar
-
-class Paciente(object):
-    def __init__(self, nombre=None, matriz_latidos_c1=None, matriz_latidos_c2=None, largo_latidos=None):
-        self.nombre=nombre
-        self.matriz_latidos_c1=matriz_latidos_c1
-        self.matriz_latidos_c2=matriz_latidos_c2
-        self.largo_latidos=largo_latidos
-
-lista_pacientes=[]
+#class Paciente(object):
+#    def __init__(self, nombre=None, matriz_latidos_c1=None, matriz_latidos_c2=None, largo_latidos=None):
+#        self.nombre=nombre
+#        self.matriz_latidos_c1=matriz_latidos_c1
+#        self.matriz_latidos_c2=matriz_latidos_c2
+#        self.largo_latidos=largo_latidos
+#
+#lista_pacientes=[]
 
 #archivos=[arch for arch in glob.glob(os.path.join(directorio_origen_datos+'*/*.txt'), recursive=True)]
 #archivos.sort()
 #for archivo in archivos:
-for archivo in glob.glob(os.path.join(directorio_origen_datos+'*/*03*.txt'), recursive=True):
+#for archivo in glob.glob(os.path.join(directorio_origen_datos+'*/*03*.txt'), recursive=True):
+#    print("\n"+archivo)
+#    
+#    detectar_qrs(archivo, directorio_registros_procesados)
+
+
+aux_arch = open("no_detectados.txt", "r")
+no_detectados = aux_arch.read().splitlines()
+aux_arch.close()
+open("no_detectados.txt", "w").close() #Borro el contenido del archivo
+for archivo in no_detectados:
     print("\n"+archivo)
     
-    ecg, qrs_inds, nombre = detectar_qrs(archivo, directorio_registros_procesados)
-    
-    if qrs_inds.size==0:
-        print("No se detectaron ondas R")
-        guardar_no_detectado("no_detectados.txt", archivo)
+    #detectar_qrs(archivo, directorio_registros_procesados, umbral=2)
+    #detectar_qrs(archivo, directorio_registros_procesados, umbral=0.13)
+    detectar_qrs(archivo, directorio_registros_procesados)
 
 #    if qrs_inds.size!=0:
 #        matriz_latidos_c1, largo_latidos = separar_latidos(ecg.p_signal[:,0], qrs_inds)

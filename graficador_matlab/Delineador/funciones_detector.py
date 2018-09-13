@@ -11,10 +11,12 @@ import shutil
 import wfdb
 from wfdb import processing
 
-def detectar_qrs(archivo, directorio_registros_procesados, umbral=None):
+def detectar_qrs(archivo, directorio_registros_procesados, canal=None, umbral=None):
+    """
+    Transforma los datos en txt a formato wfdb y los guarda. Usa la función 'detectar' para detectar picos
+    y guarda los qrs detectados. Si no detecta nada guarda el nombre del archivo. 
+    """
     #ganancia=(2.42/3/((2^23)-1))
-    if umbral == None:
-        umbral = 2
     Fs = 250 #Frecuencia de muestreo
 
     registro = np.genfromtxt(archivo, delimiter=',') # Cargo el archivo con los registros de una posición
@@ -34,54 +36,68 @@ def detectar_qrs(archivo, directorio_registros_procesados, umbral=None):
     #config = wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=0.13, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
 
     #Detecta las posiciones de las r
-    #Primero intenta en el canal 0, si no encuentra nada pasa al 1
-    canal=0
-    qrs_inds_aux=[]
-    sig_aux=[]
-    fields_aux=[]
-    #while len(qrs_inds)==0 and canal<2:
-    while canal<2:
-        sig, fields = wfdb.rdsamp(directorio_registros_procesados+archivo_wfdb, channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
-        sig_aux.append(sig)
-        fields_aux.append(fields)
-        n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
- 
-        umbral=np.median(np.absolute(n_sig))/0.6745
-        config=wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=umbral, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
+    if canal is None: #Si no le indico canal analiza los 2 y se queda con el que haya detectado más
+        canal=0
+        qrs_inds_aux=[]
+        sig_aux=[]
+        fields_aux=[]
+        while canal<2:
+            sig, fields, qrs_inds = detectar(directorio_registros_procesados+archivo_wfdb, canal)
+            sig_aux.append(sig)
+            fields_aux.append(fields)
+            qrs_inds_aux.append(qrs_inds)
+            
+            canal=canal+1
         
-        #qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)
-        qrs_inds_aux.append(processing.xqrs_detect(sig=n_sig[:,0], fs=fields['fs'], conf=config))
-        
-        canal=canal+1
+        # Tomo los qrs del canal donde haya detectado más
+        if len(qrs_inds_aux[0]) > len(qrs_inds_aux[1]):
+            qrs_inds = qrs_inds_aux[0]
+            sig=sig_aux[0]
+            fields=fields_aux[0]
+            canal=1
+            #sig, fields = wfdb.rdsamp(directorio_registros_procesados+archivo_wfdb, channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
+        else:
+            qrs_inds = qrs_inds_aux[1]
+            sig=sig_aux[1]
+            fields=fields_aux[1]
+            canal=2
+    else: #Canal != None
+        sig, fields, qrs_inds = detectar(directorio_registros_procesados+archivo_wfdb, canal, umbral)
     
-    # Tomo los qrs del canal donde haya detectado más
-    if len(qrs_inds_aux[0]) > len(qrs_inds_aux[1]):
-        qrs_inds = qrs_inds_aux[0]
-        sig=sig_aux[0]
-        fields=fields_aux[0]
-        canal=1
-        #sig, fields = wfdb.rdsamp(directorio_registros_procesados+archivo_wfdb, channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
-    else:
-        qrs_inds = qrs_inds_aux[1]
-        sig=sig_aux[1]
-        fields=fields_aux[1]
-        canal=2
-
-    #Si no se detectan r sale de la función
+        
+     #Si no se detectan r sale de la función
     if qrs_inds.size==0:
-        return ecg, qrs_inds, nombre
+        print("No se detectaron ondas R")
+        guardar_no_detectado("no_detectados.txt", archivo)
+        return
 
     print(canal)
     #Corrijo los qrs detectados para que coincidan con los picos
-    search_radius = int(fields['fs'] * 60 / config.hr_max)
+    max_bpm = 200
+    search_radius = int(fields['fs'] * 60 / max_bpm)
     corrected_peak_inds = processing.correct_peaks(sig[:, 0], peak_inds=qrs_inds, search_radius=search_radius, smooth_window_size=150)
     corrected_peak_inds= corrected_peak_inds+50 #Corrijo los índices porque no leo las primeras 50 muestras (*)
     
     #Si encontró picos los guardo en el archivo de anotaciones .ann
     wfdb.wrann(archivo_wfdb, 'ann', corrected_peak_inds, symbol=['N']*len(qrs_inds), chan=np.array([canal]*len(qrs_inds)), write_dir=directorio_registros_procesados)
     
-    return ecg, corrected_peak_inds, nombre
 
+def detectar(nombre_registro, canal, umbral=None):
+    """
+    Detecta los picos en un registro. Recibe el nombre del registro, el canal donde hacer la detección y el umbral.
+    Si no recibe umbral lo calcula.
+    """
+    sig, fields = wfdb.rdsamp(nombre_registro, channels=[canal], sampfrom=50) # (*)ver la corrección de los índices
+    n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
+
+    if umbral==None:
+        umbral=np.median(np.absolute(n_sig))/0.6745 #Donoho
+    
+    config=wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=umbral, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
+    #qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)
+    qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],conf=config)
+
+    return sig, fields, qrs_inds
 
 def separar_latidos(ecg, qrs_inds):
     ##Separa los latidos y los guarda por filas en una matriz.
@@ -133,17 +149,17 @@ def analizar_registros_procesados(directorio_registros_procesados):
     registros_wfdb = [aux.split('.ann')[0] for aux in registros_wfdb if aux.endswith('.ann')]
     registros_wfdb.sort()
 
-    for arch in registros_wfdb:
-        print("Analizando registro "+arch)
-        #registro = wfdb.rdrecord(os.path.join(directorio_registros_procesados, arch))
-        sig, fields = wfdb.rdsamp(os.path.join(directorio_registros_procesados, arch))
-        anotaciones = wfdb.rdann(os.path.join(directorio_registros_procesados, arch), 'ann')
+    for reg in registros_wfdb:
+        print("Analizando registro "+reg)
+        registro = os.path.join(directorio_registros_procesados, reg)
+        sig, fields = wfdb.rdsamp(registro)
+        anotaciones = wfdb.rdann(registro, 'ann')
         #wfdb.plot_wfdb(registro, annotation=anotaciones, title='Registro - %s' % registro.record_name)
 
         #Grafico los 2 canales y los qrs detectados en el canal correspondiente
         plt.figure()
         plt.subplot(2, 1, 1)
-        plt.title('Registro '+arch)
+        plt.title('Registro '+reg)
         plt.plot(sig[:,0])
         plt.ylabel('C1')
 
@@ -151,28 +167,34 @@ def analizar_registros_procesados(directorio_registros_procesados):
         plt.plot(sig[:,1])
         plt.xlabel('Muestras')
         plt.ylabel('C2')
-
+        
         plt.subplot(2, 1, anotaciones.chan[0])
         plt.plot(anotaciones.sample, sig[anotaciones.sample,anotaciones.chan[0]-1], 'rx')
 
         plt.ion()
         plt.show()
-        input("Presione enter")
 
-        #bien_detectado=[]
-        #while bien_detectado != 's' and bien_detectado != 'n':
-        #    bien_detectado = str.lower(input("¿Registro " + arch + " bien detectado? [s/n]: "))
+        # Compruebo si están bien detectados
+        opcion=[]
+        while opcion != 's' and opcion != 'n' and opcion != 'b':
+            opcion = str.lower(input("¿Registro " + reg + " bien detectado? [s/n/(b)orrar primer índice]: "))
+        
+        plt.close()
 
-        #if bien_detectado == 'n':
-        #    #Si no está bien detectado guarda el nombre del archivo original
-        #    directorio=arch.split('_')[0]
-        #    guardar_no_detectado("no_detectados.txt","../Datos_filtrados/"+directorio+"/"+arch+"_filt.txt")
-        #    os.remove(os.path.join(directorio_registros_procesados+arch+".ann"))
-        #elif bien_detectado == 's':
-        #    #Si está bien detectado mueve los archivos al directorio 'ok'
-        #    os.rename(directorio_registros_procesados+"/"+arch+".dat", directorio_registros_procesados+"/ok/"+arch+".dat")
-        #    os.rename(directorio_registros_procesados+"/"+arch+".hea", directorio_registros_procesados+"/ok/"+arch+".hea")
-        #    os.rename(directorio_registros_procesados+"/"+arch+".ann", directorio_registros_procesados+"/ok/"+arch+".ann")
+        if opcion == 'n':
+            #Si no está bien detectado guarda el nombre del archivo original
+            directorio=reg.split('_')[0]
+            guardar_no_detectado("no_detectados.txt","../Datos_filtrados/"+directorio+"/"+reg+"_filt.txt")
+            os.remove(os.path.join(directorio_registros_procesados+"/"+reg+".ann"))
+        elif opcion == 's':
+            #Si está bien detectado mueve los archivos al directorio 'ok'
+            mover_registro(directorio_registros_procesados, reg)
+        elif opcion == 'b':
+            #Borra el primer índice detectado y mueve los archivos al directorio 'ok'
+            aux_qrs=anotaciones.sample[1:]
+            wfdb.wrann(reg, 'ann', aux_qrs, symbol=['N']*len(aux_qrs), chan=np.array([anotaciones.chan[0]]*len(aux_qrs)), write_dir=directorio_registros_procesados)
+            mover_registro(directorio_registros_procesados, reg)
+            
 
 def guardar_no_detectado(nombre_archivo, registro_no_detectado):
     """
@@ -181,6 +203,15 @@ def guardar_no_detectado(nombre_archivo, registro_no_detectado):
     archivo_no_detectados = open(nombre_archivo, "a")
     archivo_no_detectados.write(registro_no_detectado+"\n")
     archivo_no_detectados.close()
+
+def mover_registro(directorio_registros_procesados, registro):
+    """
+    Mueve el registro al directorio './ok'
+    """
+    os.rename(directorio_registros_procesados+"/"+registro+".dat", directorio_registros_procesados+"/ok/"+registro+".dat")
+    os.rename(directorio_registros_procesados+"/"+registro+".hea", directorio_registros_procesados+"/ok/"+registro+".hea")
+    os.rename(directorio_registros_procesados+"/"+registro+".ann", directorio_registros_procesados+"/ok/"+registro+".ann")
+
 
 #Límite para los ejes
 #lim=np.max([np.max(np.abs(latido_promedio_c1)),np.max(np.abs(latido_promedio_c2))])
