@@ -62,7 +62,7 @@ def detectar_qrs(archivo, directorio_registros_procesados, canal=None, umbral=No
             fields=fields_aux[1]
             canal=2
     else: #Canal != None
-        sig, fields, qrs_inds = detectar(directorio_registros_procesados+archivo_wfdb, canal, umbral)
+        sig, fields, qrs_inds = detectar(directorio_registros_procesados+archivo_wfdb, canal-1, umbral)
     
         
      #Si no se detectan r sale de la función
@@ -76,10 +76,11 @@ def detectar_qrs(archivo, directorio_registros_procesados, canal=None, umbral=No
     max_bpm = 200
     search_radius = int(fields['fs'] * 60 / max_bpm)
     corrected_peak_inds = processing.correct_peaks(sig[:, 0], peak_inds=qrs_inds, search_radius=search_radius, smooth_window_size=150)
-    corrected_peak_inds= corrected_peak_inds+50 #Corrijo los índices porque no leo las primeras 50 muestras (*)
-    
+    corrected_peak_inds = corrected_peak_inds+50 #Corrijo los índices porque no leo las primeras 50 muestras (*)
+    corrected_peak_inds = np.unique(corrected_peak_inds) #Elimino duplicados
+   
     #Si encontró picos los guardo en el archivo de anotaciones .ann
-    wfdb.wrann(archivo_wfdb, 'ann', corrected_peak_inds, symbol=['N']*len(qrs_inds), chan=np.array([canal]*len(qrs_inds)), write_dir=directorio_registros_procesados)
+    wfdb.wrann(archivo_wfdb, 'ann', corrected_peak_inds, symbol=['N']*len(corrected_peak_inds), chan=np.array([canal]*len(corrected_peak_inds)), write_dir=directorio_registros_procesados)
     
 
 def detectar(nombre_registro, canal, umbral=None):
@@ -140,6 +141,31 @@ def separar_latidos(ecg, qrs_inds):
     return matriz_latidos, min_RR# pos_r
 
 
+def graficar_registros_directorio(directorio_registros_procesados):
+    """
+    Grafica los registros de un directorio
+    """
+    registros_wfdb = [arch for arch in os.listdir(directorio_registros_procesados)]
+    registros_wfdb = [aux.split('.dat')[0] for aux in registros_wfdb if aux.endswith('.dat')]
+    registros_wfdb.sort()
+
+    for reg in registros_wfdb:
+        print("Analizando registro "+reg)
+        registro = os.path.join(directorio_registros_procesados, reg)
+        sig, fields = wfdb.rdsamp(registro)
+        
+        directorio=reg.split('_')[0]
+
+        #Grafico los 2 canales
+        graficar_registro(sig, reg)
+        anotacion=input("Canal, umbral:")
+        archivo_anotaciones = open("anotaciones.txt", "a")
+        archivo_anotaciones.write("../Datos_filtrados/"+directorio+"/"+reg+"_filt.txt"+" "+anotacion+"\n")
+        archivo_anotaciones.close()
+
+        plt.close()
+
+
 def analizar_registros_procesados(directorio_registros_procesados):
     """
     Grafica los registros con anotaciones de un directorio
@@ -157,27 +183,14 @@ def analizar_registros_procesados(directorio_registros_procesados):
         #wfdb.plot_wfdb(registro, annotation=anotaciones, title='Registro - %s' % registro.record_name)
 
         #Grafico los 2 canales y los qrs detectados en el canal correspondiente
-        plt.figure()
-        plt.subplot(2, 1, 1)
-        plt.title('Registro '+reg)
-        plt.plot(sig[:,0])
-        plt.ylabel('C1')
-
-        plt.subplot(2, 1, 2)
-        plt.plot(sig[:,1])
-        plt.xlabel('Muestras')
-        plt.ylabel('C2')
-        
-        plt.subplot(2, 1, anotaciones.chan[0])
-        plt.plot(anotaciones.sample, sig[anotaciones.sample,anotaciones.chan[0]-1], 'rx')
-
-        plt.ion()
-        plt.show()
+        graficar_registro(sig, reg, anotaciones)
 
         # Compruebo si están bien detectados
+        entrada=[]
         opcion=[]
         while opcion != 's' and opcion != 'n' and opcion != 'b':
-            opcion = str.lower(input("¿Registro " + reg + " bien detectado? [s/n/(b)orrar primer índice]: "))
+            entrada = str.lower(input("¿Registro " + reg + " bien detectado? [s/n/(b#)orrar índice #]: "))
+            opcion = entrada[0]
         
         plt.close()
 
@@ -190,9 +203,9 @@ def analizar_registros_procesados(directorio_registros_procesados):
             #Si está bien detectado mueve los archivos al directorio 'ok'
             mover_registro(directorio_registros_procesados, reg)
         elif opcion == 'b':
-            #Borra el primer índice detectado y mueve los archivos al directorio 'ok'
-            aux_qrs=anotaciones.sample[1:]
-            wfdb.wrann(reg, 'ann', aux_qrs, symbol=['N']*len(aux_qrs), chan=np.array([anotaciones.chan[0]]*len(aux_qrs)), write_dir=directorio_registros_procesados)
+            muestra=int(entrada[1:])
+            modificar_anotacion(registro, accion='b', indice=muestra)
+            #Borra el índice indicado y mueve los archivos al directorio 'ok'
             mover_registro(directorio_registros_procesados, reg)
             
 
@@ -212,6 +225,64 @@ def mover_registro(directorio_registros_procesados, registro):
     os.rename(directorio_registros_procesados+"/"+registro+".hea", directorio_registros_procesados+"/ok/"+registro+".hea")
     os.rename(directorio_registros_procesados+"/"+registro+".ann", directorio_registros_procesados+"/ok/"+registro+".ann")
 
+def graficar_registro(registro, nombre, anotaciones=None):
+    """
+    Grafica los 2 canales de un registro. Si se le pasan las anotaciones las grafica en el canal correspondiente
+    """
+    plt.figure()
+    plt.subplot(2, 1, 1)
+    plt.title('Registro '+nombre)
+    plt.plot(registro[:,0])
+    plt.ylabel('C1')
+
+    plt.subplot(2, 1, 2)
+    plt.plot(registro[:,1])
+    plt.xlabel('Muestras')
+    plt.ylabel('C2')
+    
+    if anotaciones is not None:
+        plt.subplot(2, 1, anotaciones.chan[0])
+        plt.plot(anotaciones.sample, registro[anotaciones.sample,anotaciones.chan[0]-1], 'rx')
+
+    plt.ion()
+    plt.show()
+
+
+def modificar_anotacion(registro, accion, indice):
+    """
+    Modifica el archivo de anotaciones.
+    accion = a: agrega el indice a la lista de qrs
+    accion = b: borra el qrs indicado por indice
+
+    Ej:
+    anotaciones.sample = [ 181,  545,  788,  986, 1127 ]
+    
+    modificar_anotacion(registro, a, 120)
+    anotaciones.sample = [ 120, 181,  545,  788,  986, 1127 ]
+    
+    modificar_anotacion(registro, b, 2)
+    anotaciones.sample = [ 181,  788,  986, 1127 ]
+    """
+    sig, fields = wfdb.rdsamp(registro)
+    anotaciones = wfdb.rdann(registro, 'ann')
+    reg=os.path.basename(registro)
+    dir_reg=os.path.dirname(registro)
+
+    if accion == 'b':
+        try:
+            float(indice)
+            muestra=indice-1
+        except TypeError:
+            muestra=[x-1 for x in indice]
+        #Borra el índice indicado
+        aux_qrs=np.delete(anotaciones.sample, muestra)
+    elif accion == 'a':
+        aux_qrs = np.append(anotaciones.sample, indice)
+        aux_qrs.sort()
+    else:
+        print("'accion' debe ser a para agregar o b para borrar")
+
+    wfdb.wrann(reg, 'ann', aux_qrs, symbol=['N']*len(aux_qrs), chan=np.array([anotaciones.chan[0]]*len(aux_qrs)), write_dir=dir_reg)
 
 #Límite para los ejes
 #lim=np.max([np.max(np.abs(latido_promedio_c1)),np.max(np.abs(latido_promedio_c2))])

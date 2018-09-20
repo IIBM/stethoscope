@@ -21,7 +21,7 @@ from sklearn.cluster import KMeans
 
 import funciones_detector
 importlib.reload(funciones_detector) #Recargo el módulo para que si cambio algo se actualice
-from funciones_detector import detectar_qrs, separar_latidos, analizar_registros_procesados, guardar_no_detectado
+from funciones_detector import detectar_qrs, separar_latidos, analizar_registros_procesados, guardar_no_detectado, graficar_registro, modificar_anotacion
 
 directorio_origen_datos = '../Datos_filtrados/'
 directorio_registros_procesados = './Registros/'
@@ -53,7 +53,7 @@ for archivo in no_detectados:
     
     #detectar_qrs(archivo, directorio_registros_procesados, umbral=2)
     #detectar_qrs(archivo, directorio_registros_procesados, umbral=0.13)
-    detectar_qrs(archivo, directorio_registros_procesados)
+    detectar_qrs(archivo, directorio_registros_procesados, canal=1, umbral=0.1)
 
 #    if qrs_inds.size!=0:
 #        matriz_latidos_c1, largo_latidos = separar_latidos(ecg.p_signal[:,0], qrs_inds)
