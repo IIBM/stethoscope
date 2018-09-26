@@ -31,13 +31,13 @@ pos=regexp(archivo_canal_1, '[_.]', 'split'){end-1}; %Encuentra la posicion dond
 
 % --- Genero los nombres de los archivos y títulos
 titulo_trazado=cstrcat('Trazado ',num2str(pos));
-%archivo_trazado=strcat(directorio_graficos, '/trazado',pos);
-archivo_trazado=strcat(directorio_graficos, '/trazado',num2str(str2num(pos),'%02d'));
+archivo_trazado=strcat(directorio_graficos, '/trazado',pos);
+%archivo_trazado=strcat(directorio_graficos, '/trazado',num2str(str2num(pos),'%02d'));
 %archivo_trazado=strcat('trazado',num2str(pos,'%02d'));
 
 titulo_vecto=cstrcat('Vecto ',num2str(pos));
-%archivo_vecto=strcat(directorio_graficos, '/vecto',pos);
-archivo_vecto=strcat(directorio_graficos, '/vecto',num2str(str2num(pos),'%02d'));
+archivo_vecto=strcat(directorio_graficos, '/vecto',pos);
+%archivo_vecto=strcat(directorio_graficos, '/vecto',num2str(str2num(pos),'%02d'));
 %archivo_vecto=strcat('vecto',num2str(pos,'%02d'));
 
 SPS=250; %Muestras por segundo

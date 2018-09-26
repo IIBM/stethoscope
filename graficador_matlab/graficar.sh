@@ -10,7 +10,7 @@ function mostrar_uso {
 #funcion para mostrar la ayuda del script
 function mostrar_ayuda {
     echo "Realiza los gráficos de los trazados y vectocardiogramas a partir de los archivos guardados por la interfaz gráfica en un directorio."
-    echo "Los gráficos se guardan en /Img/directorio."
+    echo "Los gráficos se guardan en /Img/<directorio>."
     echo "El script graficar_datos.m debe estar en el mismo directorio que este."
     echo "Las opciones son:"
     echo ""
@@ -115,8 +115,8 @@ then
     fi
 fi
 
-directorio_graficos="Img/`basename $directorio`"
-mkdir $directorio_graficos
+directorio_graficos="Img/`basename $directorio`/temp"
+mkdir -p "$directorio_graficos"
 
 for archivo in $(find $directorio -type f -name "*c1*")
 #for archivo in "${directorio}/*c1*"
@@ -132,21 +132,15 @@ do
     ./graficar_datos.m $archivo_c1 $archivo_c2 $inicio $fin $directorio_graficos
 done
 
-#Genero un pdf con todos los vectos, y otro con todos los trazados
 cd $directorio_graficos
 
-archivo_vectos="vectos_${directorio##*/}.pdf"
-archivo_trazados="trazados_${directorio##*/}.pdf"
+#Renombro los archivos de trazados y vectos del 1 al 9 para agregarles 0 adelante
+rename.ul trazado trazado0 trazado[0-9].pdf
+rename.ul vecto vecto0 vecto[0-9].pdf
 
-if [ -e $archivo_vectos ]
-then
-    rm $archivo_vectos
-fi
-
-if [ -e $archivo_trazados ]
-then
-    rm $archivo_trazados
-fi
+#Genero un pdf con todos los vectos, y otro con todos los trazados
+archivo_vectos="vectos_${directorio##*/}_${inicio}-${fin}.pdf"
+archivo_trazados="trazados_${directorio##*/}_${inicio}-${fin}.pdf"
 
 echo "Uniendo pdfs de vectos."
 pdftk vecto*.pdf cat output "aux_$archivo_vectos"
@@ -156,10 +150,13 @@ echo "Uniendo pdfs de trazados."
 pdftk trazado*.pdf cat output "aux_$archivo_trazados"
 pdfcrop "aux_$archivo_trazados" $archivo_trazados
 
+cd ..
+
+mv temp/${archivo_trazados} temp/${archivo_vectos} ./
 echo "Eliminando archivos auxiliares."
-rm "aux_$archivo_vectos" 
-rm "aux_$archivo_trazados"
-rm trazado[0-9][0-9]*.pdf
-rm vecto[0-9][0-9]*.pdf
+rm -r "temp"
+#rm "aux_$archivo_vectos" 
+#rm "aux_$archivo_trazados"
+#find . \! -name "*_${directorio##*/}.pdf" -delete
 
 echo "Listo!"
