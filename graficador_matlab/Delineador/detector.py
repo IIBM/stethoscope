@@ -11,6 +11,7 @@ import matplotlib.cm as cm
 from itertools import cycle
 import numpy as np
 import shutil
+import pickle #Para persistencia de objetos
 
 import wfdb
 from wfdb import processing
@@ -21,20 +22,22 @@ from sklearn.cluster import KMeans
 
 import funciones_detector
 importlib.reload(funciones_detector) #Recargo el módulo para que si cambio algo se actualice
-from funciones_detector import detectar_qrs, separar_latidos, analizar_registros_procesados, guardar_no_detectado, graficar_registro, modificar_anotacion
+from funciones_detector import detectar_qrs, separar_latidos, analizar_registros_procesados, guardar_no_detectado, graficar_registro, modificar_anotacion, separar_latidos_por_paciente
 
 directorio_origen_datos = '../Datos_filtrados/'
 directorio_registros_procesados = './Registros/'
+directorio_registros_procesados_ok = './Registros/ok/'
 
-#class Paciente(object):
-#    def __init__(self, nombre=None, matriz_latidos_c1=None, matriz_latidos_c2=None, largo_latidos=None):
-#        self.nombre=nombre
-#        self.matriz_latidos_c1=matriz_latidos_c1
-#        self.matriz_latidos_c2=matriz_latidos_c2
-#        self.largo_latidos=largo_latidos
-#
-#lista_pacientes=[]
+class Paciente(object):
+    def __init__(self, nombre=None, matriz_latidos_c1=None, matriz_latidos_c2=None, largo_latidos=None):
+        self.nombre=nombre
+        self.matriz_latidos_c1=matriz_latidos_c1
+        self.matriz_latidos_c2=matriz_latidos_c2
+        self.largo_latidos=largo_latidos
 
+lista_pacientes=[]
+
+###Detectar desde el directorio de datos filtrados
 #archivos=[arch for arch in glob.glob(os.path.join(directorio_origen_datos+'*/*.txt'), recursive=True)]
 #archivos.sort()
 #for archivo in archivos:
@@ -43,38 +46,49 @@ directorio_registros_procesados = './Registros/'
 #    
 #    detectar_qrs(archivo, directorio_registros_procesados)
 
+###Detectar del archivo de "no_detectados"
+#aux_arch = open("no_detectados.txt", "r")
+#no_detectados = aux_arch.read().splitlines()
+#aux_arch.close()
+#open("no_detectados.txt", "w").close() #Borro el contenido del archivo
+#for archivo in no_detectados:
+#    print("\n"+archivo)
+#    
+#    detectar_qrs(archivo, directorio_registros_procesados, canal=1, umbral=0.1)
 
-aux_arch = open("no_detectados.txt", "r")
-no_detectados = aux_arch.read().splitlines()
-aux_arch.close()
-open("no_detectados.txt", "w").close() #Borro el contenido del archivo
-for archivo in no_detectados:
-    print("\n"+archivo)
+###Separo latidos de los archivos procesados
+
+for i in range(18, 19):
     
-    #detectar_qrs(archivo, directorio_registros_procesados, umbral=2)
-    #detectar_qrs(archivo, directorio_registros_procesados, umbral=0.13)
-    detectar_qrs(archivo, directorio_registros_procesados, canal=1, umbral=0.1)
+    #print(i)
+    posicion=str(i).zfill(2) #Lo paso a cadena y le agrego ceros hasta completar 2 dígitos
+    archivos = [arch for arch in os.listdir(directorio_registros_procesados_ok)]
+    archivos = [os.path.splitext(aux)[0] for aux in archivos if posicion+".ann" in aux]
+    archivos.sort()
 
-#    if qrs_inds.size!=0:
-#        matriz_latidos_c1, largo_latidos = separar_latidos(ecg.p_signal[:,0], qrs_inds)
-#        matriz_latidos_c2, largo_latidos = separar_latidos(ecg.p_signal[:,1], qrs_inds)
-#
-#        #Corrijo la escala
-#        matriz_latidos_c1=matriz_latidos_c1/1000
-#        matriz_latidos_c2=matriz_latidos_c2/1000
-#        
-#        nombre=nombre.replace("-"," ")
-#        #pos_r=matriz_latidos_c1.shape[1]//2#calculo pos_r
-#
-#        lista_pacientes.append(Paciente(nombre, matriz_latidos_c1, matriz_latidos_c2, largo_latidos))
-#    else:
-#        print("No se detectaron ondas R")
-#        guardar_no_detectado("no_detectados.txt", archivo)
+    for archivo in archivos:
+        print("\n"+archivo)
+        sig, fields = wfdb.rdsamp(os.path.join(directorio_registros_procesados_ok, archivo))
+        anotaciones=wfdb.rdann(os.path.join(directorio_registros_procesados_ok, archivo),"ann")
+        matriz_latidos_c1, largo_latidos = separar_latidos(sig[:,0], anotaciones.sample)
+        matriz_latidos_c2, largo_latidos = separar_latidos(sig[:,1], anotaciones.sample)
 
+        #Corrijo la escala que cambié en "detectar_qrs" 
+        matriz_latidos_c1=matriz_latidos_c1/1000
+        matriz_latidos_c2=matriz_latidos_c2/1000
+            
+        nombre=archivo.split("_")[0]
+        nombre=nombre.replace("-"," ")
+        #pos_r=matriz_latidos_c1.shape[1]//2#calculo pos_r
+        lista_pacientes.append(Paciente(nombre, matriz_latidos_c1, matriz_latidos_c2, largo_latidos))
+
+    nombre_archivo = "paciente_pos"+posicion+".obj"
+    archivo_pacientes = open(nombre_archivo, "wb")
+    pickle.dump(lista_pacientes, archivo_pacientes)
 
 #latido_min=min(paciente.largo_latidos for paciente in lista_pacientes) #Latido más corto entre todos los pacientes
 #latido_max=max(paciente.largo_latidos for paciente in lista_pacientes) #Latido más largo entre todos los pacientes
-
+#
 ###Para hacer PCA de los latidos promedio
 ##Calculo el latido promedio en cada canal
 #latidos_promedio_c1=[np.mean(paciente.matriz_latidos_c1, axis=0) for paciente in lista_pacientes]
@@ -95,15 +109,16 @@ for archivo in no_detectados:
 ##http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
 #
 #pca = PCA(n_components=2)
+#scaler = StandardScaler()
 #
-#pca_c1=pca.fit_transform(latidos_promedio_c1)
-#pca_c2=pca.fit_transform(latidos_promedio_c2)
+#pca_c1=pca.fit_transform(scaler.fit_transform(latidos_promedio_c1))
+#pca_c2=pca.fit_transform(scaler.fit_transform(latidos_promedio_c2))
 #
 #cant_pacientes=len(latidos_promedio_c1)
 #rango_colores=np.cumsum(cant_pacientes)
 #
 #colores=[]
-#for paciente in lista_pacientes:
+#for paciente in lista_pacientes: #Si es control lo pone en negro, si no en rojo
 #     try:
 #         float(paciente.nombre)
 #         colores.append('r')
@@ -112,22 +127,52 @@ for archivo in no_detectados:
 #
 ##plot es más eficiente que scatter para muchos datos
 ##https://jakevdp.github.io/PythonDataScienceHandbook/04.02-simple-scatter-plots.html#plot-Versus-scatter:-A-Note-on-Efficiency
+#### PCA_c1 vs PCA_c2 componente 1
 #marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
 #ciclo_marcadores = cycle(marcadores)
 ##colors = iter(cm.rainbow(np.linspace(0, 1, cant_pacientes)))
 #plt.figure()
+#plt.title('PCA_canal1 componente 1 vs componente 2')
+#plt.xlabel('Componente 1')
+#plt.ylabel('Componente 2')
 #for i, paciente in enumerate(pca_c1):
 #    plt.plot(paciente[0], paciente[1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
-#plt.legend()
+##plt.legend()
 #
+#### PCA_c1 vs PCA_c2 componente 2
 #marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
 #ciclo_marcadores = cycle(marcadores)
 ##colors = iter(cm.rainbow(np.linspace(0, 1, cant_pacientes)))
 #plt.figure()
+#plt.title('PCA_canal2 componente 1 vs componente 2')
+#plt.xlabel('Componente 1')
+#plt.ylabel('Componente 2')
 #for i, paciente in enumerate(pca_c2):
 #    plt.plot(paciente[0], paciente[1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
-#plt.legend()
+##plt.legend()
 #
+#### PCA_c1 vs PCA_c2 componente 1
+#marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
+#ciclo_marcadores = cycle(marcadores)
+#plt.figure()
+#plt.title('PCA_c1 vs PCA_c2 componente 1')
+#plt.xlabel('PCA_c1')
+#plt.ylabel('PCA_c2')
+#for i, paciente in enumerate(pca_c1):
+#    plt.plot(pca_c1[i,0], pca_c2[i,0], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+##plt.legend()
+#
+#### PCA_c1 vs PCA_c2 componente 2
+#marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
+#ciclo_marcadores = cycle(marcadores)
+#plt.figure()
+#plt.title('PCA_c1 vs PCA_c2 componente 1')
+#plt.xlabel('PCA_c1')
+#plt.ylabel('PCA_c2')
+#for i, paciente in enumerate(pca_c1):
+#    plt.plot(pca_c1[i,1], pca_c2[i,1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+##plt.legend()
+#plt.ion()
 #plt.show()
 
 

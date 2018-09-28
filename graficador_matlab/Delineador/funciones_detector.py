@@ -11,6 +11,8 @@ import shutil
 import wfdb
 from wfdb import processing
 
+###Detectar picos###
+
 def detectar_qrs(archivo, directorio_registros_procesados, canal=None, umbral=None):
     """
     Transforma los datos en txt a formato wfdb y los guarda. Usa la función 'detectar' para detectar picos
@@ -100,46 +102,6 @@ def detectar(nombre_registro, canal, umbral=None):
 
     return sig, fields, qrs_inds
 
-def separar_latidos(ecg, qrs_inds):
-    ##Separa los latidos y los guarda por filas en una matriz.
-    #ecg = wfdb.rdrecord('record')
-    Fs = 250 #Frecuencia de muestreo
-    #delay = round(0.1/(1/Fs))
-    delay = 1
-    M = qrs_inds.size
-    RR = np.diff(qrs_inds) #Vector de intervalos RR
-    min_RR=np.min(RR) #Latido más corto
-    matriz_latidos = np.zeros((M,((min_RR//2)-delay)*2))*np.nan #Matriz para guardar los latidos por filas.
-                                                                #Divido y multiplico x2 min_RR por si es impar
-    cortes=[]
-    
-    for m in range(0,M):
-        # Uso un aux porque necesito saber el largo de los latidos para que si uno
-        # queda más corto me deje guardarlo en la matriz. 
-        a = np.max([0, qrs_inds[m]-((min_RR//2)-delay)])
-        b = qrs_inds[m]+(min_RR//2)-delay
-        #cortes.append(a)
-        #cortes.append(b)
-        aux = ecg[a:b]
-        pos_inicial = np.int(np.abs(np.min(np.array([0, qrs_inds[m]-(np.floor(min_RR/2)-delay)]))))
-        matriz_latidos[m,pos_inicial:aux.size+pos_inicial] = aux
-
-    ##Completo los latidos que quedaron cortados con el promedio de los anteriores en ese sector
-    pos_datos_faltantes=np.where(np.isnan(matriz_latidos))
-    col_mean = np.nanmean(matriz_latidos, axis=0)
-   
-    #pos_r=min_RR//2-delay
-    #agregado=np.mean(matriz_latidos[0:M-2,-pos_datos_faltantes.shape[0]:], axis=0)
-    
-    #a=matriz_latidos[0:M-2,-pos_datos_faltantes.shape[0]:] #Matriz auxiliar para calcular la potencia
-    #potencia_agregado=np.mean(np.sqrt(np.sum(np.square(a),axis=1)/a.shape[1])) #Calculo el promedio de la potencia
-    #agregado2=agregado*potencia_agregado
-    
-    matriz_latidos[pos_datos_faltantes]=np.take(col_mean, pos_datos_faltantes[1])
-    min_RR=matriz_latidos.shape[1]
-
-    return matriz_latidos, min_RR# pos_r
-
 
 def graficar_registros_directorio(directorio_registros_procesados):
     """
@@ -217,13 +179,13 @@ def guardar_no_detectado(nombre_archivo, registro_no_detectado):
     archivo_no_detectados.write(registro_no_detectado+"\n")
     archivo_no_detectados.close()
 
-def mover_registro(directorio_registros_procesados, registro):
+def mover_registro(directorio_origen, registro):
     """
-    Mueve el registro al directorio './ok'
+    Mueve el registro del directorio_origen al directorio 'directorio_origen/ok'
     """
-    os.rename(directorio_registros_procesados+"/"+registro+".dat", directorio_registros_procesados+"/ok/"+registro+".dat")
-    os.rename(directorio_registros_procesados+"/"+registro+".hea", directorio_registros_procesados+"/ok/"+registro+".hea")
-    os.rename(directorio_registros_procesados+"/"+registro+".ann", directorio_registros_procesados+"/ok/"+registro+".ann")
+    os.rename(directorio_origen+"/"+registro+".dat", directorio_origen+"/ok/"+registro+".dat")
+    os.rename(directorio_origen+"/"+registro+".hea", directorio_origen+"/ok/"+registro+".hea")
+    os.rename(directorio_origen+"/"+registro+".ann", directorio_origen+"/ok/"+registro+".ann")
 
 def graficar_registro(registro, nombre, anotaciones=None):
     """
@@ -283,6 +245,78 @@ def modificar_anotacion(registro, accion, indice):
         print("'accion' debe ser a para agregar o b para borrar")
 
     wfdb.wrann(reg, 'ann', aux_qrs, symbol=['N']*len(aux_qrs), chan=np.array([anotaciones.chan[0]]*len(aux_qrs)), write_dir=dir_reg)
+
+
+
+###Separación de latidos###
+
+def separar_latidos(ecg, qrs_inds):
+    """
+    Separa los latidos y los guarda por filas en una matriz.
+    """
+    #ecg = wfdb.rdrecord('record')
+    Fs = 250 #Frecuencia de muestreo
+    #delay = round(0.1/(1/Fs))
+    delay = 1
+    M = qrs_inds.size
+    RR = np.diff(qrs_inds) #Vector de intervalos RR
+    min_RR=np.min(RR) #Latido más corto
+    matriz_latidos = np.zeros((M,((min_RR//2)-delay)*2))*np.nan #Matriz para guardar los latidos por filas.
+                                                                #Divido y multiplico x2 min_RR por si es impar
+    cortes=[]
+    
+    for m in range(0,M):
+        # Uso un aux porque necesito saber el largo de los latidos para que si uno
+        # queda más corto me deje guardarlo en la matriz. 
+        a = np.max([0, qrs_inds[m]-((min_RR//2)-delay)])
+        b = qrs_inds[m]+(min_RR//2)-delay
+        #cortes.append(a)
+        #cortes.append(b)
+        aux = ecg[a:b]
+        pos_inicial = np.int(np.abs(np.min(np.array([0, qrs_inds[m]-(np.floor(min_RR/2)-delay)]))))
+        matriz_latidos[m,pos_inicial:aux.size+pos_inicial] = aux
+
+    ##Completo los latidos que quedaron cortados con el promedio de los anteriores en ese sector
+    pos_datos_faltantes=np.where(np.isnan(matriz_latidos))
+    col_mean = np.nanmean(matriz_latidos, axis=0)
+   
+    #pos_r=min_RR//2-delay
+    #agregado=np.mean(matriz_latidos[0:M-2,-pos_datos_faltantes.shape[0]:], axis=0)
+    
+    #a=matriz_latidos[0:M-2,-pos_datos_faltantes.shape[0]:] #Matriz auxiliar para calcular la potencia
+    #potencia_agregado=np.mean(np.sqrt(np.sum(np.square(a),axis=1)/a.shape[1])) #Calculo el promedio de la potencia
+    #agregado2=agregado*potencia_agregado
+    
+    matriz_latidos[pos_datos_faltantes]=np.take(col_mean, pos_datos_faltantes[1])
+    min_RR=matriz_latidos.shape[1]
+
+    return matriz_latidos, min_RR# pos_r
+
+#def separar_latidos_por_paciente(directorio, posicion):
+#    """
+#    Separo latidos de los archivos procesados por paciente en una determinada posición
+#    """
+#    posicion=str(posicion).zfill(2) #Lo paso a cadena y le agrego ceros hasta completar 2 dígitos
+#    archivos = [arch for arch in os.listdir(directorio)]
+#    archivos = [os.path.splitext(aux)[0] for aux in archivos if posicion+".ann" in aux]
+#    archivos.sort()
+#
+#    for archivo in archivos:
+#        print("\n"+archivo)
+#        sig, fields = wfdb.rdsamp(os.path.join(directorio, archivo))
+#        anotaciones=wfdb.rdann(os.path.join(directorio, archivo),"ann")
+#        matriz_latidos_c1, largo_latidos = separar_latidos(sig[:,0], anotaciones.sample)
+#        matriz_latidos_c2, largo_latidos = separar_latidos(sig[:,1], anotaciones.sample)
+#
+#        #Corrijo la escala que cambié en "detectar_qrs" 
+#        matriz_latidos_c1=matriz_latidos_c1/1000
+#        matriz_latidos_c2=matriz_latidos_c2/1000
+#            
+#        nombre=archivo.split("_")[0]
+#        nombre=nombre.replace("-"," ")
+#        #pos_r=matriz_latidos_c1.shape[1]//2#calculo pos_r
+#    
+#    return nombre, matriz_latidos_c1, matriz_latidos_c2, largo_latidos
 
 #Límite para los ejes
 #lim=np.max([np.max(np.abs(latido_promedio_c1)),np.max(np.abs(latido_promedio_c2))])
