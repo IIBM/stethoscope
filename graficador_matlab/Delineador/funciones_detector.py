@@ -292,31 +292,7 @@ def separar_latidos(ecg, qrs_inds):
 
     return matriz_latidos, min_RR# pos_r
 
-#def separar_latidos_por_paciente(directorio, posicion):
-#    """
-#    Separo latidos de los archivos procesados por paciente en una determinada posición
-#    """
-#    posicion=str(posicion).zfill(2) #Lo paso a cadena y le agrego ceros hasta completar 2 dígitos
-#    archivos = [arch for arch in os.listdir(directorio)]
-#    archivos = [os.path.splitext(aux)[0] for aux in archivos if posicion+".ann" in aux]
-#    archivos.sort()
-#
-#    for archivo in archivos:
-#        print("\n"+archivo)
-#        sig, fields = wfdb.rdsamp(os.path.join(directorio, archivo))
-#        anotaciones=wfdb.rdann(os.path.join(directorio, archivo),"ann")
-#        matriz_latidos_c1, largo_latidos = separar_latidos(sig[:,0], anotaciones.sample)
-#        matriz_latidos_c2, largo_latidos = separar_latidos(sig[:,1], anotaciones.sample)
-#
-#        #Corrijo la escala que cambié en "detectar_qrs" 
-#        matriz_latidos_c1=matriz_latidos_c1/1000
-#        matriz_latidos_c2=matriz_latidos_c2/1000
-#            
-#        nombre=archivo.split("_")[0]
-#        nombre=nombre.replace("-"," ")
-#        #pos_r=matriz_latidos_c1.shape[1]//2#calculo pos_r
-#    
-#    return nombre, matriz_latidos_c1, matriz_latidos_c2, largo_latidos
+
 
 #Límite para los ejes
 #lim=np.max([np.max(np.abs(latido_promedio_c1)),np.max(np.abs(latido_promedio_c2))])
