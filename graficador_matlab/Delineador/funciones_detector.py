@@ -294,34 +294,12 @@ def separar_latidos(ecg, qrs_inds):
 
 
 
-#Límite para los ejes
-#lim=np.max([np.max(np.abs(latido_promedio_c1)),np.max(np.abs(latido_promedio_c2))])
-#lim=lim*1.1;
 
 
 #wfdb.plot_wfdb(ecg)
 #wfdb.plot_items(signal=n_sig, ann_samp=[qrs_inds])
 #wfdb.plot_items(signal=sig, ann_samp=[qrs_inds])
 #
-##Grafico el vecto
-#c1d=np.diff(latido_promedio_c1)
-#c1d=np.append(c1d,latido_promedio_c1[-1]-latido_promedio_c1[0])
-##c1d=latido_promedio_c1[1:]-latido_promedio_c1[:-1]
-#c2d=np.diff(latido_promedio_c2)
-#c2d=np.append(c2d,latido_promedio_c2[-1]-latido_promedio_c2[0])
-##c2d=latido_promedio_c2[1:]-latido_promedio_c2[:-1]
-##
-#plt.figure()
-#plt.title('Vecto')
-#plt.xlabel('Tensión [V]')
-#plt.ylabel('Tensión [V]')
-##plt.plot(latido_promedio_c1,latido_promedio_c2)
-#plt.quiver(latido_promedio_c1,latido_promedio_c2, c1d, c2d, scale_units='xy', angles='xy', scale=1)
-#plt.xlim(-lim, lim)
-#plt.ylim(lim, -lim)
-#plt.grid(True)
-#wfdb.plot_wfdb(registro)
-#plt.show()
 #
 #plt.figure()
 #plt.plot(matriz_latidos_c1.T,'--')
@@ -333,28 +311,6 @@ def separar_latidos(ecg, qrs_inds):
 #plt.plot(latido_promedio_c2,'k')
 #plt.show()
 
-#plt.figure()
-#plt.plot(lista_pacientes[0].matriz_latidos_c1.T,'--')
-#plt.plot(latido_promedio_c1,'k')
-#plt.title('Canal 1')
-#plt.xlabel('Muestras')
-#plt.ylabel('Tensión [V]')
-#plt.ylim(-lim, lim)
-#plt.grid(True)
-##ax.set(ylim=[-lim, lim], xlabel='Muestras', ylabel='Tensión[V]', title='Canal1')
-##plt.axvline(x=matriz_latidos_c2.shape[1]//2, color='r')
-#
-#plt.figure()
-#plt.plot(lista_pacientes[0].matriz_latidos_c2.T,'--')
-#plt.plot(latido_promedio_c2,'k')
-#plt.title('Canal 2')
-#plt.xlabel('Muestras')
-#plt.ylabel('Tensión [V]')
-#plt.ylim(-lim, lim)
-#plt.grid(True)
-##ax.set(ylim=[-lim, lim], xlabel='Muestras', ylabel='Tensión[V]', title='Canal1')
-##plt.axvline(x=matriz_latidos_c2.shape[1]//2, color='r')
-#plt.show()
 
 
 
