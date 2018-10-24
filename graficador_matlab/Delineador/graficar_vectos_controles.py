@@ -5,6 +5,8 @@ import numpy as np
 
 import importlib
 
+import matplotlib
+matplotlib.use('Agg') #Cambio el backend para que no me muestre las imágenes y las guarde directamente
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import matplotlib.ticker as ticker #Para poder cambiar la escala de los ejes
@@ -26,7 +28,7 @@ class Paciente(object):
 
     
 #for pos in range(6,7):
-for pos in range(2,4):
+for pos in range(1,19):
     lista_control=[]
     lista_bloqueo=[]
     lista_pacientes=[]
@@ -61,7 +63,7 @@ for pos in range(2,4):
             
             #plt.subplot(3, 3, i)
             ax[i,j].quiver(latido_promedio_c1,latido_promedio_c2, c1d, c2d, scale_units='xy', angles='xy', scale=1)
-            #ax[i,j].title(paciente[cont_paciente].nombre)
+            ax[i,j].set_title(paciente[cont_paciente].nombre)
 
             cont_paciente=cont_paciente+1
 
@@ -76,6 +78,10 @@ for pos in range(2,4):
             ax[i,j].yaxis.set_major_formatter(ticks_v)
     
     plt.suptitle("Posicion "+posicion)
+    
+    plt.savefig("Graficos/Vectos_controles_pos_"+posicion, format="pdf")
 
+#plt.ion()
+#plt.show()
 
 
