@@ -1,5 +1,9 @@
 #! /usr/bin/python3
 
+#
+# Calcula y grafica la PCA
+#
+
 from IPython.display import display
 import numpy as np
 
@@ -9,6 +13,8 @@ import matplotlib
 matplotlib.use('Agg') #Cambio el backend para que no me muestre las imágenes y las guarde directamente
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+from matplotlib.lines import Line2D
+
 from itertools import cycle
 
 from sklearn.decomposition import PCA
@@ -25,8 +31,17 @@ class Paciente(object):
         self.largo_latidos=largo_latidos
         self.patologia=patologia
 
+tamanio_marcador=7.5
+
+legend_elements = [Line2D([0], [0], marker='o', markersize=tamanio_marcador, linestyle="None", color='k', label='Control'),
+                   Line2D([0], [0], marker='>', markersize=tamanio_marcador, linestyle="None", color='r', label='Bloq. der'),
+                   Line2D([0], [0], marker='<', markersize=tamanio_marcador, linestyle="None", color='b', label='Bloq. izq'),]
     
-for pos in range(1,2):
+#for pos in [4, 5, 10, 13, 16]: #PCA1
+#for pos in [4, 6, 7, 11, 12, 15, 18]: #PCA2
+#for pos in [6, 7, 10, 12, 13, 16]: #PCA3
+for pos in [4, 5, 6, 12, 15]: #PCA4
+#for pos in range(1,19):
     lista_control=[]
     lista_bloqueo=[]
     lista_pacientes=[]
@@ -77,74 +92,138 @@ for pos in range(1,2):
     rango_colores=np.cumsum(cant_pacientes)
 
     colores=[]
+    marcadores=[]
     for paciente in lista_pacientes: #Si es control lo pone en negro, si no en rojo
         if any ("control" in patologias for patologias in paciente.patologia):
              colores.append('k')
-        elif any ("bloqueo" in patologias for patologias in paciente.patologia):
+             marcadores.append('o')
+#        elif any ("bloqueo" in patologias for patologias in paciente.patologia):
+#             colores.append('r')
+        elif any ("derecha" in patologias for patologias in paciente.patologia):
              colores.append('r')
-        else:
+             marcadores.append('>')
+        elif any ("izquierda" in patologias for patologias in paciente.patologia):
              colores.append('b')
+             marcadores.append('<')
+        else:
+             colores.append('g')
 
     #plot es más eficiente que scatter para muchos datos
     #https://jakevdp.github.io/PythonDataScienceHandbook/04.02-simple-scatter-plots.html#plot-Versus-scatter:-A-Note-on-Efficiency
-    plt.figure()
-    plt.suptitle('Pos '+posicion)
-    ### PCA_c1 vs PCA_c2 componente 1
-    plt.subplot(221)
-    marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
-    ciclo_marcadores = cycle(marcadores)
-    #colors = iter(cm.rainbow(np.linspace(0, 1, cant_pacientes)))
-    #plt.figure()
-    plt.title('PCA_canal1: comp 1 vs comp 2')
-    plt.xlabel('Componente 1')
-    plt.ylabel('Componente 2')
-    for i, paciente in enumerate(pca_c1):
-        plt.plot(paciente[0], paciente[1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
-    #plt.legend()
+ #   plt.figure()
+ #   plt.suptitle('Pos '+posicion)
+ #   ### PCA_canal1: comp 1 vs comp 2
+##    plt.subplot(111)
+ #   plt.subplot(221)
+ #   marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
+ #   ciclo_marcadores = cycle(marcadores)
+ #   #colors = iter(cm.rainbow(np.linspace(0, 1, cant_pacientes)))
+ #   #plt.figure()
+##    plt.title('Posición 14 - canal 1')
+ #   plt.title('PCA_canal1: comp 1 vs comp 2')
+ #   plt.xlabel('Componente 1')
+ #   plt.ylabel('Componente 2')
+ #   for i, paciente in enumerate(pca_c1):
+ #       plt.plot(paciente[0], paciente[1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+##        plt.plot(paciente[0], paciente[1], marker='o', linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+ #   #plt.legend()
 
-    ### PCA_c1 vs PCA_c2 componente 2
-    plt.subplot(222)
-    marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
-    ciclo_marcadores = cycle(marcadores)
-    #colors = iter(cm.rainbow(np.linspace(0, 1, cant_pacientes)))
-    #plt.figure()
-    plt.title('PCA_canal2: comp 1 vs comp 2')
-    plt.xlabel('Componente 1')
-    plt.ylabel('Componente 2')
-    for i, paciente in enumerate(pca_c2):
-        plt.plot(paciente[0], paciente[1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre.split("_")[0])
-    plt.legend(loc="upper left", bbox_to_anchor=(1,1)) #Pone la leyenda fuera del gráfico
+ #   ### PCA_canal2: comp 1 vs comp 2
+ #   plt.subplot(222)
+ #   #plt.subplot(111)
+ #   marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
+ #   ciclo_marcadores = cycle(marcadores)
+ #   #colors = iter(cm.rainbow(np.linspace(0, 1, cant_pacientes)))
+ #   #plt.figure()
+##    plt.title('Posición 11 - canal 2')
+ #   plt.title('PCA_canal2: comp 1 vs comp 2')
+ #   plt.xlabel('Componente 1')
+ #   plt.ylabel('Componente 2')
+ #   for i, paciente in enumerate(pca_c2):
+ #       plt.plot(paciente[0], paciente[1], marker=next(ciclo_marcadores), markersize=1, linestyle="None", color=colores[i], label=lista_pacientes[i].nombre.split("_")[0])
+##        plt.plot(paciente[0], paciente[1], marker='o', linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+ #   plt.legend(loc="upper left", bbox_to_anchor=(1,1)) #Pone la leyenda fuera del gráfico
 
-    ### PCA_c1 vs PCA_c2 componente 1
-    plt.subplot(223)
-    marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
-    ciclo_marcadores = cycle(marcadores)
-    #plt.figure()
-    plt.title('PCA_c1 vs PCA_c2: comp 1')
-    plt.xlabel('PCA_c1')
-    plt.ylabel('PCA_c2')
-    for i, paciente in enumerate(pca_c1):
-        plt.plot(pca_c1[i,0], pca_c2[i,0], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
-    #plt.legend()
+ #   ### PCA_c1 vs PCA_c2 componente 1
+ #   plt.subplot(223)
+ #   marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
+ #   ciclo_marcadores = cycle(marcadores)
+ #   #plt.figure()
+ #   plt.title('PCA_c1 vs PCA_c2: comp 1')
+ #   plt.xlabel('PCA_c1')
+ #   plt.ylabel('PCA_c2')
+ #   for i, paciente in enumerate(pca_c1):
+ #       plt.plot(pca_c1[i,0], pca_c2[i,0], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+ #   #plt.legend()
 
-    ### PCA_c1 vs PCA_c2 componente 2
-    plt.subplot(224)
-    marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
-    ciclo_marcadores = cycle(marcadores)
-    #plt.figure()
-    plt.title('PCA_c1 vs PCA_c2: comp 1')
-    plt.xlabel('PCA_c1')
-    plt.ylabel('PCA_c2')
-    for i, paciente in enumerate(pca_c1):
-        plt.plot(pca_c1[i,1], pca_c2[i,1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
-    #plt.legend()
+ #   ### PCA_c1 vs PCA_c2 componente 2
+ #   plt.subplot(224)
+ #   marcadores = ['o', 'x', '+', 'v', '^', '<', '>', 's', 'D']
+ #   ciclo_marcadores = cycle(marcadores)
+ #   #plt.figure()
+ #   plt.title('PCA_c1 vs PCA_c2: comp 1')
+ #   plt.xlabel('PCA_c1')
+ #   plt.ylabel('PCA_c2')
+ #   for i, paciente in enumerate(pca_c1):
+ #       plt.plot(pca_c1[i,1], pca_c2[i,1], marker=next(ciclo_marcadores), linestyle="None", color=colores[i], label=lista_pacientes[i].nombre)
+ #   #plt.legend()
 
+ #   
+ #   plt.tight_layout()
+ #   plt.savefig("Graficos/PCA_pos_"+posicion, format="pdf", bbox_inches='tight')
+ #   plt.close("all")
+ #   #plt.ion()
+ #   #plt.show()
+
+
+###-----------------------------------###
+#Un sólo gráfico
+
+    ### PCA_canal1: comp 1 vs comp 2
+#    plt.figure()
+#    plt.title('Posición '+posicion+' - canal 1')
+#    plt.xlabel('Componente 1')
+#    plt.ylabel('Componente 2')
+#    for i, paciente in enumerate(pca_c1):
+#        plt.plot(paciente[0], paciente[1], marker=marcadores[i], markersize=tamanio_marcador, linestyle="None", color=colores[i])
+#    plt.tight_layout()
+#    plt.legend(handles=legend_elements, loc='upper right')
+#    plt.savefig("Graficos/todos/PCA1_pos_"+posicion, format="pdf", bbox_inches='tight')
     
+ #   ### PCA_canal2: comp 1 vs comp 2
+ #   plt.figure()
+ #   plt.title('Posición '+posicion+' - canal 2')
+ #   plt.xlabel('Componente 1')
+ #   plt.ylabel('Componente 2')
+ #   for i, paciente in enumerate(pca_c2):
+ #       plt.plot(paciente[0], paciente[1], marker=marcadores[i], markersize=tamanio_marcador, linestyle="None", color=colores[i])
+ #   plt.tight_layout()
+ #   plt.legend(handles=legend_elements, loc='upper right')
+ #   plt.savefig("Graficos/todos/PCA2_pos_"+posicion, format="pdf", bbox_inches='tight')
+    
+ #   ### PCA_c1 vs PCA_c2 componente 1
+ #   plt.figure()
+ #   plt.title('Posición '+posicion+' - componente 1')
+ #   plt.xlabel('PCA_c1')
+ #   plt.ylabel('PCA_c2')
+ #   for i, paciente in enumerate(pca_c1):
+ #       plt.plot(pca_c1[i,0], pca_c2[i,0], marker=marcadores[i], markersize=tamanio_marcador, linestyle="None", color=colores[i])
+ #   plt.tight_layout()
+ #   plt.legend(handles=legend_elements, loc='upper right')
+ #   plt.savefig("Graficos/PCA3_pos_"+posicion, format="pdf", bbox_inches='tight')
+    
+    ### PCA_c1 vs PCA_c2 componente 2
+    plt.figure()
+    plt.title('Posición '+posicion+' - componente 2')
+    plt.xlabel('PCA_c1')
+    plt.ylabel('PCA_c2')
+    for i, paciente in enumerate(pca_c1):
+        plt.plot(pca_c1[i,1], pca_c2[i,1], marker=marcadores[i], markersize=tamanio_marcador, linestyle="None", color=colores[i])
     plt.tight_layout()
-    plt.savefig("Graficos/PCA_pos_"+posicion, format="pdf", bbox_inches='tight')
-    #plt.ion()
-    #plt.show()
+    plt.legend(handles=legend_elements, loc='upper right')
+    plt.savefig("Graficos/PCA4_pos_"+posicion, format="pdf", bbox_inches='tight')
 
+###-----------------------------------###
 
 ###Para hacer PCA de todos los latidos
 #cant_total_latidos=sum(paciente.matriz_latidos_c1.shape[0] for paciente in lista_pacientes)
@@ -243,42 +322,7 @@ for pos in range(1,2):
 #plt.legend()
 #plt.show()
 
-#paciente=[paciente for paciente in lista_pacientes if "18" in paciente.nombre]
-##Calculo el latido promedio en cada canal
-#latido_promedio_c1=np.mean(paciente[0].matriz_latidos_c1, axis=0)
-#latido_promedio_c2=np.mean(paciente[0].matriz_latidos_c2, axis=0)
-##Límite para los ejes
-#lim=np.max([np.max(np.abs(latido_promedio_c1)),np.max(np.abs(latido_promedio_c2))])
-#lim=lim*1.1;
-#
-#### Latidos cortados superpuestos y promedio
-#plt.figure()
-#plt.plot(paciente[0].matriz_latidos_c1.T,'--')
-##plt.plot(lista_pacientes[0].matriz_latidos_c1.T,'--')
-#plt.plot(latido_promedio_c1,'k')
-#plt.title('Canal 1')
-#plt.xlabel('Muestras')
-#plt.ylabel('Tensión [V]')
-#plt.ylim(-lim, lim)
-#plt.grid(True)
-##ax.set(ylim=[-lim, lim], xlabel='Muestras', ylabel='Tensión[V]', title='Canal1')
-##plt.axvline(x=matriz_latidos_c2.shape[1]//2, color='r')
-#
-#plt.figure()
-#plt.plot(paciente[0].matriz_latidos_c2.T,'--')
-##plt.plot(lista_pacientes[0].matriz_latidos_c2.T,'--')
-#plt.plot(latido_promedio_c2,'k')
-#plt.title('Canal 2')
-#plt.xlabel('Muestras')
-#plt.ylabel('Tensión [V]')
-#plt.ylim(-lim, lim)
-#plt.grid(True)
-##ax.set(ylim=[-lim, lim], xlabel='Muestras', ylabel='Tensión[V]', title='Canal1')
-##plt.axvline(x=matriz_latidos_c2.shape[1]//2, color='r')
-#plt.ion()
-#plt.show()
-
-
+###-----------------------------------###
 
 ### Vecto
 #c1d=np.diff(latido_promedio_c1)

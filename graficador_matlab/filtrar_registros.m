@@ -1,10 +1,10 @@
 #! /usr/bin/octave -qf
 
-# Grafica el vecto y los trazados a partir de los archivos de los 2 canales de una medición
+# Filtra los datos de los 2 canales de una medición
 # y los guarda en el directorio indicado.
 #
 # Uso:
-#     ./graficar_datos.m archivo_canal_1.txt archivo_canal_2.txt directorio_destino
+#     ./filtrar_registros.m archivo_canal_1.txt archivo_canal_2.txt directorio_destino
 
 %printf("%s\n", program_name());
 %arg_list=argv();

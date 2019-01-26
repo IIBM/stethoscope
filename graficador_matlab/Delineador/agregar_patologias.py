@@ -24,9 +24,10 @@ patologias = {
     'Joaquín Ulloa': ["control"],
     'Martín Mello Teggia': ["control"],
     'Mateo Martinez': ["control"],
-    'Matías Stingl': ["control"],
+    'Matias Stingl': ["control"],
     'Maximiliano Torre': ["control"],
     'Roger Mion': ["control"],
+    'control 12': ["control"],
     '1': ["insuficiencia cardíaca", "bloqueo de rama derecha", "hemibloqueo anterior externo"],
     '2': ["enfermedad de nodo sinusal", "marcapasos implantado"],
     '3': ["hipertrofia ventricular", "miocardio trabiculado", "insuficiencia cardíaca", "signo de sobrecarga ventricular izquierda"],
@@ -38,13 +39,13 @@ patologias = {
     '9': ["taquicardia ventricular", "bloqueo completo de rama derecha", "secuela septal", "miocardiopatía dilatada"],
     '10': ["iam de cara anterior", "cest (con st elevado)", "bloqueo completo de rama derecha"],
     '11': ["diagnóstico de sindrome de bayes"],
-    '12': ["bloqueo completo de rama izq", "bloqueo ab de 1er grado", "4 episodios de síncope"],
+    '12': ["bloqueo completo de rama izquierda", "bloqueo ab de 1er grado", "4 episodios de síncope"],
     '13': ["iam diafragmático de 5 días de evolución", "enfermedad de 3 vasos csg"],
     '14': ["epoc", "bcri", "aleteo auricular", "secuela en cara anterior"],
     '15': ["endocarditis protesica de un mes de evolucion al año de la cirugía eco t esof sin vegetaciones"],
     '16': ["secuela anteroseptal", "insuficiencia cardíaca isquémica o valvular", "estenosis aórtica", "antecedentes de arritmia"],
     '17': ["falta de progresión de r en cara anterior", "p negetiva en v1", "insuficiencia cardíaca isquémica"],
-    '18': [""]
+    '18': ["insuficiencia cardíaca con FEY conservada isquemiconecrotica y valvular", "estenosis aortica severa"]
 }
 
 #posicion = 1

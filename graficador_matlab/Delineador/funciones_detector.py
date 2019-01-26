@@ -94,7 +94,8 @@ def detectar(nombre_registro, canal, umbral=None):
     n_sig=wfdb.processing.normalize_bound(sig, lb=0, ub=1) #Normalizo la señal entre 0 y 1
 
     if umbral==None:
-        umbral=np.median(np.absolute(n_sig))/0.6745 #Donoho
+        umbral=(np.median(np.absolute(n_sig))/0.6745)*np.sqrt(np.log(len(n_sig))) #Donoho
+        #umbral=np.median(np.absolute(n_sig))/0.6745 #Donoho
     
     config=wfdb.processing.XQRS.Conf(hr_init=75, hr_max=200, hr_min=25, qrs_width=0.1, qrs_thr_init=umbral, qrs_thr_min=0, ref_period=0.2, t_inspect_period=0.36)
     #qrs_inds = processing.xqrs_detect(sig=sig[:,0], fs=fields['fs'],sampfrom=50,conf=config)

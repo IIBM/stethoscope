@@ -54,7 +54,9 @@ lista_pacientes=[]
 #for archivo in no_detectados:
 #    print("\n"+archivo)
 #    
-#    detectar_qrs(archivo, directorio_registros_procesados, canal=1, umbral=0.1)
+#    #detectar_qrs(archivo, directorio_registros_procesados, canal=1, umbral=0.1)
+#    detectar_qrs(archivo, directorio_registros_procesados, umbral=0.01)
+#    #detectar_qrs(archivo, directorio_registros_procesados)
 
 ###Separo latidos de los archivos procesados
 
