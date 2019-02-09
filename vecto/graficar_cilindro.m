@@ -1,7 +1,8 @@
-function graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a)
+function M = graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a)
     idx=1;
     col=length(angulo);
     fil=length(y);
+    M=[]; %Matriz para guardar los latidos
     for Y=y
         for angle=angulo
             Xn=radio*cos(angle*pi/180)+desplazamiento;
@@ -43,6 +44,7 @@ function graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a)
             %ylim([-0.00025 0.00025]);
             axis off
             idx=idx+1;
+            M=[M;v];
     %        %[Y, angle]
         end
     end

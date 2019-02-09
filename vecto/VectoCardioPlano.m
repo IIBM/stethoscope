@@ -59,39 +59,40 @@ for num_reg=[1:9]
         case 1
             x=x(1:4);
             y=y(1:4);
-            graficar_plano(x, y, Z, num_reg, a);
+            P1=graficar_plano(x, y, Z, num_reg, a);
         case 2
             x=x(5:8);
             y=y(1:4);
-            graficar_plano(x, y, Z, num_reg, a);
+            P2=graficar_plano(x, y, Z, num_reg, a);
         case 3
             x=x(9:12);
             y=y(1:4);
-            graficar_plano(x, y, Z, num_reg, a);
+            P3=graficar_plano(x, y, Z, num_reg, a);
         case 4
             x=x(1:4);
             y=y(5:8);
-            graficar_plano(x, y, Z, num_reg, a);
+            P4=graficar_plano(x, y, Z, num_reg, a);
         case 5
             x=x(5:8);
             y=y(5:8);
-            graficar_plano(x, y, Z, num_reg, a);
+            P5=graficar_plano(x, y, Z, num_reg, a);
         case 6
             x=x(9:12);
             y=y(5:8);
-            graficar_plano(x, y, Z, num_reg, a);
+            P6=graficar_plano(x, y, Z, num_reg, a);
         case 7
             x=x(1:4);
             y=y(9:12);
-            graficar_plano(x, y, Z, num_reg, a);
+            P7=graficar_plano(x, y, Z, num_reg, a);
         case 8
             x=x(5:8);
             y=y(9:12);
-            graficar_plano(x, y, Z, num_reg, a);
+            P8=graficar_plano(x, y, Z, num_reg, a);
         case 9
             x=x(9:12);
             y=y(9:12);
-            graficar_plano(x, y, Z, num_reg, a);
+            P9=graficar_plano(x, y, Z, num_reg, a);
     end
 end
 
+save('vect_plano', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'P9')

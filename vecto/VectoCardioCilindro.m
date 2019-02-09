@@ -61,26 +61,28 @@ for num_reg=[1:6]
         case 1
             angulo=[315:15:360];
             y=y(1:4);
-            graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
+            C1=graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
         case 2
             angulo=[15:15:45];
             y=y(1:4);
-            graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
+            C2=graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
         case 3
             angulo=[315:15:360];
             y=y(5:8);
-            graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
+            C3=graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
         case 4
             angulo=[15:15:45];
             y=y(5:8);
-            graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
+            C4=graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
         case 5
             angulo=[315:15:360];
             y=y(9:12);
-            graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
+            C5=graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
         case 6
             angulo=[15:15:45];
             y=y(9:12);
-            graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
+            C6=graficar_cilindro(angulo, y, radio, desplazamiento, num_reg, a);
     end
 end
+
+save('vect_cilindro', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6')
