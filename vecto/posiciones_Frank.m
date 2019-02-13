@@ -17,9 +17,9 @@ close all
 %Saca las precordiales de los ECGs tomados de manera convencional con el ECGView
 
 %[RegistrosECG]=ECGFileOpen ('ECG_Files/04/04_08.ECG');
-%[RegistrosECG]=ECGFileOpen ('ECG_Files/05/05_12.ECG');
+[RegistrosECG]=ECGFileOpen ('ECG_Files/05/05_12.ECG');
 %[RegistrosECG]=ECGFileOpen ('ECG_Files/06/06_09.ECG');
-[RegistrosECG]=ECGFileOpen ('ECG_Files/07/07_14.ECG');
+%[RegistrosECG]=ECGFileOpen ('ECG_Files/07/07_14.ECG');
 %[RegistrosECG]=ECGFileOpen ('ECG_Files/08/08_16.ECG');
 %[RegistrosECG]=ECGFileOpen ('ECG_Files/09/09_17.ECG');
 %[RegistrosECG]=ECGFileOpen ('ECG_Files/10/10_20.ECG');
@@ -32,9 +32,9 @@ a=RegistrosECG.RowDATA*RegistrosECG.Pendiente;
 %plot(a(:,7:12)) %Grafico las precordiales para encontrar el latido donde estén más alineadas
 
 %b=a(2550:2850,:); %Tomo un latido después de haber graficado
-%b=a(1980:2280,:); %Tomo un latido después de haber graficado
+b=a(1980:2280,:); %Tomo un latido después de haber graficado
 %b=a(4575:4875,:); %Tomo un latido después de haber graficado
-b=a(1400:1700,:); %Tomo un latido después de haber graficado
+%b=a(1400:1700,:); %Tomo un latido después de haber graficado
 %b=a(2125:2425,:); %Tomo un latido después de haber graficado
 %b=a(3275:3575,:); %Tomo un latido después de haber graficado
 %b=a(1510:1810,:); %Tomo un latido después de haber graficado
@@ -84,6 +84,9 @@ registros=vecto'*derivaciones';
 for i=1:18
     figure('visible','off')
     plot(registros(:,i))
+    L1=max(abs(registros(:,1)))*1.1;
+    ylim([-L1 L1])
+    xlim([0 size(registros,1)])
     title(num2str(i))
     nombre=strcat('reg',num2str(i),'.pdf');
     print(nombre,'-dpdf')
